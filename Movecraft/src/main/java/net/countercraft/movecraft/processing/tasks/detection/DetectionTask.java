@@ -243,7 +243,9 @@ public class DetectionTask implements Supplier<Effect> {
     public Effect get() {
         frontier();
         if (!illegal.isEmpty()) {
-            this.alwaysRunAfter.apply(null);
+            if (this.alwaysRunAfter != null) {
+                this.alwaysRunAfter.apply(null);
+            }
             return null;
         }
 
@@ -255,7 +257,8 @@ public class DetectionTask implements Supplier<Effect> {
         ).validate(visitedMaterials, type, movecraftWorld, player) : result;
         if (!result.isSucess()) {
             String message = result.getMessage();
-            this.alwaysRunAfter.apply(null);
+            if (this.alwaysRunAfter != null)
+                this.alwaysRunAfter.apply(null);
             return () -> audience.sendMessage(Component.text(message));
         }
 
@@ -272,7 +275,8 @@ public class DetectionTask implements Supplier<Effect> {
 
         if (!result.isSucess()) {
             String message = result.getMessage();
-            this.alwaysRunAfter.apply(craft);
+            if (this.alwaysRunAfter != null)
+                this.alwaysRunAfter.apply(craft);
             return () -> audience.sendMessage(Component.text(message));
         }
 
@@ -310,7 +314,11 @@ public class DetectionTask implements Supplier<Effect> {
                 () -> Bukkit.getServer().getPluginManager().callEvent(
                         new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER))
         ).andThen(
-                this.alwaysRunAfter.apply(craft)
+                () -> {
+                    if (this.alwaysRunAfter != null) {
+                        this.alwaysRunAfter.apply(craft);
+                    }
+                }
         ).andThen(
                 // Apply post detection effect
                 postDetection.apply(craft)
