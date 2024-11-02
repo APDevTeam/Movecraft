@@ -66,7 +66,7 @@ hangarPublish {
         platforms {
             register(io.papermc.hangarpublishplugin.model.Platforms.PAPER) {
                 jar.set(tasks.shadowJar.flatMap { it.archiveFile })
-                platformVersions.set(listOf("1.20.6", "1.21.1"))
+                platformVersions.set(listOf("1.20.6", "1.21.3"))
             }
         }
     }
