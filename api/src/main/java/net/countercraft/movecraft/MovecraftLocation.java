@@ -20,6 +20,7 @@ package net.countercraft.movecraft;
 import com.google.common.primitives.UnsignedInteger;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.jetbrains.annotations.NotNull;
 
 import static net.countercraft.movecraft.util.BitMath.mask;
@@ -173,5 +174,9 @@ final public class MovecraftLocation implements Comparable<MovecraftLocation>{
             return this.z - other.z ;
         }
         return 0;
+    }
+
+    public MovecraftLocation getRelative(BlockFace facing) {
+        return this.translate(facing.getModX(), facing.getModY(), facing.getModZ());
     }
 }

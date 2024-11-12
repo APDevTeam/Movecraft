@@ -28,6 +28,7 @@ import net.countercraft.movecraft.processing.tasks.detection.validators.SizeVali
 import net.countercraft.movecraft.processing.tasks.detection.validators.WaterContactValidator;
 import net.countercraft.movecraft.util.AtomicLocationSet;
 import net.countercraft.movecraft.util.CollectionUtils;
+import net.countercraft.movecraft.util.SupportUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
@@ -39,6 +40,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -304,7 +308,6 @@ public class DetectionTask implements Supplier<Effect> {
         ConcurrentLinkedQueue<MovecraftLocation> nextFrontier = new ConcurrentLinkedQueue<>();
         currentFrontier.add(startLocation);
         currentFrontier.addAll(Arrays.stream(SHIFTS).map(startLocation::add).collect(Collectors.toList()));
-        visited.addAll(currentFrontier);
         int threads = Runtime.getRuntime().availableProcessors();
         while(!currentFrontier.isEmpty() && size.intValue() < type.getIntProperty(CraftType.MAX_SIZE) + threads) {
             List<ForkJoinTask<?>> tasks = new ArrayList<>();
@@ -330,6 +333,14 @@ public class DetectionTask implements Supplier<Effect> {
     private class DetectAction implements Runnable {
         private final ConcurrentLinkedQueue<MovecraftLocation> currentFrontier;
         private final ConcurrentLinkedQueue<MovecraftLocation> nextFrontier;
+        private static DetectionPredicate<MovecraftLocation> chain;
+
+        static {
+            chain = FORBIDDEN_BLOCK_VALIDATOR;
+            for(var validator : VALIDATORS) {
+                chain = chain.and(validator);
+            }
+        }
 
         private DetectAction(ConcurrentLinkedQueue<MovecraftLocation> currentFrontier, ConcurrentLinkedQueue<MovecraftLocation> nextFrontier) {
             this.currentFrontier = currentFrontier;
@@ -339,31 +350,43 @@ public class DetectionTask implements Supplier<Effect> {
         @Override
         public void run() {
             MovecraftLocation probe;
+            EnumSet<Material> directionalDependent = type.getMaterialSetProperty(CraftType.DIRECTIONAL_DEPENDENT_MATERIALS);
+
             while((probe = currentFrontier.poll()) != null) {
-                visitedMaterials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                BlockData blockData = movecraftWorld.getData(probe);
+                Material material = blockData.getMaterial();
+
+                if (directionalDependent.contains(material)) {
+                    BlockFace supportFace = SupportUtils.getSupportFace(blockData);
+                    if (supportFace != null) {
+                        MovecraftLocation relativeLoc = probe.getRelative(supportFace);
+
+                        if (!legal.contains(relativeLoc))
+                            continue;
+                    }
+                }
+
+                if(!visited.add(probe))
+                    continue;
+
+                visitedMaterials.computeIfAbsent(material, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
                 if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, type, movecraftWorld, player).isSucess())
                     continue;
 
-                DetectionPredicate<MovecraftLocation> chain = FORBIDDEN_BLOCK_VALIDATOR;
-                for(var validator : VALIDATORS) {
-                    chain = chain.and(validator);
-                }
                 var result = chain.validate(probe, type, movecraftWorld, player);
 
-                if(result.isSucess()) {
+                if (result.isSucess()) {
                     legal.add(probe);
-                    if(Tags.FLUID.contains(movecraftWorld.getMaterial(probe)))
+                    if (Tags.FLUID.contains(material))
                         fluid.add(probe);
 
                     size.increment();
-                    materials.computeIfAbsent(movecraftWorld.getMaterial(probe), Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
-                    for(MovecraftLocation shift : SHIFTS) {
+                    materials.computeIfAbsent(material, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                    for (MovecraftLocation shift : SHIFTS) {
                         var shifted = probe.add(shift);
-                        if(visited.add(shifted))
-                            nextFrontier.add(shifted);
+                        nextFrontier.add(shifted);
                     }
-                }
-                else {
+                } else {
                     illegal.add(probe);
                     audience.sendMessage(Component.text(result.getMessage()));
                 }

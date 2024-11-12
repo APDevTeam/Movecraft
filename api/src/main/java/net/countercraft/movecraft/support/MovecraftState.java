@@ -8,12 +8,16 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Entity;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.Collection;
 import java.util.List;
 
 public class MovecraftState implements BlockState {
@@ -46,6 +50,16 @@ public class MovecraftState implements BlockState {
     @Override
     public BlockData getBlockData() {
         return data;
+    }
+
+    @Override
+    public @NotNull BlockState copy() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public @NotNull BlockState copy(@NotNull Location location) {
+        throw new UnsupportedOperationException();
     }
 
     @NotNull
@@ -153,6 +167,11 @@ public class MovecraftState implements BlockState {
 
     @Override
     public boolean isCollidable() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public @Unmodifiable @NotNull Collection<ItemStack> getDrops(@Nullable ItemStack tool, @Nullable Entity entity) {
         throw new UnsupportedOperationException();
     }
 

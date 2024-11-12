@@ -43,10 +43,7 @@ import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -129,6 +126,7 @@ final public class CraftType {
     public static final NamespacedKey EXPLODE_ON_CRASH = buildKey("explode_on_crash");
     public static final NamespacedKey INCENDIARY_ON_CRASH = buildKey("incendiary_on_crash");
     public static final NamespacedKey COLLISION_EXPLOSION = buildKey("collision_explosion");
+    public static final NamespacedKey UNDERWATER_COLLISION_EXPLOSION = buildKey("underwater_collision_explosion");
     private static final NamespacedKey MIN_HEIGHT_LIMIT = buildKey("min_height_limit");
         // Private key used as default for PER_WORLD_MIN_HEIGHT_LIMIT
     public static final NamespacedKey PER_WORLD_MIN_HEIGHT_LIMIT = buildKey("per_world_min_height_limit");
@@ -190,6 +188,8 @@ final public class CraftType {
     public static final NamespacedKey CRUISE_ON_PILOT_LIFETIME = buildKey("cruise_on_pilot_lifetime");
 
     public static final NamespacedKey EXPLOSION_ARMING_TIME = buildKey("explosion_arming_time");
+    public static final NamespacedKey DIRECTIONAL_DEPENDENT_MATERIALS = buildKey("directional_dependent_materials");
+    public static final NamespacedKey ALLOW_INTERNAL_COLLISION_EXPLOSION = buildKey("allow_internal_collision_explosion");
     //endregion
 
     @Contract("_ -> new")
@@ -392,6 +392,14 @@ final public class CraftType {
         /* Optional properties */
         registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS, type -> new HashSet<>()));
         registerProperty(new RequiredBlockProperty("detectionblocks", DETECTION_BLOCKS, type -> new HashSet<>()));
+        registerProperty(new MaterialSetProperty("directionDependentMaterials", DIRECTIONAL_DEPENDENT_MATERIALS, type -> {
+            var set = EnumSet.of(Material.LADDER, Material.LEVER, Material.GRINDSTONE);
+            set.addAll(Tag.WALL_SIGNS.getValues());
+            set.addAll(Tags.WALL_TORCHES);
+            set.addAll(Tags.LANTERNS);
+            return set;
+        }));
+
         registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
                 (data, type, fileKey, namespacedKey) -> data.getStringListOrEmpty(fileKey).stream().map(
                         String::toLowerCase).collect(Collectors.toSet()),
@@ -452,6 +460,7 @@ final public class CraftType {
         registerProperty(new FloatProperty("explodeOnCrash", EXPLODE_ON_CRASH, type -> 0F));
         registerProperty(new BooleanProperty("incendiaryOnCrash", INCENDIARY_ON_CRASH, type -> false));
         registerProperty(new FloatProperty("collisionExplosion", COLLISION_EXPLOSION, type -> 0F));
+        registerProperty(new FloatProperty("underwaterCollisionExplosion", UNDERWATER_COLLISION_EXPLOSION, type -> type.getFloatProperty(COLLISION_EXPLOSION)));
         registerProperty(new IntegerProperty("minHeightLimit", MIN_HEIGHT_LIMIT, type -> Integer.MIN_VALUE));
         registerProperty(new PerWorldProperty<>("perWorldMinHeightLimit", PER_WORLD_MIN_HEIGHT_LIMIT,
                 (type, worldName) -> type.getIntProperty(MIN_HEIGHT_LIMIT)));
@@ -566,6 +575,7 @@ final public class CraftType {
         registerProperty(new BooleanProperty("mergePistonExtensions", MERGE_PISTON_EXTENSIONS, type -> false));
         registerProperty(new IntegerProperty("cruiseOnPilotLifetime", CRUISE_ON_PILOT_LIFETIME, type -> 15*20));
         registerProperty(new IntegerProperty("explosionArmingTime", EXPLOSION_ARMING_TIME, type -> 1000));
+        registerProperty(new BooleanProperty("allowInternalCollisionExplosion", ALLOW_INTERNAL_COLLISION_EXPLOSION, type -> false));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN

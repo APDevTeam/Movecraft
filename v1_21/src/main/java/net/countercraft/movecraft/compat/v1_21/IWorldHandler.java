@@ -9,29 +9,32 @@ import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.UnsafeUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
+import net.minecraft.world.level.block.piston.PistonMovingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.ScheduledTick;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.inventory.CraftInventoryView;
-import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 @SuppressWarnings("unused")
 public class IWorldHandler extends WorldHandler {
@@ -67,15 +70,21 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         ServerLevel nativeWorld = ((CraftWorld) craft.getWorld()).getHandle();
         List<TileHolder> tiles = new ArrayList<>();
+        List<TickHolder> ticks = new ArrayList<>();
         //get the tiles
         for (BlockPos position : rotatedPositions.keySet()) {
             //BlockEntity tile = nativeWorld.removeBlockEntity(position);
             BlockEntity tile = removeBlockEntity(nativeWorld, position);
-            if (tile == null)
-                continue;
-//            tile.a(ROTATION[rotation.ordinal()]);
+            if (tile != null)
+                tiles.add(new TileHolder(tile, position));
+
             //get the nextTick to move with the tile
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick(nativeWorld, position), position));
+            ScheduledTick tickHere = tickProvider.getNextTick(nativeWorld, position);
+            if (tickHere != null) {
+                ((LevelChunkTicks) nativeWorld.getChunkAt(position).getBlockTicks()).removeIf(
+                        (Predicate<ScheduledTick>) scheduledTick -> scheduledTick.equals(tickHere));
+                ticks.add(new TickHolder(tickHere, position));
+            }
         }
 
         //*******************************************
@@ -100,12 +109,16 @@ public class IWorldHandler extends WorldHandler {
         //*    Step four: replace all the tiles     *
         //*******************************************
         //TODO: go by chunks
-        for (TileHolder tileHolder : tiles) {
+        for (TileHolder tileHolder : tiles)
             moveBlockEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getTile());
-            if (tileHolder.getNextTick() == null)
-                continue;
+        for (TickHolder tickHolder : ticks) {
             final long currentTime = nativeWorld.serverLevelData.getGameTime();
-            nativeWorld.getBlockTicks().schedule(new ScheduledTick<>((Block) tileHolder.getNextTick().type(), rotatedPositions.get(tileHolder.getNextTick().pos()), tileHolder.getNextTick().triggerTick() - currentTime, tileHolder.getNextTick().priority(), tileHolder.getNextTick().subTickOrder()));
+            nativeWorld.getBlockTicks().schedule(new ScheduledTick<>(
+                    (Block) tickHolder.getTick().type(),
+                    rotatedPositions.get(tickHolder.getTick().pos()),
+                    tickHolder.getTick().triggerTick() - currentTime,
+                    tickHolder.getTick().priority(),
+                    tickHolder.getTick().subTickOrder()));
         }
 
         //*******************************************
@@ -134,6 +147,7 @@ public class IWorldHandler extends WorldHandler {
         //*         Step two: Get the tiles         *
         //*******************************************
         List<TileHolder> tiles = new ArrayList<>();
+        List<TickHolder> ticks = new ArrayList<>();
         //get the tiles
         for (int i = 0, positionsSize = positions.size(); i < positionsSize; i++) {
             BlockPos position = positions.get(i);
@@ -141,14 +155,16 @@ public class IWorldHandler extends WorldHandler {
                 continue;
             //BlockEntity tile = nativeWorld.removeBlockEntity(position);
             BlockEntity tile = removeBlockEntity(oldNativeWorld, position);
-            if (tile == null)
-                continue;
+            if (tile != null)
+                tiles.add(new TileHolder(tile,position));
+
             //get the nextTick to move with the tile
-
-            //nativeWorld.capturedTileEntities.remove(position);
-            //nativeWorld.getChunkAtWorldCoords(position).getTileEntities().remove(position);
-            tiles.add(new TileHolder(tile, tickProvider.getNextTick(oldNativeWorld, position), position));
-
+            ScheduledTick tickHere = tickProvider.getNextTick(nativeWorld, position);
+            if (tickHere != null) {
+                ((LevelChunkTicks) nativeWorld.getChunkAt(position).getBlockTicks()).removeIf(
+                        (Predicate<ScheduledTick>) scheduledTick -> scheduledTick.equals(tickHere));
+                ticks.add(new TickHolder(tickHere, position));
+            }
         }
         //*******************************************
         //*   Step three: Translate all the blocks  *
@@ -173,13 +189,11 @@ public class IWorldHandler extends WorldHandler {
         //*    Step four: replace all the tiles     *
         //*******************************************
         //TODO: go by chunks
-        for (int i = 0, tilesSize = tiles.size(); i < tilesSize; i++) {
-            TileHolder tileHolder = tiles.get(i);
+        for (TileHolder tileHolder : tiles)
             moveBlockEntity(nativeWorld, tileHolder.getTilePosition().offset(translateVector), tileHolder.getTile());
-            if (tileHolder.getNextTick() == null)
-                continue;
+        for (TickHolder tickHolder : ticks) {
             final long currentTime = nativeWorld.getGameTime();
-            nativeWorld.getBlockTicks().schedule(new ScheduledTick<>((Block) tileHolder.getNextTick().type(), tileHolder.getTilePosition().offset(translateVector), tileHolder.getNextTick().triggerTick() - currentTime, tileHolder.getNextTick().priority(), tileHolder.getNextTick().subTickOrder()));
+            nativeWorld.getBlockTicks().schedule(new ScheduledTick<>((Block) tickHolder.getTick().type(), tickHolder.getTickPosition().offset(translateVector), tickHolder.getTick().triggerTick() - currentTime, tickHolder.getTick().priority(), tickHolder.getTick().subTickOrder()));
         }
         //*******************************************
         //*   Step five: Destroy the leftovers      *
@@ -195,6 +209,24 @@ public class IWorldHandler extends WorldHandler {
 
     @Nullable
     private BlockEntity removeBlockEntity(@NotNull Level world, @NotNull BlockPos position) {
+        BlockEntity testEntity = world.getChunkAt(position).getBlockEntity(position);
+        //Prevents moving pistons by locking up by forcing their movement to finish
+        if (testEntity instanceof PistonMovingBlockEntity)
+        {
+            BlockState oldState;
+            if (((PistonMovingBlockEntity) testEntity).isSourcePiston() && testEntity.getBlockState().getBlock() instanceof PistonBaseBlock) {
+                if (((PistonMovingBlockEntity) testEntity).getMovedState().is(Blocks.PISTON))
+                    oldState = Blocks.PISTON.defaultBlockState()
+                            .setValue(PistonBaseBlock.FACING, ((PistonMovingBlockEntity) testEntity).getMovedState().getValue(PistonBaseBlock.FACING));
+                else
+                    oldState = Blocks.STICKY_PISTON.defaultBlockState()
+                            .setValue(PistonBaseBlock.FACING, ((PistonMovingBlockEntity) testEntity).getMovedState().getValue(PistonBaseBlock.FACING));
+            } else
+                oldState = ((PistonMovingBlockEntity) testEntity).getMovedState();
+            ((PistonMovingBlockEntity) testEntity).finalTick();
+            setBlockFast(world, position, oldState);
+            return world.getBlockEntity(position);
+        }
         return world.getChunkAt(position).blockEntities.remove(position);
     }
 
@@ -242,33 +274,6 @@ public class IWorldHandler extends WorldHandler {
         setBlockFast(world, BlockPos, blockData);
     }
 
-    @Override
-    public @Nullable Location getAccessLocation(@NotNull InventoryView inventoryView) {
-        AbstractContainerMenu menu = ((CraftInventoryView) inventoryView).getHandle();
-        Field field = UnsafeUtils.getFieldOfType(ContainerLevelAccess.class, menu.getClass());
-        if (field != null) {
-            try {
-                field.setAccessible(true);
-                return ((ContainerLevelAccess) field.get(menu)).getLocation();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void setAccessLocation(@NotNull InventoryView inventoryView, @NotNull Location location) {
-        if (location.getWorld() == null)
-            return;
-        ServerLevel level = ((CraftWorld) location.getWorld()).getHandle();
-        BlockPos position = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-        ContainerLevelAccess access = ContainerLevelAccess.create(level, position);
-
-        AbstractContainerMenu menu = ((CraftInventoryView) inventoryView).getHandle();
-        UnsafeUtils.trySetFieldOfType(ContainerLevelAccess.class, menu, access);
-    }
-
     private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
         LevelChunk chunk = nativeWorld.getChunkAt(newPosition);
         try {
@@ -291,14 +296,11 @@ public class IWorldHandler extends WorldHandler {
     private static class TileHolder {
         @NotNull
         private final BlockEntity tile;
-        @Nullable
-        private final ScheduledTick<?> nextTick;
         @NotNull
         private final BlockPos tilePosition;
 
-        public TileHolder(@NotNull BlockEntity tile, @Nullable ScheduledTick<?> nextTick, @NotNull BlockPos tilePosition) {
+        public TileHolder(@NotNull BlockEntity tile, @NotNull BlockPos tilePosition) {
             this.tile = tile;
-            this.nextTick = nextTick;
             this.tilePosition = tilePosition;
         }
 
@@ -308,14 +310,32 @@ public class IWorldHandler extends WorldHandler {
             return tile;
         }
 
-        @Nullable
-        public ScheduledTick<?> getNextTick() {
-            return nextTick;
-        }
-
         @NotNull
         public BlockPos getTilePosition() {
             return tilePosition;
+        }
+    }
+
+    private static class TickHolder {
+        @NotNull
+        private final ScheduledTick tick;
+        @NotNull
+        private final BlockPos tickPosition;
+
+        public TickHolder(@NotNull ScheduledTick tick, @NotNull BlockPos tilePosition) {
+            this.tick = tick;
+            this.tickPosition = tilePosition;
+        }
+
+
+        @NotNull
+        public ScheduledTick getTick() {
+            return tick;
+        }
+
+        @NotNull
+        public BlockPos getTickPosition() {
+            return tickPosition;
         }
     }
 }

@@ -42,9 +42,11 @@ import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockPistonEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockRedstoneEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.material.Attachable;
@@ -123,7 +125,16 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPistonEvent(@NotNull BlockPistonExtendEvent e) {
+    public void onPistonExtendEvent(@NotNull BlockPistonExtendEvent e) {
+        onPistonEvent(e);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPistonRetractEvent(@NotNull BlockPistonRetractEvent e) {
+        onPistonEvent(e);
+    }
+
+    public void onPistonEvent(@NotNull BlockPistonEvent e) {
         Block block = e.getBlock();
         Location location = block.getLocation();
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(location);
@@ -131,21 +142,23 @@ public class BlockListener implements Listener {
             if (!craft.getHitBox().contains(loc))
                 continue;
 
-            if (!craft.isNotProcessing())
-                e.setCancelled(true); // prevent pistons on cruising crafts
-
+           if (!craft.isNotProcessing())
+               e.setCancelled(true); // prevent pistons on cruising crafts
+           if (!(e instanceof BlockPistonExtendEvent))
+               return;
             // merge piston extensions to craft
-            if (craft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS))
+           if (craft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS))
                 continue;
 
-            BitmapHitBox hitBox = new BitmapHitBox();
-            for (Block b : e.getBlocks()) {
-                Vector dir = e.getDirection().getDirection();
-                hitBox.add(new MovecraftLocation(b.getX() + dir.getBlockX(), b.getY() + dir.getBlockY(), b.getZ() + dir.getBlockZ()));
-            }
-            craft.setHitBox(craft.getHitBox().union(hitBox));
+           BitmapHitBox hitBox = new BitmapHitBox();
+           for (Block b : ((BlockPistonExtendEvent) e).getBlocks()) {
+               Vector dir = e.getDirection().getDirection();
+               hitBox.add(new MovecraftLocation(b.getX() + dir.getBlockX(), b.getY() + dir.getBlockY(), b.getZ() + dir.getBlockZ()));
+           }
+           craft.setHitBox(craft.getHitBox().union(hitBox));
         }
     }
+
 
     // prevent hoppers on cruising crafts
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
