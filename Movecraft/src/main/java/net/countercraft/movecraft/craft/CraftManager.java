@@ -181,6 +181,22 @@ public class CraftManager implements Iterable<Craft>{
         ));
     }
 
+    public void detect(@NotNull MovecraftLocation startPoint,
+                       @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                       @NotNull World world, @Nullable Player player,
+                       @NotNull Audience audience,
+                       @NotNull Function<Craft, Effect> postDetection,
+                       @Nullable Function<@Nullable Craft, Effect> alwaysRunAfter) {
+        WorldManager.INSTANCE.submit(new DetectionTask(
+                startPoint, CachedMovecraftWorld.of(world),
+                type, supplier,
+                world, player,
+                audience,
+                postDetection,
+                alwaysRunAfter
+        ));
+    }
+
     public void add(@NotNull Craft c) {
         if (c instanceof PlayerCraft) {
             if (playerCrafts.containsKey(((PlayerCraft) c).getPilot()))
