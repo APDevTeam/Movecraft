@@ -158,7 +158,7 @@ public class StatusSign extends AbstractInformationSign {
             } else if (percentPresent > entry.getMin() * 1.02) {
                 style = STYLE_COLOR_YELLOW;
             } else {
-                style = STYLE_COLOR_YELLOW;
+                style = STYLE_COLOR_RED;
             }
             Component signText = Component.text(text).style(style);
             if (signColumn == 0) {
