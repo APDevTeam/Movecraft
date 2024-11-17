@@ -308,14 +308,12 @@ public class SignListener implements Listener {
             }*/
             AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(backingForEvent.line(0));
             if (acs != null) {
-                if (acs.processSignTranslation(craft, backingForEvent, wrapperToLocs.get(entry.getKey()))) {
+                if (acs.processSignTranslation(craft, backingForEvent, wrapperToLocs.get(entry.getKey())) && (!checkEventIsUpdated || !SignWrapper.areSignsEqualIgnoreFace(backingForEvent, entry.getKey()))) {
                     // Values get changed definitely, but perhaps it does not get applied to the sign after all?
                     for(SignWrapper wrapperTmp : entry.getValue()){
-                        if (!checkEventIsUpdated) {
-                            wrapperTmp.copyContent(backingForEvent::line, (i) -> i < backingForEvent.lines().size());
-                            if (wrapperTmp.block() != null) {
-                                signsToUpdate.add(wrapperTmp.block());
-                            }
+                        wrapperTmp.copyContent(backingForEvent::line, (i) -> i < backingForEvent.lines().size());
+                        if (wrapperTmp.block() != null) {
+                            signsToUpdate.add(wrapperTmp.block());
                         }
                     }
                 }
