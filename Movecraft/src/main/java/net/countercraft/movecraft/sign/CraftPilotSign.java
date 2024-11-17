@@ -71,79 +71,82 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
     }
 
     protected void runDetectTask(MovecraftLocation startPoint, Player player, SignListener.SignWrapper signWrapper, Craft parentCraft, World world) {
-        PILOTING.add(startPoint);
-        CraftManager.getInstance().detect(
-                startPoint,
-                craftType, (type, w, p, parents) -> {
-                    // Assert instructions are not available normally, also this is checked in beforehand sort of
-                    assert p != null; // Note: This only passes in a non-null player.
-                    if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
-                        if (parents.size() > 1)
-                            return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
-                                    "Detection - Failed - Already commanding a craft")), null);
-                        if (parents.size() == 1) {
-                            Craft parent = parents.iterator().next();
+        if (PILOTING.add(startPoint)) {
+            CraftManager.getInstance().detect(
+                    startPoint,
+                    craftType, (type, w, p, parents) -> {
+                        // Assert instructions are not available normally, also this is checked in beforehand sort of
+                        assert p != null; // Note: This only passes in a non-null player.
+                        if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                            if (parents.size() > 1)
+                                return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
+                                        "Detection - Failed - Already commanding a craft")), null);
+                            if (parents.size() == 1) {
+                                Craft parent = parents.iterator().next();
+                                return new Pair<>(Result.succeed(),
+                                        new CruiseOnPilotSubCraft(type, world, p, parent));
+                            }
+
                             return new Pair<>(Result.succeed(),
-                                    new CruiseOnPilotSubCraft(type, world, p, parent));
+                                    new CruiseOnPilotCraft(type, world, p));
+                        }
+                        else {
+                            if (parents.size() > 0)
+                                return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
+                                        "Detection - Failed - Already commanding a craft")), null);
+
+                            return new Pair<>(Result.succeed(),
+                                    new PlayerCraftImpl(type, w, p));
+                        }
+                    },
+                    world, player, player,
+                    craft -> () -> {
+                        Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
+                        if (craft instanceof SubCraft) { // Subtract craft from the parent
+                            Craft parent = ((SubCraft) craft).getParent();
+                            var newHitbox = parent.getHitBox().difference(craft.getHitBox());;
+                            parent.setHitBox(newHitbox);
+                            parent.setOrigBlockCount(parent.getOrigBlockCount() - craft.getHitBox().size());
                         }
 
-                        return new Pair<>(Result.succeed(),
-                                new CruiseOnPilotCraft(type, world, p));
-                    }
-                    else {
-                        if (parents.size() > 0)
-                            return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
-                                    "Detection - Failed - Already commanding a craft")), null);
+                        if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                            // Setup cruise direction
+                            BlockFace facing = signWrapper.facing();
+                            craft.setCruiseDirection(CruiseDirection.fromBlockFace(facing));
 
-                        return new Pair<>(Result.succeed(),
-                                new PlayerCraftImpl(type, w, p));
-                    }
-                },
-                world, player, player,
-                craft -> () -> {
-                    Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
-                    if (craft instanceof SubCraft) { // Subtract craft from the parent
-                        Craft parent = ((SubCraft) craft).getParent();
-                        var newHitbox = parent.getHitBox().difference(craft.getHitBox());;
-                        parent.setHitBox(newHitbox);
-                        parent.setOrigBlockCount(parent.getOrigBlockCount() - craft.getHitBox().size());
-                    }
+                            // Start craft cruising
+                            craft.setLastCruiseUpdate(System.currentTimeMillis());
+                            craft.setCruising(true);
 
-                    if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
-                        // Setup cruise direction
-                        BlockFace facing = signWrapper.facing();
-                        craft.setCruiseDirection(CruiseDirection.fromBlockFace(facing));
-
-                        // Start craft cruising
-                        craft.setLastCruiseUpdate(System.currentTimeMillis());
-                        craft.setCruising(true);
-
-                        // Stop craft cruising and sink it in 15 seconds
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                craft.setCruising(false);
-                                CraftManager.getInstance().sink(craft);
-                            }
-                        }.runTaskLater(Movecraft.getInstance(), (craftType.getIntProperty(CraftType.CRUISE_ON_PILOT_LIFETIME)));
+                            // Stop craft cruising and sink it in 15 seconds
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    craft.setCruising(false);
+                                    CraftManager.getInstance().sink(craft);
+                                }
+                            }.runTaskLater(Movecraft.getInstance(), (craftType.getIntProperty(CraftType.CRUISE_ON_PILOT_LIFETIME)));
+                        }
+                        else {
+                            // Release old craft if it exists
+                            Craft oldCraft = CraftManager.getInstance().getCraftByPlayer(player);
+                            if (oldCraft != null)
+                                CraftManager.getInstance().release(oldCraft, CraftReleaseEvent.Reason.PLAYER, false);
+                        }
+                    },
+                    craft -> () -> {
+                        PILOTING.remove(startPoint);
                     }
-                    else {
-                        // Release old craft if it exists
-                        Craft oldCraft = CraftManager.getInstance().getCraftByPlayer(player);
-                        if (oldCraft != null)
-                            CraftManager.getInstance().release(oldCraft, CraftReleaseEvent.Reason.PLAYER, false);
-                    }
+            );
+
+            // Just to be sure...
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    PILOTING.remove(startPoint);
                 }
-        );
-        // TODO: Move this to be directly called by the craftmanager post detection...
-        // Or use the event handler or something
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                PILOTING.remove(startPoint);
-            }
-        }.runTaskLater(Movecraft.getInstance(), 4);
-
+            }.runTaskLater(Movecraft.getInstance(), 4);
+        }
     }
 
     @Override
