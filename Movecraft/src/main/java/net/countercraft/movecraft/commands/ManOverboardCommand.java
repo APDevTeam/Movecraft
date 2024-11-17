@@ -70,6 +70,12 @@ public class ManOverboardCommand implements CommandExecutor {
         ManOverboardEvent event = new ManOverboardEvent(craft, telPoint);
         Bukkit.getServer().getPluginManager().callEvent(event);
 
+        if (!event.isCancelled()) {
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX
+                    + I18nSupport.getInternationalisedComponent("ManOverboard - Cancelled"));
+            return true;
+        }
+
         telPoint.setYaw(player.getLocation().getYaw());
         telPoint.setPitch(player.getLocation().getPitch());
         player.setVelocity(new Vector(0, 0, 0));
