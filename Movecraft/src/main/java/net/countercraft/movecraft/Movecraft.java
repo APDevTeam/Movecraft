@@ -77,6 +77,7 @@ public class Movecraft extends JavaPlugin {
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
         Settings.ReleaseOnDeath = getConfig().getBoolean("ReleaseOnDeath", false);
+        Settings.ManOverboardCooldown = getConfig().getInt("ManoverboardCooldown", 30);
 
         String[] localisations = {"en", "cz", "nl", "fr"};
         for (String s : localisations) {

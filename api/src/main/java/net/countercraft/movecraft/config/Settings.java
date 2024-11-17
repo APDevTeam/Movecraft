@@ -42,6 +42,7 @@ public class Settings {
     public static double FadePercentageOfWreckPerCycle = 10.0;
     public static Map<Material, Integer> ExtraFadeTimePerBlock = new HashMap<>();
     public static int ManOverboardTimeout = 60;
+    public static int ManOverboardCooldown = 30;
     public static double ManOverboardDistSquared = 1000000;
     public static int MaxRemoteSigns = -1;
     public static boolean CraftsUseNetherPortals = false;
