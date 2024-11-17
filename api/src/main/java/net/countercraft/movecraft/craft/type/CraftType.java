@@ -575,7 +575,7 @@ final public class CraftType {
         registerProperty(new IntegerProperty("explosionArmingTime", EXPLOSION_ARMING_TIME, type -> 1000));
         registerProperty(new BooleanProperty("allowInternalCollisionExplosion", ALLOW_INTERNAL_COLLISION_EXPLOSION, type -> false));
 
-        registerProperty(new RequiredBlockProperty("moveBreakBlocks", MOVE_BREAK_BLOCKS, type -> new HashSet<>()));
+        registerProperty(new MaterialSetProperty("moveBreakBlocks", MOVE_BREAK_BLOCKS));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN
