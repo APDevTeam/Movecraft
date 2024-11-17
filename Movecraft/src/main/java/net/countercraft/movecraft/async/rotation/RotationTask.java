@@ -205,6 +205,7 @@ public class RotationTask extends AsyncTask {
         craft1.getAudience().sendMessage(faceMessage);
 
         craftsInWorld = CraftManager.getInstance().getCraftsInWorld(craft1.getWorld());
+        //TODO: Sure??? We only need to do this for the parent actually...
         for (Craft craft : craftsInWorld) {
             if (newHitBox.intersection(craft.getHitBox()).isEmpty() || craft == craft1) {
                 continue;
