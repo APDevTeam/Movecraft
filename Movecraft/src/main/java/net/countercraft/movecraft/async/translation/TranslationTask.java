@@ -191,8 +191,11 @@ public class TranslationTask extends AsyncTask {
                 blockObstructed = !testMaterial.isAir()
                         && !craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(testMaterial);
 
-            boolean ignoreBlock = oldLocation.toBukkit(craft.getWorld()).getBlock().getType().isAir()
-                    && blockObstructed;
+            Material blockMatTmp = oldLocation.toBukkit(craft.getWorld()).getBlock().getType();
+            boolean ignoreBlock = (
+                    blockMatTmp.isAir()
+                    || craft.getType().getMaterialSetProperty(CraftType.MOVE_BREAK_BLOCKS).contains(blockMatTmp)
+            ) && blockObstructed;
             // air never obstructs anything (changed 4/18/2017 to prevent drilling machines)
 
             if (blockObstructed && !harvestBlocks.isEmpty() && harvestBlocks.contains(testMaterial)) {
