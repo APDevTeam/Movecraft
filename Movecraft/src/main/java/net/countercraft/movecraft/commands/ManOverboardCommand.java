@@ -92,7 +92,7 @@ public class ManOverboardCommand implements CommandExecutor {
 
         if (event.isCancelled()) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX
-                    + I18nSupport.getInternationalisedComponent("ManOverboard - Cancelled"));
+                    + I18nSupport.getInternationalisedString("ManOverboard - Cancelled"));
             return true;
         }
 
