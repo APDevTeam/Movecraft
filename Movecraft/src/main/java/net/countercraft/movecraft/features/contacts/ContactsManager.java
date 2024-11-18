@@ -167,14 +167,16 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         }
         notification = notification.append(Component.text( ": "));
 
+        // No longer include the type, that is sort of OP
+        // TODO: Obfuscate parts of the name depending on the distance
         Component name = Component.empty();
         if (!target.getName().isEmpty()) {
-            name = name.append(Component.text(target.getName() + " ("));
+            name = name.append(Component.text(target.getName()));
+        } else {
+            name = name.append(Component.text(target.getType().getStringProperty(CraftType.NAME)));
         }
-        name = name.append(Component.text(target.getType().getStringProperty(CraftType.NAME)));
-        if (!target.getName().isEmpty()) {
-            name = name.append(Component.text(")"));
-        }
+
+        // TODO: Team colors!
         if (target instanceof SinkingCraft) {
             name = name.color(NamedTextColor.RED);
         }
@@ -194,10 +196,14 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             notification = notification.append(Component.text("null"));
         }
 
+        // Use the bigger axis for the size, not the blockcount
+        int sX = target.getHitBox().getMaxX() - target.getHitBox().getMinX();
+        int sZ = target.getHitBox().getMaxZ() - target.getHitBox().getMinZ();
+
         notification = notification.append(Component.text(", "))
                 .append(I18nSupport.getInternationalisedComponent("Contact - Size"))
                 .append(Component.text(": "))
-                .append(Component.text(target.getOrigBlockCount()))
+                .append(Component.text(Math.max(sX, sZ) + "m"))
                 .append(Component.text(", "))
                 .append(I18nSupport.getInternationalisedComponent("Contact - Range"))
                 .append(Component.text(": "))
