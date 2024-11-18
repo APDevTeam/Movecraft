@@ -116,6 +116,7 @@ public class CraftManager implements Iterable<Craft>{
         }
 
         Set<CraftType> craftTypes = new HashSet<>();
+        // TODO: Support subdirectories too
         File[] files = craftsFile.listFiles();
         if (files == null) {
             return craftTypes;
