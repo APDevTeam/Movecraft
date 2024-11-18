@@ -156,8 +156,6 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         catch (EmptyHitBoxException e) {
             return null;
         }
-        int diffX = baseCenter.getX() - targetCenter.getX();
-        int diffZ = baseCenter.getZ() - targetCenter.getZ();
         int distSquared = baseCenter.distanceSquared(targetCenter);
 
         Component notification = Component.empty();
@@ -208,24 +206,31 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                 .append(I18nSupport.getInternationalisedComponent("Contact - To The"))
                 .append(Component.text(" "));
 
-        if (Math.abs(diffX) > Math.abs(diffZ)) {
-            if (diffX < 0) {
-                notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - East"));
-            }
-            else {
-                notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - West"));
-            }
-        }
-        else {
-            if (diffZ < 0) {
-                notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - South"));
-            } else {
-                notification = notification.append(I18nSupport.getInternationalisedComponent("Contact/Subcraft Rotate - North"));
-            }
-        }
+        BlockFace direction = getDirection(baseCenter, targetCenter);
+        notification = notification.append(I18nSupport.getInternationalisedComponent("Contact - Direction - " + direction.name()));
 
         notification = notification.append(Component.text("."));
         return notification;
+    }
+
+    public static String getDirectionAppreviation(BlockFace face) {
+        return DIRECTION_APPREVIATIONS[face.ordinal()];
+    }
+
+    static String[] DIRECTION_APPREVIATIONS = calcDirectionAppreviations();
+
+    private static String[] calcDirectionAppreviations() {
+        String[] result = new String[BlockFace.values().length];
+        for (BlockFace face : BlockFace.values()) {
+            String ident = face.name();
+            String[] splitted = ident.split("_");
+            String value = "";
+            for (String s : splitted) {
+                value = value + splitted[0];
+            }
+            result[face.ordinal()] = value;
+        }
+        return result;
     }
 
     static Map<Pair<Double, Double>, BlockFace> DIRECTION_MAPPING_4 = calcDirectionMapping4();
@@ -311,18 +316,18 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
         final Map<Pair<Double, Double>, BlockFace> directionMap = grabDirectionMap(vectorNormalized.lengthSquared());
 
-        for (Map.Entry<Pair<Double, Double>, BlockFace> entry : DIRECTION_MAPPING_16.entrySet()) {
+        for (Map.Entry<Pair<Double, Double>, BlockFace> entry : directionMap.entrySet()) {
             final Pair<Double, Double> filter = entry.getKey();
             if (filter.getLeft() <= angle && filter.getRight() >= angle) {
                 return entry.getValue();
             }
         }
-
+        return BlockFace.SELF;
     }
 
     // TODO: Make this dependant on the max settings for contacts and use percentages!
-    static final double RANGE_FOR_16_DIRECTIONS = 1000 * 1000;
-    static final double RANGE_FOR_8_DIRECTIONS = RANGE_FOR_16_DIRECTIONS * 3;
+    static final double RANGE_FOR_16_DIRECTIONS = 512 * 512;
+    static final double RANGE_FOR_8_DIRECTIONS = 1024 * 1024;
 
     static Map<Pair<Double, Double>, BlockFace> grabDirectionMap(double lengthSquared) {
         if (lengthSquared < RANGE_FOR_16_DIRECTIONS) {
