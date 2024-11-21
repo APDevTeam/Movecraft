@@ -7,6 +7,7 @@ import net.countercraft.movecraft.sign.AbstractInformationSign;
 import net.countercraft.movecraft.sign.SignListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -39,10 +40,14 @@ public class ContactsSign extends AbstractInformationSign {
 
         Component result = Component.text(craftTypeName + " ").style(style);
 
-        String directionStr = "" + (int) Math.sqrt(distanceSquared);
+        double distance = Math.sqrt(distanceSquared);
+        distance = distance / 1000;
+
+        String directionStr = "" + String.format("%.2f", distance);
         final BlockFace direction = ContactsManager.getDirection(baseCenter, targetCenter);
         directionStr = directionStr + " " + ContactsManager.getDirectionAppreviation(direction);
         result = result.append(Component.text(directionStr).style(STYLE_COLOR_WHITE));
+        String tmp = PlainTextComponentSerializer.plainText().serialize(result);
         return result;
     }
 
