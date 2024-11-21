@@ -185,7 +185,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         }
         notification = notification.append(name);
 
-        notification = notification.append(Component.text(" "))
+        // Ignore pilot
+        /*notification = notification.append(Component.text(" "))
                 .append(I18nSupport.getInternationalisedComponent("Contact - Commanded By"))
                 .append(Component.text(" "));
 
@@ -194,7 +195,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         }
         else {
             notification = notification.append(Component.text("null"));
-        }
+        }*/
 
         // Use the bigger axis for the size, not the blockcount
         int sX = target.getHitBox().getMaxX() - target.getHitBox().getMinX();
@@ -320,7 +321,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             angle += 360;
         }
 
-        final Map<Pair<Double, Double>, BlockFace> directionMap = grabDirectionMap(vectorNormalized.lengthSquared());
+        final Map<Pair<Double, Double>, BlockFace> directionMap = grabDirectionMap(vector.lengthSquared());
 
         for (Map.Entry<Pair<Double, Double>, BlockFace> entry : directionMap.entrySet()) {
             final Pair<Double, Double> filter = entry.getKey();
