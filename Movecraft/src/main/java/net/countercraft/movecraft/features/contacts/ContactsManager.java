@@ -233,7 +233,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             String[] splitted = ident.split("_");
             String value = "";
             for (String s : splitted) {
-                value = value + splitted[0];
+                value = value + s.charAt(0);
             }
             result[face.ordinal()] = value;
         }
