@@ -314,7 +314,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     public static BlockFace getDirection(MovecraftLocation self, MovecraftLocation other) {
         final MovecraftLocation distanceVector = other.subtract(self);
         final Vector2d vector = new Vector2d(distanceVector.getX(), distanceVector.getZ());
-        final Vector2d vectorNormalized = vector.normalize();
+        final Vector2d vectorNormalized = new Vector2d(vector).normalize();
 
         double angle = ROTATION_OFFSET + (Math.atan2(vectorNormalized.y(), vectorNormalized.x()) * 180 / Math.PI);
         if (angle < 0) {
