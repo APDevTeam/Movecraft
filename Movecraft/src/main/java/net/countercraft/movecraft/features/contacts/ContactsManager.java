@@ -309,7 +309,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     }
 
 
-    static final double ROTATION_OFFSET = 0;
+    static final double ROTATION_OFFSET = 90;
 
     public static BlockFace getDirection(MovecraftLocation self, MovecraftLocation other) {
         final MovecraftLocation distanceVector = other.subtract(self);
