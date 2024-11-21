@@ -57,10 +57,13 @@ public class ContactsSign extends AbstractInformationSign {
     protected @Nullable Component getUpdateString(int lineIndex, Component oldData, Craft craft) {
         Craft contact = null;
         List<Craft> contacts = craft.getDataTag(Craft.CONTACTS);
-        if (contacts.isEmpty() || contacts.size() <= lineIndex) {
+
+        int contactIndex = lineIndex - 1;
+
+        if (contacts.isEmpty() || contacts.size() <= contactIndex) {
             return EMPTY;
         }
-        contact = contacts.get(lineIndex);
+        contact = contacts.get(contactIndex);
 
         return contactsLine(craft, contact);
     }
