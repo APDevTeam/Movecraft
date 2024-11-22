@@ -23,6 +23,7 @@ public class ContactsSign extends AbstractInformationSign {
     protected final int MAX_DISTANCE_COLOR_YELLOW = 128 * 128;
 
     protected @NotNull Component contactsLine(@NotNull Craft base, @NotNull Craft target) {
+        // TODO: Support for ContactProvider interface
         MovecraftLocation baseCenter = base.getHitBox().getMidPoint();
         MovecraftLocation targetCenter = target.getHitBox().getMidPoint();
         int distanceSquared = baseCenter.distanceSquared(targetCenter);
@@ -56,7 +57,7 @@ public class ContactsSign extends AbstractInformationSign {
     protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
         player.performCommand("contacts");
 
-        return true;
+        return super.internalProcessSignWithCraft(clickType, sign, craft, player);
     }
 
     @Override
