@@ -23,7 +23,13 @@ public class ContactsSign extends AbstractInformationSign {
     protected final int MAX_DISTANCE_COLOR_YELLOW = 128 * 128;
 
     protected @NotNull Component contactsLine(@NotNull Craft base, @NotNull Craft target) {
-        // TODO: Support for ContactProvider interface
+        if (target instanceof ContactProvider contactProvider) {
+            Component provided = contactProvider.getContactsLine(base);
+            if (provided != null) {
+                return provided;
+            }
+        }
+
         MovecraftLocation baseCenter = base.getHitBox().getMidPoint();
         MovecraftLocation targetCenter = target.getHitBox().getMidPoint();
         int distanceSquared = baseCenter.distanceSquared(targetCenter);

@@ -17,6 +17,10 @@ public interface ContactProvider {
 
     public Component getDetectedMessage(boolean isNew, Craft detectingCraft);
 
+    public default Component getContactsLine(final Craft detector) {
+        return null;
+    }
+
     public boolean contactPickedUpBy(Craft other);
 
     public MovecraftLocation getContactLocation();
