@@ -1,18 +1,16 @@
 package net.countercraft.movecraft.features.contacts;
 
-import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.*;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.events.*;
+import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.features.contacts.events.LostContactEvent;
 import net.countercraft.movecraft.features.contacts.events.NewContactEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Pair;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
@@ -33,7 +31,7 @@ import org.joml.Vector2d;
 import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
-    private static final CraftDataTagKey<Map<Craft, Long>> RECENT_CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
+    private static final CraftDataTagKey<Map<UUID, Long>> RECENT_CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
 
     @Override
     public void run() {
@@ -48,7 +46,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
             Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(w);
             for (Craft base : craftsInWorld) {
-                if (base instanceof SinkingCraft || base instanceof SubCraft)
+                if ((base instanceof SinkingCraft || base instanceof SubCraft) && !(base instanceof ContactProvider))
                     continue;
 
                 update(base, craftsInWorld);
@@ -57,41 +55,68 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     }
 
     private void update(@NotNull Craft base, @NotNull Set<Craft> craftsInWorld) {
-        List<Craft> previousContacts = base.getDataTag(Craft.CONTACTS);
+        List<UUID> futureContacts = get(base, craftsInWorld);
+        if (futureContacts == null) {
+            return;
+        }
+
+        List<UUID> previousContacts = base.getDataTag(Craft.CONTACTS);
         if (previousContacts == null)
             previousContacts = new ArrayList<>(0);
-        List<Craft> futureContacts = get(base, craftsInWorld);
 
-        Set<Craft> newContacts = new HashSet<>(futureContacts);
+        Set<UUID> newContacts = new HashSet<>(futureContacts);
         previousContacts.forEach(newContacts::remove);
-        for (Craft target : newContacts) {
-            NewContactEvent event = new NewContactEvent(base, target);
+        for (UUID target : newContacts) {
+            Craft targetCraft = Craft.getCraftByUUID(target);
+            NewContactEvent event = new NewContactEvent(base, targetCraft);
             Bukkit.getServer().getPluginManager().callEvent(event);
         }
 
-        Set<Craft> oldContacts = new HashSet<>(previousContacts);
+        Set<UUID> oldContacts = new HashSet<>(previousContacts);
         futureContacts.forEach(oldContacts::remove);
-        for (Craft target : oldContacts) {
-            LostContactEvent event = new LostContactEvent(base, target);
+        for (UUID target : oldContacts) {
+            Craft targetCraft = Craft.getCraftByUUID(target);
+            LostContactEvent event = new LostContactEvent(base, targetCraft);
             Bukkit.getServer().getPluginManager().callEvent(event);
         }
 
         base.setDataTag(Craft.CONTACTS, futureContacts);
     }
 
-    private @NotNull List<Craft> get(Craft base, @NotNull Set<Craft> craftsInWorld) {
-        Map<Craft, Integer> inRangeDistanceSquared = new HashMap<>();
-        for (Craft target : craftsInWorld) {
-            if (target instanceof SubCraft)
-                continue;
-            if (base instanceof PilotedCraft && target instanceof PilotedCraft
-                    && ((PilotedCraft) base).getPilot() == ((PilotedCraft) target).getPilot())
-                continue;
+    private @NotNull List<UUID> get(Craft base, @NotNull Set<Craft> craftsInWorld) {
+        if (base instanceof ContactProvider cp) {
+            return cp.getContactUUIDs(base, craftsInWorld);
+        }
 
-            MovecraftLocation baseCenter;
+        Map<Craft, Integer> inRangeDistanceSquared = new HashMap<>();
+
+        MovecraftLocation baseCenter;
+        try {
+            baseCenter = base.getHitBox().getMidPoint();
+        } catch(EmptyHitBoxException e) {
+            return new ArrayList<>();
+        }
+
+        for (Craft target : craftsInWorld) {
             MovecraftLocation targetCenter;
+
+            if (target instanceof ContactProvider contactProvider) {
+                if (!contactProvider.contactPickedUpBy(base)) {
+                    continue;
+                }
+                targetCenter = contactProvider.getContactLocation();
+                if (targetCenter == null) {
+                    continue;
+                }
+            } else {
+                if (target instanceof SubCraft)
+                    continue;
+                if (base instanceof PilotedCraft && target instanceof PilotedCraft
+                        && ((PilotedCraft) base).getPilot() == ((PilotedCraft) target).getPilot())
+                    continue;
+            }
+
             try {
-                baseCenter = base.getHitBox().getMidPoint();
                 targetCenter = target.getHitBox().getMidPoint();
             }
             catch (EmptyHitBoxException e) {
@@ -99,15 +124,22 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             }
 
             int distanceSquared = baseCenter.distanceSquared(targetCenter);
+            boolean waterLine = targetCenter.getY() > 65;
             double detectionMultiplier;
-            if (targetCenter.getY() > 65) { // TODO: fix the water line
-                detectionMultiplier = (double) target.getType().getPerWorldProperty(
-                        CraftType.PER_WORLD_DETECTION_MULTIPLIER, target.getMovecraftWorld());
+
+            if (target instanceof  ContactProvider contactProvider) {
+                    detectionMultiplier = contactProvider.getDetectionMultiplier(waterLine, target.getMovecraftWorld());
+            } else {
+                if (waterLine) { // TODO: fix the water line
+                    detectionMultiplier = (double) target.getType().getPerWorldProperty(
+                            CraftType.PER_WORLD_DETECTION_MULTIPLIER, target.getMovecraftWorld());
+                }
+                else {
+                    detectionMultiplier = (double) target.getType().getPerWorldProperty(
+                            CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, target.getMovecraftWorld());
+                }
             }
-            else {
-                detectionMultiplier = (double) target.getType().getPerWorldProperty(
-                        CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, target.getMovecraftWorld());
-            }
+
             int detectionRange = (int) (target.getOrigBlockCount() * detectionMultiplier);
             detectionRange = detectionRange * 10;
             if (distanceSquared > detectionRange)
@@ -116,8 +148,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             inRangeDistanceSquared.put(target, distanceSquared);
         }
 
-        List<Craft> result = new ArrayList<>(inRangeDistanceSquared.keySet().size());
-        result.addAll(inRangeDistanceSquared.keySet());
+        List<UUID> result = new ArrayList<>(inRangeDistanceSquared.keySet().size());
+        inRangeDistanceSquared.keySet().forEach(c -> result.add(c.getUUID()));
         result.sort(Comparator.comparingInt(inRangeDistanceSquared::get));
         return result;
     }
@@ -131,12 +163,13 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                 if (base.getHitBox().isEmpty())
                     continue;
 
-                for (Craft target : base.getDataTag(Craft.CONTACTS)) {
+                for (UUID target : base.getDataTag(Craft.CONTACTS)) {
                     // has the craft not been seen in the last minute?
                     if (System.currentTimeMillis() - base.getDataTag(RECENT_CONTACTS).getOrDefault(target, 0L) <= 60000)
                         continue;
 
-                    Component message = contactMessage(false, base, target);
+                    Craft targetCraft = Craft.getCraftByUUID(target);
+                    Component message = contactMessage(false, base, targetCraft);
                     if (message == null)
                         continue;
 
@@ -148,6 +181,11 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     }
 
     public static @Nullable Component contactMessage(boolean isNew, @NotNull Craft base, @NotNull Craft target) {
+
+        if (target instanceof ContactProvider contactProvider) {
+            return contactProvider.getDetectedMessage(isNew, base);
+        }
+
         MovecraftLocation baseCenter, targetCenter;
         try {
             baseCenter = base.getHitBox().getMidPoint();
@@ -358,17 +396,17 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
     private void remove(Craft base) {
         for (Craft other : CraftManager.getInstance().getCrafts()) {
-            List<Craft> contacts = other.getDataTag(Craft.CONTACTS);
-            if (contacts.contains(base))
+            List<UUID> contacts = other.getDataTag(Craft.CONTACTS);
+            if (contacts.contains(base.getUUID()))
                 continue;
 
-            contacts.remove(base);
+            contacts.remove(base.getUUID());
             other.setDataTag(Craft.CONTACTS, contacts);
         }
 
         for (Craft other : CraftManager.getInstance().getCrafts()) {
-            Map<Craft, Long> recentContacts = other.getDataTag(RECENT_CONTACTS);
-            if (!recentContacts.containsKey(other))
+            Map<UUID, Long> recentContacts = other.getDataTag(RECENT_CONTACTS);
+            if (!recentContacts.containsKey(other.getUUID()))
                 continue;
 
             recentContacts.remove(base);
@@ -390,8 +428,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         base.getAudience().playSound(sound);
 
         if (base instanceof PlayerCraft) {
-            Map<Craft, Long> recentContacts = base.getDataTag(RECENT_CONTACTS);
-            recentContacts.put(target, System.currentTimeMillis());
+            Map<UUID, Long> recentContacts = base.getDataTag(RECENT_CONTACTS);
+            recentContacts.put(target.getUUID(), System.currentTimeMillis());
             base.setDataTag(RECENT_CONTACTS, recentContacts);
         }
     }

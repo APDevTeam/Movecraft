@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
 public class ContactsSign extends AbstractInformationSign {
 
@@ -61,14 +62,17 @@ public class ContactsSign extends AbstractInformationSign {
     @Override
     protected @Nullable Component getUpdateString(int lineIndex, Component oldData, Craft craft) {
         Craft contact = null;
-        List<Craft> contacts = craft.getDataTag(Craft.CONTACTS);
+        List<UUID> contacts = craft.getDataTag(Craft.CONTACTS);
 
         int contactIndex = lineIndex - 1;
 
         if (contacts.isEmpty() || contacts.size() <= contactIndex) {
             return EMPTY;
         }
-        contact = contacts.get(contactIndex);
+        contact = Craft.getCraftByUUID(contacts.get(contactIndex));
+        if (contact == null) {
+            return Component.empty();
+        }
 
         return contactsLine(craft, contact);
     }

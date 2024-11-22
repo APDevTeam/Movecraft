@@ -44,7 +44,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public interface Craft {
-    CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
+    CraftDataTagKey<List<UUID>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
     CraftDataTagKey<Double> FUEL = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
     CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
     CraftDataTagKey<Counter<RequiredBlockEntry>> FLYBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "flyblocks"), craft -> new Counter<>());
