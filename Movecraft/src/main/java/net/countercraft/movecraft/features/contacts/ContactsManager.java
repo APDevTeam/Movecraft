@@ -88,7 +88,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             return cp.getContactUUIDs(base, craftsInWorld);
         }
 
-        Map<Craft, Integer> inRangeDistanceSquared = new HashMap<>();
+        Map<UUID, Integer> inRangeDistanceSquared = new HashMap<>();
 
         MovecraftLocation baseCenter;
         try {
@@ -125,7 +125,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
             int distanceSquared = baseCenter.distanceSquared(targetCenter);
             boolean waterLine = targetCenter.getY() > 65;
-            double detectionMultiplier;
+            double detectionMultiplier = 1;
 
             if (target instanceof  ContactProvider contactProvider) {
                     detectionMultiplier = contactProvider.getDetectionMultiplier(waterLine, target.getMovecraftWorld());
@@ -145,11 +145,11 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             if (distanceSquared > detectionRange)
                 continue;
 
-            inRangeDistanceSquared.put(target, distanceSquared);
+            inRangeDistanceSquared.put(target.getUUID(), distanceSquared);
         }
 
         List<UUID> result = new ArrayList<>(inRangeDistanceSquared.keySet().size());
-        inRangeDistanceSquared.keySet().forEach(c -> result.add(c.getUUID()));
+        result.addAll(inRangeDistanceSquared.keySet());
         result.sort(Comparator.comparingInt(inRangeDistanceSquared::get));
         return result;
     }
