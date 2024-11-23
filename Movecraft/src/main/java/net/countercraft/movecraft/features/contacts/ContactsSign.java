@@ -35,6 +35,9 @@ public class ContactsSign extends AbstractInformationSign {
         int distanceSquared = baseCenter.distanceSquared(targetCenter);
 
         String craftTypeName = target.getType().getStringProperty(CraftType.NAME);
+        if (target.getName() != null && !target.getName().isBlank()) {
+            craftTypeName = target.getName();
+        }
         if (craftTypeName.length() > 9)
             craftTypeName = craftTypeName.substring(0, 7);
 
