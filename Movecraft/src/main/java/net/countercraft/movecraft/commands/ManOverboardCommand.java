@@ -80,7 +80,7 @@ public class ManOverboardCommand implements CommandExecutor {
                 long now = System.currentTimeMillis();
                 if ((now - lastManoverboard) < minCooldown) {
                     player.sendMessage(MOVECRAFT_COMMAND_PREFIX
-                            + I18nSupport.getInternationalisedComponent("ManOverboard - Cooldown"));
+                            + I18nSupport.getInternationalisedString("ManOverboard - Cooldown"));
                     return true;
                 }
                 player.getPersistentDataContainer().remove(MANOVERBOARD_LAST_TIME);
