@@ -39,6 +39,7 @@ public class ContactsSign extends AbstractInformationSign {
         if (target.getName() != null && !target.getNameRaw().isBlank()) {
             craftTypeName = target.getNameRaw();
         }
+        // TODO: Why do we check if it is greater than 9 and then limit it to 8 characters?
         if (craftTypeName.length() > 9)
             craftTypeName = craftTypeName.substring(0, 7);
 

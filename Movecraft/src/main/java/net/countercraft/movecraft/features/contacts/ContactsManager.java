@@ -237,12 +237,17 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
         // Use the bigger axis for the size, not the blockcount
         int sX = target.getHitBox().getMaxX() - target.getHitBox().getMinX();
+        int sY = target.getHitBox().getMaxY() - target.getHitBox().getMinY();
         int sZ = target.getHitBox().getMaxZ() - target.getHitBox().getMinZ();
+
+        int sizeClass = Math.max(sX, Math.max(sY, sZ));
+
+        // TODO: The further away, the more inaccurate the info is
 
         notification = notification.append(Component.text(", "))
                 .append(I18nSupport.getInternationalisedComponent("Contact - Size"))
                 .append(Component.text(": "))
-                .append(Component.text(Math.max(sX, sZ) + "m"))
+                .append(Component.text("" + sizeClass + "m"))
                 .append(Component.text(", "))
                 .append(I18nSupport.getInternationalisedComponent("Contact - Range"))
                 .append(Component.text(": "))
