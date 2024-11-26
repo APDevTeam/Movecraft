@@ -208,8 +208,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         // No longer include the type, that is sort of OP
         // TODO: Obfuscate parts of the name depending on the distance
         Component name = Component.empty();
-        if (!target.getName().isEmpty()) {
-            name = name.append(Component.text(target.getName()));
+        if (!target.getNameRaw().isEmpty()) {
+            name = name.append(target.getName());
         } else {
             name = name.append(Component.text(target.getType().getStringProperty(CraftType.NAME)));
         }
