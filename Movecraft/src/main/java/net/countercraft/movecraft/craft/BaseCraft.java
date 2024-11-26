@@ -76,7 +76,7 @@ public abstract class BaseCraft implements Craft {
     @NotNull
     private Audience audience;
     @NotNull
-    private String name = "";
+    private Component name = Component.empty();
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
     private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
@@ -500,12 +500,12 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     @NotNull
-    public String getName() {
+    public Component getName() {
         return name;
     }
 
     @Override
-    public void setName(@NotNull String name) {
+    public void setName(@NotNull Component name) {
         this.name = name;
     }
 

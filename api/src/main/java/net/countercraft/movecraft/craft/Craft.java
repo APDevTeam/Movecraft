@@ -31,6 +31,8 @@ import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -248,9 +250,18 @@ public interface Craft {
     Map<Location, BlockData> getPhaseBlocks();
 
     @NotNull
-    String getName();
+    default String getNameRaw() {
+            Component compname = this.getName();
+            return PlainTextComponentSerializer.plainText().serialize(compname);
+    }
 
-    void setName(@NotNull String name);
+    Component getName();
+
+    default void setName(@NotNull String name) {
+        this.setName(Component.text(name));
+    }
+
+    void setName(Component name);
 
     @NotNull
     MutableHitBox getCollapsedHitBox();
