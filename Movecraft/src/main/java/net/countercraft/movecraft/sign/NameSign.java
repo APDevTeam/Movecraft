@@ -5,6 +5,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.util.ChatUtils;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
@@ -69,7 +70,29 @@ public class NameSign extends AbstractCraftSign {
                 return;
         }
 
-        craft.setName(Arrays.stream(sign.rawLines()).skip(1).filter(f -> f != null
-                && !f.trim().isEmpty()).collect(Collectors.joining(" ")));
+        if (sign.isEmpty()) {
+            return;
+        }
+
+        boolean foundSome = false;
+        Component name = Component.empty();
+        for (int i = 0; i < sign.lines().size(); i++) {
+            if (i == 0) {
+                continue;
+            }
+
+            String raw = sign.getRaw(i);
+            if (raw.isBlank()) {
+                continue;
+            }
+
+            foundSome |= true;
+
+            name = name.append(sign.line(i));
+        }
+
+        if (foundSome) {
+            craft.setName(name);
+        }
     }
 }
