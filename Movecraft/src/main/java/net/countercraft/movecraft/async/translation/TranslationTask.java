@@ -230,12 +230,19 @@ public class TranslationTask extends AsyncTask {
                     newHitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);
             while (test.toBukkit(world).getBlock().getType().isAir()) {
+                // If we are out of bounds, that is technically air, but can we hover over ground???
+                if (test.getY() < world.getMinHeight()) {
+                    fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over void"))));
+                    return;
+                }
                 test = test.translate(0, -1, 0);
             }
             Material testType = test.toBukkit(world).getBlock().getType();
             if (craft.getType().getMaterialSetProperty(CraftType.FORBIDDEN_HOVER_OVER_BLOCKS).contains(testType)) {
+                // Why is there no return here? Shouldnt there be one?
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over block"),
                         testType.name().toLowerCase().replace("_", " ")));
+                return;
             }
         }
         //call event
