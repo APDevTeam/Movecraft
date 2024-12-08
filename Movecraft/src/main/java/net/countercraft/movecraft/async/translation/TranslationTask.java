@@ -232,7 +232,7 @@ public class TranslationTask extends AsyncTask {
             while (test.toBukkit(world).getBlock().getType().isAir()) {
                 // If we are out of bounds, that is technically air, but can we hover over ground???
                 if (test.getY() < world.getMinHeight()) {
-                    fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over void"))));
+                    fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over void")));
                     return;
                 }
                 test = test.translate(0, -1, 0);
