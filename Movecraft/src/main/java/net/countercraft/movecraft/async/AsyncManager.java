@@ -312,7 +312,7 @@ public class AsyncManager extends BukkitRunnable {
             if (!(craft instanceof SinkingCraft))
                 continue;
 
-            if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < 5) {
+            if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < (craft.getWorld().getMinHeight() +5 )) {
                 CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
                 continue;
             }
