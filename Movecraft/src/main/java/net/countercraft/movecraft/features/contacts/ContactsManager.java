@@ -33,6 +33,9 @@ import java.util.*;
 public class ContactsManager extends BukkitRunnable implements Listener {
     private static final CraftDataTagKey<Map<UUID, Long>> RECENT_CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
 
+    // TODO: Change so that contacts command can not be abused to triangulate positions => Save the distance and direction in the record of recent contacts
+    // TODO: Add ignore list for contacts and add a "ignore" button in the message
+
     @Override
     public void run() {
         runContacts();
@@ -354,6 +357,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
     static final double ROTATION_OFFSET = 90;
 
+    // TODO: Fix "SELF" contact
     public static BlockFace getDirection(MovecraftLocation self, MovecraftLocation other) {
         final MovecraftLocation distanceVector = other.subtract(self);
         final Vector2d vector = new Vector2d(distanceVector.getX(), distanceVector.getZ());
@@ -427,6 +431,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         if (notification != null)
             base.getAudience().sendMessage(notification);
 
+        // TODO: Change to different sound that falls back to the anvil instead
         Object object = base.getType().getObjectProperty(CraftType.COLLISION_SOUND);
         if (!(object instanceof Sound sound))
             throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
