@@ -46,6 +46,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public interface Craft {
+    // TODO: Unify with RECENT_CONTACTS tag and use a object to also store distance and direction
     CraftDataTagKey<List<UUID>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
     CraftDataTagKey<Double> FUEL = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
     CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());

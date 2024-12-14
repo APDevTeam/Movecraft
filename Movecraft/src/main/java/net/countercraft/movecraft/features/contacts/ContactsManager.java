@@ -31,6 +31,7 @@ import org.joml.Vector2d;
 import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
+    // TODO: Unify with the standard CONTACTS datatag
     private static final CraftDataTagKey<Map<UUID, Long>> RECENT_CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
 
     // TODO: Change so that contacts command can not be abused to triangulate positions => Save the distance and direction in the record of recent contacts
@@ -168,8 +169,10 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
                 for (UUID target : base.getDataTag(Craft.CONTACTS)) {
                     // has the craft not been seen in the last minute?
-                    if (System.currentTimeMillis() - base.getDataTag(RECENT_CONTACTS).getOrDefault(target, 0L) <= 60000)
+                    // TODO: Move to config value or craft value
+                    if (System.currentTimeMillis() - base.getDataTag(RECENT_CONTACTS).getOrDefault(target, 0L) <= 60000) {
                         continue;
+                    }
 
                     Craft targetCraft = Craft.getCraftByUUID(target);
                     Component message = contactMessage(false, base, targetCraft);
@@ -346,8 +349,17 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         for(int i = 0; i < directionCompass.size(); i++) {
             BlockFace face = directionCompass.get(i);
             double borderleft = currentAngle - halfAngleIncrement;
+            if (borderleft < 0) {
+                borderleft += 360;
+            }
             double borderRight = currentAngle + halfAngleIncrement;
+            if (borderRight < 0) {
+                borderRight += 360;
+            }
             currentAngle += angleIncrement;
+            if (currentAngle > 360) {
+                currentAngle -= 360;
+            }
             result.put(new Pair<>(borderleft, borderRight), face);
         }
 
@@ -363,7 +375,9 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         final Vector2d vector = new Vector2d(distanceVector.getX(), distanceVector.getZ());
         final Vector2d vectorNormalized = new Vector2d(vector).normalize();
 
-        double angle = ROTATION_OFFSET + (Math.atan2(vectorNormalized.y(), vectorNormalized.x()) * 180 / Math.PI);
+        // Alternatively calculate the angle around the Y axis for this vector and then choose the direction that is closest to this angle
+        // Or divide by 16 and round, that should get the closest value
+        double angle = ROTATION_OFFSET + (Math.atan2(-vectorNormalized.x(), vectorNormalized.y()) * 180 / Math.PI);
         if (angle < 0) {
             angle += 360;
         }
