@@ -229,12 +229,8 @@ public class TranslationTask extends AsyncTask {
             MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(),
                     newHitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);
-            while (test.toBukkit(world).getBlock().getType().isAir()) {
-                // If we are out of bounds, that is technically air, but can we hover over ground???
-                if (test.getY() < world.getMinHeight()) {
-                    fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over void")));
-                    return;
-                }
+            // If we are out of bounds, that is technically air, but then we would have an infinite loop, so stay in Y bounds
+            while (test.toBukkit(world).getBlock().getType().isAir() && world.getMinHeight() >= test.getY() && world.getMaxHeight() <= test.getY()) {
                 test = test.translate(0, -1, 0);
             }
             Material testType = test.toBukkit(world).getBlock().getType();
