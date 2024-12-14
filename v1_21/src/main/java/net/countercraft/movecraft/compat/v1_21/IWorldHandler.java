@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.compat.v1_21;
 
+import ca.spottedleaf.moonrise.common.util.WorldUtil;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.WorldHandler;
@@ -51,7 +52,7 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {
         String version = Bukkit.getServer().getMinecraftVersion();
-        if (!version.equals("1.21.1"))
+        if (!version.equals("1.21.3"))
             throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft: " + version);
     }
 
@@ -237,7 +238,7 @@ public class IWorldHandler extends WorldHandler {
 
     private void setBlockFast(@NotNull Level world, @NotNull BlockPos position, @NotNull BlockState data) {
         LevelChunk chunk = world.getChunkAt(position);
-        int chunkSection = (position.getY() >> 4) - chunk.getMinSection();
+        int chunkSection = (position.getY() >> 4) - WorldUtil.getMinSection(world);
         LevelChunkSection section = chunk.getSections()[chunkSection];
         if (section == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
@@ -251,7 +252,7 @@ public class IWorldHandler extends WorldHandler {
         section.setBlockState(position.getX() & 15, position.getY() & 15, position.getZ() & 15, data);
         world.sendBlockUpdated(position, data, data, 3);
         world.getLightEngine().checkBlock(position); // boolean corresponds to if chunk section empty
-        chunk.setUnsaved(true);
+        chunk.markUnsaved();
     }
 
     @Override
