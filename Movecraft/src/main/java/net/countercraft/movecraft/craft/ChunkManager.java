@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.craft;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -19,7 +20,10 @@ import java.util.concurrent.Future;
 
 @Deprecated
 public class ChunkManager implements Listener {
-    
+
+    @Inject
+    public ChunkManager(){}
+
     private static final Set<MovecraftChunk> chunks = new HashSet<>();
     
     public static void addChunksToLoad(Iterable<MovecraftChunk> list) {

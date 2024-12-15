@@ -17,10 +17,12 @@
 
 package net.countercraft.movecraft.localisation;
 
-import net.countercraft.movecraft.Movecraft;
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.lifecycle.HostedService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,32 +33,53 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class I18nSupport {
+public class I18nSupport implements HostedService {
     private static Properties languageFile;
+    private final @NotNull Plugin plugin;
+    private final @NotNull Logger logger;
 
-    public static void init() {
+    @Inject
+    public I18nSupport(@NotNull Plugin plugin, @NotNull Logger logger){
+        this.plugin = plugin;
+        this.logger = logger;
+    }
+
+
+
+    @Override
+    public void start() {
+        String[] localisations = {"en", "cz", "nl", "fr"};
+        for (String locale : localisations) {
+            var file = new File("%s/localisation/movecraftlang_%s.properties".formatted(plugin.getDataFolder(), locale));
+            if (!file.exists()) {
+                plugin.saveResource("localisation/movecraftlang_%s.properties".formatted(locale), false);
+            }
+        }
+
+        init();
+    }
+
+    private void init() {
         languageFile = new Properties();
 
-        File localisationDirectory = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/localisation");
+        Path localisationDirectory = plugin.getDataFolder().toPath().resolve("localisation");
 
-        if (!localisationDirectory.exists()) {
-            localisationDirectory.mkdirs();
-        }
-
-        InputStream inputStream = null;
         try {
-            inputStream = new FileInputStream(localisationDirectory.getAbsolutePath() + "/movecraftlang" + "_" + Settings.LOCALE + ".properties");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Files.createDirectories(localisationDirectory);
+        } catch (IOException e) {
+            throw new IllegalStateException("Critical Error in Localisation System", e);
         }
 
-        if (inputStream == null) {
-            Movecraft.getInstance().getLogger().log(Level.SEVERE, "Critical Error in Localisation System");
-            Movecraft.getInstance().getServer().shutdown();
-            return;
+        InputStream inputStream;
+        try {
+            inputStream = new FileInputStream(localisationDirectory.resolve("movecraftlang_" + Settings.LOCALE + ".properties").toFile());
+        } catch (FileNotFoundException e) {
+            throw new IllegalStateException("Critical Error in Localisation System", e);
         }
 
         try {
