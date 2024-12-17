@@ -38,21 +38,22 @@ public class Tags {
 
             FALL_THROUGH_BLOCKS.add(m);
         }
+        //commented out blocks that would be griefable on my personal server
         FALL_THROUGH_BLOCKS.add(Material.DEAD_BUSH);
         FALL_THROUGH_BLOCKS.addAll(Tag.CORAL_PLANTS.getValues());
-        FALL_THROUGH_BLOCKS.add(Material.BROWN_MUSHROOM);
-        FALL_THROUGH_BLOCKS.add(Material.RED_MUSHROOM);
-        FALL_THROUGH_BLOCKS.add(Material.TORCH);
+        //FALL_THROUGH_BLOCKS.add(Material.BROWN_MUSHROOM);
+        //FALL_THROUGH_BLOCKS.add(Material.RED_MUSHROOM);
+        //FALL_THROUGH_BLOCKS.add(Material.TORCH);
         FALL_THROUGH_BLOCKS.add(Material.FIRE);
-        FALL_THROUGH_BLOCKS.add(Material.REDSTONE_WIRE);
-        FALL_THROUGH_BLOCKS.add(Material.LADDER);
-        FALL_THROUGH_BLOCKS.addAll(Tag.SIGNS.getValues());
-        FALL_THROUGH_BLOCKS.add(Material.LEVER);
-        FALL_THROUGH_BLOCKS.add(Material.STONE_BUTTON);
+        //FALL_THROUGH_BLOCKS.add(Material.REDSTONE_WIRE);
+        //FALL_THROUGH_BLOCKS.add(Material.LADDER);
+        //FALL_THROUGH_BLOCKS.addAll(Tag.SIGNS.getValues());
+        //FALL_THROUGH_BLOCKS.add(Material.LEVER);
+        //FALL_THROUGH_BLOCKS.add(Material.STONE_BUTTON);
         FALL_THROUGH_BLOCKS.add(Material.SNOW);
-        FALL_THROUGH_BLOCKS.add(Material.CARROT);
-        FALL_THROUGH_BLOCKS.add(Material.POTATO);
-        FALL_THROUGH_BLOCKS.addAll(Tag.FENCES.getValues());
+        //FALL_THROUGH_BLOCKS.add(Material.CARROT);
+        //FALL_THROUGH_BLOCKS.add(Material.POTATO);
+        //FALL_THROUGH_BLOCKS.addAll(Tag.FENCES.getValues());
         FALL_THROUGH_BLOCKS.addAll(FLUID);
     }
 

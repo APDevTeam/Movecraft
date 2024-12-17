@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.craft.Craft;
@@ -32,13 +33,16 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -287,16 +291,33 @@ public class AsyncManager extends BukkitRunnable {
 
     //Controls sinking crafts
     private void processSinking() {
-        //copy the crafts before iteration to prevent concurrent modifications
+        // Copy the crafts before iteration to prevent concurrent modifications
         List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
         for (Craft craft : crafts) {
             if (!(craft instanceof SinkingCraft))
                 continue;
-
             if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < (craft.getWorld().getMinHeight() +5 )) {
+
                 CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
                 continue;
             }
+            if (craft.getHitBox().getMinY() == craft.getWorld().getMinHeight()) {
+                removeBottomLayer(craft);
+                MovecraftLocation start = new MovecraftLocation(
+                    craft.getHitBox().getMinX(), 
+                    craft.getHitBox().getMinY() + 1, 
+                    craft.getHitBox().getMinZ()
+                );
+                MovecraftLocation end = new MovecraftLocation(
+                    craft.getHitBox().getMaxX(), 
+                    craft.getHitBox().getMaxY(), 
+                    craft.getHitBox().getMaxZ()
+                );
+                SolidHitBox newHitBox = new SolidHitBox(start, end);
+                craft.setHitBox(newHitBox);
+                continue;
+            }
+
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
             if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS))
                 continue;
@@ -311,6 +332,29 @@ public class AsyncManager extends BukkitRunnable {
             craft.setLastCruiseUpdate(System.currentTimeMillis());
         }
     }
+
+
+private void removeBottomLayer(Craft craft) {
+    if (craft.getHitBox().isEmpty()) {
+        return;
+    }
+
+    int bottomY = craft.getHitBox().getMinY();
+    int width = craft.getHitBox().getXLength();
+    int length = craft.getHitBox().getZLength();
+    int startX = craft.getHitBox().getMinX();
+    int startZ = craft.getHitBox().getMinZ();
+    World world = craft.getWorld();
+
+    for (int x = startX; x < startX + width; x++) {
+        for (int z = startZ; z < startZ + length; z++) {
+            Block block = world.getBlockAt(x, bottomY, z);
+            if (block.getType() != Material.AIR) {
+                block.setType(Material.AIR);
+            }
+        }
+    }
+}
 
     public void run() {
         clearAll();
