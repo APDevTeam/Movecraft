@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+// TODO: De-static
 public class Settings {
     public static boolean IGNORE_RESET = false;
     public static boolean Debug = false;
