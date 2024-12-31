@@ -4,12 +4,14 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.UnmodifiableIterator;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public interface HitBox extends Iterable<MovecraftLocation>{
     int getMinX();
@@ -92,6 +94,12 @@ public interface HitBox extends Iterable<MovecraftLocation>{
     @NotNull
     default Set<MovecraftLocation> asSet(){
         return new HitBoxSetView(this);
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    default Stream<MovecraftLocation> stream(){
+        return asSet().stream();
     }
 
     @NotNull
