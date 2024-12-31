@@ -17,10 +17,11 @@
 
 package net.countercraft.movecraft.mapUpdater;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
+import net.countercraft.movecraft.lifecycle.Worker;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -30,19 +31,22 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 @Deprecated
-public class MapUpdateManager extends BukkitRunnable {
+public class MapUpdateManager implements Worker {
+    private final Queue<UpdateCommand> updates;
 
-    private final Queue<UpdateCommand> updates = new ConcurrentLinkedQueue<>();
-//    private final Queue<UpdateCommand> updates = new LinkedBlockingQueue<>();
-    //private PriorityQueue<UpdateCommand> updateQueue = new PriorityQueue<>();
+    @Inject
+    public MapUpdateManager() {
+        this.updates = new ConcurrentLinkedQueue<>();
+    }
 
-    //@Deprecated
-    //public HashMap<Craft, Integer> blockUpdatesPerCraft = new HashMap<>();
+    @Override
+    public boolean isAsync() {
+        return false;
+    }
 
-    private MapUpdateManager() { }
-
-    public static MapUpdateManager getInstance() {
-        return MapUpdateManagerHolder.INSTANCE;
+    @Override
+    public int getPeriod() {
+        return 1;
     }
 
     public void run() {
@@ -96,9 +100,4 @@ public class MapUpdateManager extends BukkitRunnable {
     public void scheduleUpdates(@NotNull Collection<UpdateCommand> updates){
         this.updates.addAll(updates);
     }
-
-    private static class MapUpdateManagerHolder {
-        private static final MapUpdateManager INSTANCE = new MapUpdateManager();
-    }
-
 }

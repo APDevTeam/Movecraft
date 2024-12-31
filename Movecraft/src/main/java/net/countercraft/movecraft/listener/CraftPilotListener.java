@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.listener;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
@@ -10,6 +11,8 @@ import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
 public class CraftPilotListener implements Listener {
+    @Inject
+    public CraftPilotListener(){}
 
     @EventHandler(ignoreCancelled = true)
     public void onCraftPilot(@NotNull CraftPilotEvent event) {

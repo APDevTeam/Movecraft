@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.features.fading;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.processing.WorldManager;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 public class WreckManager {
     private final @NotNull WorldManager worldManager;
 
+    @Inject
     public WreckManager(@NotNull WorldManager worldManager){
         this.worldManager = Objects.requireNonNull(worldManager);
     }

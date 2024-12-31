@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.features.contacts;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -20,6 +21,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class ContactsSign implements Listener {
     private static final String HEADER = "Contacts:";
+
+    @Inject
+    public ContactsSign(){}
 
     @EventHandler
     public void onCraftDetect(@NotNull CraftDetectEvent event) {
