@@ -342,45 +342,35 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     static Map<Pair<Double, Double>, BlockFace> calcDirectionMapping(List<BlockFace> directionCompass) {
         final double angleIncrement = (360.0 / directionCompass.size());
         final double halfAngleIncrement = angleIncrement / 2;
-        double currentAngle = 0;
 
         final Map<Pair<Double, Double>, BlockFace> result = new HashMap<>();
 
-        for(int i = 0; i < directionCompass.size(); i++) {
-            BlockFace face = directionCompass.get(i);
-            double borderleft = currentAngle - halfAngleIncrement;
-            if (borderleft < 0) {
-                borderleft += 360;
-            }
-            double borderRight = currentAngle + halfAngleIncrement;
-            if (borderRight < 0) {
-                borderRight += 360;
-            }
-            currentAngle += angleIncrement;
-            if (currentAngle > 360) {
-                currentAngle -= 360;
-            }
-            result.put(new Pair<>(borderleft, borderRight), face);
+        for (BlockFace face : directionCompass) {
+            double angle = getAngleAroundYAxis(face.getModX(), face.getModZ());
+            double borderLeft = angle - halfAngleIncrement;
+            double borderRight = angle + halfAngleIncrement;
+            result.put(new Pair<>(borderLeft, borderRight), face);
         }
 
         return result;
     }
 
+    static final double getAngleAroundYAxis(final Vector2d vector) {
+        return Math.atan2(-vector.x(), vector.y()) * 180 / Math.PI;
+    }
 
-    static final double ROTATION_OFFSET = 90;
+    static final double getAngleAroundYAxis(final double x, final double z) {
+        final Vector2d vector2d = new Vector2d(x, z).normalize();
+        return getAngleAroundYAxis(vector2d);
+    }
 
-    // TODO: Fix "SELF" contact
     public static BlockFace getDirection(MovecraftLocation self, MovecraftLocation other) {
         final MovecraftLocation distanceVector = other.subtract(self);
         final Vector2d vector = new Vector2d(distanceVector.getX(), distanceVector.getZ());
-        final Vector2d vectorNormalized = new Vector2d(vector).normalize();
 
         // Alternatively calculate the angle around the Y axis for this vector and then choose the direction that is closest to this angle
         // Or divide by 16 and round, that should get the closest value
-        double angle = ROTATION_OFFSET + (Math.atan2(-vectorNormalized.x(), vectorNormalized.y()) * 180 / Math.PI);
-        if (angle < 0) {
-            angle += 360;
-        }
+        double angle = getAngleAroundYAxis(vector.x(), vector.y());
 
         final Map<Pair<Double, Double>, BlockFace> directionMap = grabDirectionMap(vector.lengthSquared());
 
