@@ -31,6 +31,9 @@ public final class NameSign implements Listener {
 
         if (c instanceof PilotedCraft) {
             PilotedCraft pilotedCraft = (PilotedCraft) c;
+            if (((PilotedCraft) c).getPilot() == null) {
+                return;
+            }
             if (Settings.RequireNamePerm && !pilotedCraft.getPilot().hasPermission("movecraft.name.place"))
                 return;
         }
