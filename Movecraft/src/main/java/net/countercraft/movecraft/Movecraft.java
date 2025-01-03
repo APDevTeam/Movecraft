@@ -163,6 +163,7 @@ public class Movecraft extends JavaPlugin {
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
         Settings.FadeTickCooldown = getConfig().getInt("FadeTickCooldown", 20);
         Settings.FadePercentageOfWreckPerCycle = getConfig().getDouble("FadePercentageOfWreckPerCycle", 10.0);
+        Settings.ReleaseCraftOnLogout = getConfig().getBoolean("ReleaseCraftOnLogout", true);
         if (getConfig().contains("ExtraFadeTimePerBlock")) {
             Map<String, Object> temp = getConfig().getConfigurationSection("ExtraFadeTimePerBlock").getValues(false);
             for (String str : temp.keySet()) {

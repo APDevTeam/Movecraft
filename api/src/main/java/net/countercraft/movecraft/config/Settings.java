@@ -37,6 +37,7 @@ public class Settings {
     public static boolean DisableIceForm = true;
     public static boolean RequireCreatePerm = false;
     public static boolean RequireNamePerm = false;
+    public static boolean ReleaseCraftOnLogout = true;
     public static int FadeWrecksAfter = 0;
     public static int FadeTickCooldown = 20;
     public static double FadePercentageOfWreckPerCycle = 10.0;
