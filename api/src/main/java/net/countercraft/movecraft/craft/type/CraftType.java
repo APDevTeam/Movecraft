@@ -190,6 +190,8 @@ final public class CraftType {
     public static final NamespacedKey EXPLOSION_ARMING_TIME = buildKey("explosion_arming_time");
     public static final NamespacedKey DIRECTIONAL_DEPENDENT_MATERIALS = buildKey("directional_dependent_materials");
     public static final NamespacedKey ALLOW_INTERNAL_COLLISION_EXPLOSION = buildKey("allow_internal_collision_explosion");
+
+    public static final NamespacedKey MOVE_BREAK_BLOCKS = buildKey("move_break_blocks");
     //endregion
 
     @Contract("_ -> new")
@@ -393,11 +395,7 @@ final public class CraftType {
         registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS, type -> new HashSet<>()));
         registerProperty(new RequiredBlockProperty("detectionblocks", DETECTION_BLOCKS, type -> new HashSet<>()));
         registerProperty(new MaterialSetProperty("directionDependentMaterials", DIRECTIONAL_DEPENDENT_MATERIALS, type -> {
-            var set = EnumSet.of(Material.LADDER, Material.LEVER, Material.GRINDSTONE);
-            set.addAll(Tag.WALL_SIGNS.getValues());
-            set.addAll(Tags.WALL_TORCHES);
-            set.addAll(Tags.LANTERNS);
-            return set;
+            return EnumSet.noneOf(Material.class);
         }));
 
         registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
@@ -576,6 +574,8 @@ final public class CraftType {
         registerProperty(new IntegerProperty("cruiseOnPilotLifetime", CRUISE_ON_PILOT_LIFETIME, type -> 15*20));
         registerProperty(new IntegerProperty("explosionArmingTime", EXPLOSION_ARMING_TIME, type -> 1000));
         registerProperty(new BooleanProperty("allowInternalCollisionExplosion", ALLOW_INTERNAL_COLLISION_EXPLOSION, type -> false));
+
+        registerProperty(new MaterialSetProperty("moveBreakBlocks", MOVE_BREAK_BLOCKS,  type -> EnumSet.noneOf(Material.class)));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN

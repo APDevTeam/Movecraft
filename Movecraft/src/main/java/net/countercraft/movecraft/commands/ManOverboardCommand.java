@@ -10,16 +10,20 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import static net.countercraft.movecraft.util.ChatUtils.MOVECRAFT_COMMAND_PREFIX;
 
 public class ManOverboardCommand implements CommandExecutor {
+
+    static final NamespacedKey MANOVERBOARD_LAST_TIME = new NamespacedKey(Movecraft.getInstance(), "manoverboard_last_timestamp");
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
@@ -67,8 +71,32 @@ public class ManOverboardCommand implements CommandExecutor {
             return true;
         }
 
+        // Last manoverboard time for player
+        if (Settings.ManOverboardCooldown > 0) {
+            Long lastManoverboard = player.getPersistentDataContainer().get(MANOVERBOARD_LAST_TIME, PersistentDataType.LONG);
+            if (lastManoverboard != null) {
+                // SECONDS!! 
+                int minCooldown = Settings.ManOverboardCooldown * 1000;
+                long now = System.currentTimeMillis();
+                if ((now - lastManoverboard) < minCooldown) {
+                    player.sendMessage(MOVECRAFT_COMMAND_PREFIX
+                            + I18nSupport.getInternationalisedString("ManOverboard - Cooldown"));
+                    return true;
+                }
+                player.getPersistentDataContainer().remove(MANOVERBOARD_LAST_TIME);
+            }
+        }
+
         ManOverboardEvent event = new ManOverboardEvent(craft, telPoint);
         Bukkit.getServer().getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            player.sendMessage(MOVECRAFT_COMMAND_PREFIX
+                    + I18nSupport.getInternationalisedString("ManOverboard - Cancelled"));
+            return true;
+        }
+
+        player.getPersistentDataContainer().set(MANOVERBOARD_LAST_TIME, PersistentDataType.LONG, Long.valueOf(System.currentTimeMillis()));
 
         telPoint.setYaw(player.getLocation().getYaw());
         telPoint.setPitch(player.getLocation().getPitch());

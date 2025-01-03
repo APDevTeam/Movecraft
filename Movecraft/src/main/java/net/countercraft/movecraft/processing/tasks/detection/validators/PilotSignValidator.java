@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// TODO: Remove, replaced by the sign implementation!
 public class PilotSignValidator implements DetectionPredicate<MovecraftLocation> {
     @Override
     @Contract(pure = true)

@@ -23,6 +23,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
+import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PilotedCraft;
@@ -34,6 +35,7 @@ import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
@@ -176,10 +178,18 @@ public class AsyncManager extends BukkitRunnable {
             boolean bankLeft = false;
             boolean bankRight = false;
             boolean dive = false;
+            boolean rise = false;
+
             if (craft instanceof PlayerCraft && ((PlayerCraft) craft).getPilotLocked()) {
                 Player pilot = ((PlayerCraft) craft).getPilot();
-                if (pilot.isSneaking())
-                    dive = true;
+                if (pilot.isSneaking()) {
+                    if (pilot.getInventory().getItem(EquipmentSlot.OFF_HAND) != null) {
+                        dive = pilot.getInventory().getItem(EquipmentSlot.OFF_HAND).getType().isEmpty();
+                    } else {
+                        dive = true;
+                    }
+                    rise = !dive;
+                }
                 if (pilot.getInventory().getHeldItemSlot() == 3)
                     bankLeft = true;
                 if (pilot.getInventory().getHeldItemSlot() == 5)
@@ -200,7 +210,7 @@ public class AsyncManager extends BukkitRunnable {
             if (craft.getCruiseDirection() != CruiseDirection.UP
                     && craft.getCruiseDirection() != CruiseDirection.DOWN) {
                 if (bankLeft || bankRight) {
-                    if (!dive) {
+                    if (!(dive || rise)) {
                         tickCoolDown *= (Math.sqrt(Math.pow(1 + cruiseSkipBlocks, 2)
                                 + Math.pow(cruiseSkipBlocks >> 1, 2)) / (1 + cruiseSkipBlocks));
                     }
@@ -209,9 +219,13 @@ public class AsyncManager extends BukkitRunnable {
                                 + Math.pow(cruiseSkipBlocks >> 1, 2) + 1) / (1 + cruiseSkipBlocks));
                     }
                 }
-                else if (dive) {
+                else if (dive || rise) {
                     tickCoolDown *= (Math.sqrt(Math.pow(1 + cruiseSkipBlocks, 2) + 1) / (1 + cruiseSkipBlocks));
                 }
+            }
+
+            if (craft.getCruiseCooldownMultiplier() != 1 && craft.getCruiseCooldownMultiplier() != 0) {
+                tickCoolDown *= craft.getCruiseCooldownMultiplier();
             }
 
             if (Math.abs(ticksElapsed) < tickCoolDown)
@@ -233,11 +247,16 @@ public class AsyncManager extends BukkitRunnable {
                 if (craft.getHitBox().getMinY() <= w.getSeaLevel())
                     dy = -1;
             }
-            else if (dive) {
+            else if (dive || rise) {
                 dy = -((cruiseSkipBlocks + 1) >> 1);
                 if (craft.getHitBox().getMinY() <= w.getSeaLevel())
                     dy = -1;
+
+                if (rise) {
+                    dy *= -1;
+                }
             }
+            // TODO: This could be a switch case
             // ship faces west
             if (craft.getCruiseDirection() == CruiseDirection.WEST) {
                 dx = -1 - cruiseSkipBlocks;

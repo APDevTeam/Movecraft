@@ -110,6 +110,7 @@ public class CraftManager implements Iterable<Craft>{
         }
 
         Set<CraftType> craftTypes = new HashSet<>();
+        // TODO: Support subdirectories too
         File[] files = craftsFile.listFiles();
         if (files == null) {
             return craftTypes;
@@ -172,6 +173,22 @@ public class CraftManager implements Iterable<Craft>{
                 world, player,
                 audience,
                 postDetection
+        ));
+    }
+
+    public void detect(@NotNull MovecraftLocation startPoint,
+                       @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                       @NotNull World world, @Nullable Player player,
+                       @NotNull Audience audience,
+                       @NotNull Function<Craft, Effect> postDetection,
+                       @Nullable Function<@Nullable Craft, Effect> alwaysRunAfter) {
+        WorldManager.INSTANCE.submit(new DetectionTask(
+                startPoint, CachedMovecraftWorld.of(world),
+                type, supplier,
+                world, player,
+                audience,
+                postDetection,
+                alwaysRunAfter
         ));
     }
 

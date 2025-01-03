@@ -31,6 +31,8 @@ import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -44,7 +46,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public interface Craft {
-    CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
+    // TODO: Unify with RECENT_CONTACTS tag and use a object to also store distance and direction
+    CraftDataTagKey<List<UUID>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
     CraftDataTagKey<Double> FUEL = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
     CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
     CraftDataTagKey<Counter<RequiredBlockEntry>> FLYBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "flyblocks"), craft -> new Counter<>());
@@ -248,9 +251,18 @@ public interface Craft {
     Map<Location, BlockData> getPhaseBlocks();
 
     @NotNull
-    String getName();
+    default String getNameRaw() {
+            Component compname = this.getName();
+            return PlainTextComponentSerializer.plainText().serialize(compname);
+    }
 
-    void setName(@NotNull String name);
+    Component getName();
+
+    default void setName(@NotNull String name) {
+        this.setName(Component.text(name));
+    }
+
+    void setName(Component name);
 
     @NotNull
     MutableHitBox getCollapsedHitBox();
@@ -293,4 +305,12 @@ public interface Craft {
     }
 
     Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations();
+
+    public default void setCruiseCooldownMultiplier(double value) {
+        // Do nothing by default
+    }
+
+    public default double getCruiseCooldownMultiplier() {
+        return 1;
+    }
 }

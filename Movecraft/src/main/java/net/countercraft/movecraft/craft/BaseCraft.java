@@ -76,7 +76,7 @@ public abstract class BaseCraft implements Craft {
     @NotNull
     private Audience audience;
     @NotNull
-    private String name = "";
+    private Component name = Component.empty();
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
     private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
@@ -85,6 +85,8 @@ public abstract class BaseCraft implements Craft {
     private final CraftDataTagContainer dataTagContainer;
 
     private final UUID uuid = UUID.randomUUID();
+
+    private double cruiseTickMultiplier = 1;
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         Hidden.uuidToCraft.put(uuid, this);
@@ -243,6 +245,9 @@ public abstract class BaseCraft implements Craft {
     public void setCruising(boolean cruising) {
         audience.sendActionBar(Component.text().content("Cruising " + (cruising ? "enabled" : "disabled")));
         this.cruising = cruising;
+        if (!this.cruising) {
+            this.setCruiseCooldownMultiplier(1);
+        }
     }
 
     @Override
@@ -262,6 +267,9 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setCruiseDirection(CruiseDirection cruiseDirection) {
+        if (this.cruiseDirection != null && cruiseDirection != null && !cruiseDirection.equals(this.cruiseDirection)) {
+            this.setCruiseCooldownMultiplier(1);
+        }
         this.cruiseDirection = cruiseDirection;
     }
 
@@ -492,12 +500,12 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     @NotNull
-    public String getName() {
+    public Component getName() {
         return name;
     }
 
     @Override
-    public void setName(@NotNull String name) {
+    public void setName(@NotNull Component name) {
         this.name = name;
     }
 
@@ -579,4 +587,14 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations() {return trackedLocations;}
+
+    @Override
+    public void setCruiseCooldownMultiplier(double value) {
+        this.cruiseTickMultiplier = value;
+    }
+
+    @Override
+    public double getCruiseCooldownMultiplier() {
+        return this.cruiseTickMultiplier;
+    }
 }
