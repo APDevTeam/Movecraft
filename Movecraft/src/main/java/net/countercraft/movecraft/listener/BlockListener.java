@@ -84,7 +84,7 @@ public class BlockListener implements Listener {
         for (Craft craft : MathUtils.craftsNearLocFast(CraftManager.getInstance().getCrafts(), location)) {
             if (craft.getDisabled() || !(craft instanceof PilotedCraft) || !craft.getHitBox().contains(loc))
                 continue;
-            if (((PilotedCraft) craft).getPilot() == p)
+            if (((PilotedCraft) craft).getPilotUUID().equals(p.getUniqueId()))
                 continue;
 
             e.setCancelled(true);

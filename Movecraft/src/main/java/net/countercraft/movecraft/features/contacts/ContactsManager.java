@@ -234,7 +234,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                 .append(I18nSupport.getInternationalisedComponent("Contact - Commanded By"))
                 .append(Component.text(" "));
 
-        if (target instanceof PilotedCraft) {
+        if (target instanceof PilotedCraft pc && pc.getPilot() != null) {
             notification = notification.append(((PilotedCraft) target).getPilot().displayName());
         }
         else {

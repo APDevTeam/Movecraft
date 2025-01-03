@@ -95,6 +95,7 @@ public class PlayerListener implements Listener {
     public void onPlayerLogout(PlayerQuitEvent e) {
         Craft craft = CraftManager.getInstance().getCraftByPlayer(e.getPlayer());
         if (craft != null)
+            // TODO: Do not instantly release, release based on a timer
             CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DISCONNECT, false);
     }
 
