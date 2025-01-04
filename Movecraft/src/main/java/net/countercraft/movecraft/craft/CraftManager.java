@@ -194,7 +194,7 @@ public class CraftManager implements Iterable<Craft>{
 
     public void add(@NotNull Craft c) {
         if (c instanceof PlayerCraft) {
-            if (playerCrafts.containsKey(((PlayerCraft) c).getPilot()))
+            if (playerCrafts.containsKey(((PlayerCraft) c).getPilotUUID()))
                 throw new IllegalStateException("Players may only have one PlayerCraft associated with them!");
 
             playerCrafts.put(((PlayerCraft) c).getPilotUUID(), (PlayerCraft) c);
@@ -352,12 +352,12 @@ public class CraftManager implements Iterable<Craft>{
     public PlayerCraft getCraftByPlayer(@Nullable Player p) {
         if(p == null)
             return null;
-        return playerCrafts.get(p);
+        return playerCrafts.get(p.getUniqueId());
     }
 
     public PlayerCraft getCraftByPlayerName(String name) {
         for (var entry : playerCrafts.entrySet()) {
-            if (entry.getKey() != null && Bukkit.getPlayer(entry.getKey()).getName().equals(name))
+            if (entry.getKey() != null && (Bukkit.getPlayer(entry.getKey()).getName().equals(name) || Bukkit.getOfflinePlayer(entry.getKey()).getName().equals(name)))
                 return entry.getValue();
         }
         return null;

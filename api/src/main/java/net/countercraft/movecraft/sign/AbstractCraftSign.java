@@ -95,7 +95,7 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
     // By default, this returns wether or not the player is the pilot of the craft
     protected boolean canPlayerUseSignOn(Player player, @Nullable Craft craft) {
         if (craft instanceof PilotedCraft pc) {
-            return pc.getPilot() == player;
+            return pc.getPilotUUID().equals(player.getUniqueId());
         }
         return true;
     }

@@ -55,7 +55,7 @@ public class ScuttleSign extends AbstractCraftSign {
             return false;
         }
         if (craft instanceof PilotedCraft pc) {
-            if (player == pc.getPilot()) {
+            if (player.getUniqueId().equals(pc.getPilotUUID())) {
                 return true;
             }
         }
