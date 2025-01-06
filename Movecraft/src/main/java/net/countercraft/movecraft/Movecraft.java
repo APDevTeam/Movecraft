@@ -26,6 +26,7 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
+import net.countercraft.movecraft.features.contacts.IgnoreContactCommand;
 import net.countercraft.movecraft.features.fading.WreckManager;
 import net.countercraft.movecraft.features.status.StatusManager;
 import net.countercraft.movecraft.features.status.StatusSign;
@@ -261,6 +262,7 @@ public class Movecraft extends JavaPlugin {
         //getServer().getPluginManager().registerEvents(new ContactsSign(), this);
         getServer().getPluginManager().registerEvents(new CraftTypeListener(), this);
         getCommand("contacts").setExecutor(new ContactsCommand());
+        getCommand("ignorecontact").setExecutor(new IgnoreContactCommand());
 
         var statusManager = new StatusManager();
         statusManager.runTaskTimerAsynchronously(this, 0, 1);

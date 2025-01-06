@@ -414,6 +414,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         return getAngleAroundYAxis(vector2d);
     }
 
+    // TODO: Fix SELF direction
     public static BlockFace getDirection(MovecraftLocation self, MovecraftLocation other) {
         final MovecraftLocation distanceVector = other.subtract(self);
         final Vector2d vector = new Vector2d(distanceVector.getX(), distanceVector.getZ());
