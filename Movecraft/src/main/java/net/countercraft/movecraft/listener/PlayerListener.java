@@ -99,12 +99,14 @@ public class PlayerListener implements Listener {
             return;
 
         if (!Settings.ReleaseCraftOnLogout) {
-            int taskID = Bukkit.getScheduler().scheduleSyncDelayedTask(Movecraft.getInstance(), () -> {
+            if (Settings.ReleaseCraftTimeOutAfterLogOut > 0) {
+                int taskID = Bukkit.getScheduler().scheduleSyncDelayedTask(Movecraft.getInstance(), () -> {
                     // TODO: Do not instantly release, release based on a timer
                     CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DISCONNECT, false);
                     logoutReleaseTaskRelation.remove(craft.getPilotUUID());
-            }, Settings.ReleaseCraftTimeOutAfterLogOut);
-            logoutReleaseTaskRelation.put(craft.getPilotUUID(), taskID);
+                }, Settings.ReleaseCraftTimeOutAfterLogOut);
+                logoutReleaseTaskRelation.put(craft.getPilotUUID(), taskID);
+            }
 
             return;
         }
