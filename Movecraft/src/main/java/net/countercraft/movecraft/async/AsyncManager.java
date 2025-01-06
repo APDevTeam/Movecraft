@@ -180,7 +180,7 @@ public class AsyncManager extends BukkitRunnable {
             boolean dive = false;
             boolean rise = false;
 
-            if (craft instanceof PlayerCraft && ((PlayerCraft) craft).getPilotLocked()) {
+            if (craft instanceof PlayerCraft && ((PlayerCraft) craft).getPilotLocked() && ((PlayerCraft)craft).getPilot() != null) {
                 Player pilot = ((PlayerCraft) craft).getPilot();
                 if (pilot.isSneaking()) {
                     if (pilot.getInventory().getItem(EquipmentSlot.OFF_HAND) != null) {
