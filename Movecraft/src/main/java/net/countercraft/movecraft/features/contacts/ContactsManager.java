@@ -14,6 +14,8 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.Pair;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -28,11 +30,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2d;
 
+import javax.naming.Name;
 import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
     // TODO: Unify with the standard CONTACTS datatag
     private static final CraftDataTagKey<Map<UUID, Long>> RECENT_CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
+    static final CraftDataTagKey<Set<UUID>> IGNORED_CRAFTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "ignored-contacts"), craft -> new HashSet<>());
 
     // TODO: Change so that contacts command can not be abused to triangulate positions => Save the distance and direction in the record of recent contacts
     // TODO: Add ignore list for contacts and add a "ignore" button in the message
@@ -41,6 +45,21 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     public void run() {
         runContacts();
         runRecentContacts();
+        cleanUpIgnoreLists();
+    }
+
+    private void cleanUpIgnoreLists() {
+        for (World w : Bukkit.getWorlds()) {
+            if (w == null)
+                continue;
+
+            Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(w);
+            for (Craft base : craftsInWorld) {
+                if (base.hasDataTag(IGNORED_CRAFTS)) {
+                    base.getDataTag(IGNORED_CRAFTS).removeIf(ignoredUUID -> Craft.getCraftByUUID(ignoredUUID) == null);
+                }
+            }
+        }
     }
 
     private void runContacts() {
@@ -266,7 +285,18 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         notification = notification.append(I18nSupport.getInternationalisedComponent("Contact - Direction - " + direction.name()));
 
         notification = notification.append(Component.text("."));
+
+        // Command to ignore that craft
+        Component ignoreButton = buildIgnoreButton(target.getUUID());
+        notification = notification.append(Component.text("    ")).append(ignoreButton);
+
         return notification;
+    }
+
+    static Component buildIgnoreButton(final UUID ignoreUUID) {
+        ClickEvent clickEvent = ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "ignorecontact " + ignoreUUID.toString());
+        TextComponent result = Component.text().content("[IGNORE]").color(NamedTextColor.DARK_RED).clickEvent(clickEvent).build();
+        return result;
     }
 
     public static String getDirectionAppreviation(BlockFace face) {
