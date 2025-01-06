@@ -455,21 +455,13 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
     private void remove(Craft base) {
         for (Craft other : CraftManager.getInstance().getCrafts()) {
-            List<UUID> contacts = other.getDataTag(Craft.CONTACTS);
-            if (contacts.contains(base.getUUID()))
-                continue;
+            other.getDataTag(Craft.CONTACTS).remove(base.getUUID());
 
-            contacts.remove(base.getUUID());
-            other.setDataTag(Craft.CONTACTS, contacts);
-        }
-
-        for (Craft other : CraftManager.getInstance().getCrafts()) {
             Map<UUID, Long> recentContacts = other.getDataTag(RECENT_CONTACTS);
             if (!recentContacts.containsKey(other.getUUID()))
                 continue;
 
             recentContacts.remove(base);
-            other.setDataTag(RECENT_CONTACTS, recentContacts);
         }
     }
 
