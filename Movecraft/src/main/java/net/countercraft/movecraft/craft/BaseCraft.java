@@ -1,16 +1,11 @@
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.CruiseDirection;
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.MovecraftRotation;
-import net.countercraft.movecraft.TrackedLocation;
+import net.countercraft.movecraft.*;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
@@ -24,23 +19,13 @@ import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -74,6 +59,7 @@ public abstract class BaseCraft implements Craft {
     private double burningFuel;
     private int origBlockCount;
     @NotNull
+    // TODO: rework this into a "CraftAudience" to also support crews later
     private Audience audience;
     @NotNull
     private Component name = Component.empty();

@@ -20,7 +20,8 @@ public class PlayerCraftImpl extends BaseCraft implements PlayerCraft {
 
     public PlayerCraftImpl(@NotNull CraftType type, @NotNull World world, @NotNull Player pilot) {
         super(type, world);
-        this.pilotUUID = pilot.getUniqueId();
+        // Copy UUID just to be safe
+        this.pilotUUID = UUID.fromString(pilot.getUniqueId().toString());
         this.pilot = new WeakReference<>(pilot);
         pilotLocked = false;
         pilotLockedX = 0.0;
@@ -41,6 +42,7 @@ public class PlayerCraftImpl extends BaseCraft implements PlayerCraft {
     public Player getPilot() {
         if (this.pilot.get() == null) {
             this.pilot = new WeakReference<> (Bukkit.getPlayer(this.getPilotUUID()));
+            this.setAudience(this.pilot.get());
         }
         return this.pilot.get();
     }

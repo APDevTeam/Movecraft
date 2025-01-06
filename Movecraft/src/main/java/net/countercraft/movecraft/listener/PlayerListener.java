@@ -27,6 +27,7 @@ import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
+import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -99,6 +100,8 @@ public class PlayerListener implements Listener {
             return;
 
         if (!Settings.ReleaseCraftOnLogout) {
+            // Remove audience as that is a player reference
+            craft.setAudience(Audience.empty());
             if (Settings.ReleaseCraftTimeOutAfterLogOut > 0) {
                 int taskID = Bukkit.getScheduler().scheduleSyncDelayedTask(Movecraft.getInstance(), () -> {
                     // TODO: Do not instantly release, release based on a timer
