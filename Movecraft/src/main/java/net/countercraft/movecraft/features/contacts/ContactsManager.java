@@ -303,14 +303,14 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         notification = notification.append(Component.text("."));
 
         // Command to ignore that craft
-        Component ignoreButton = buildIgnoreButton(target.getUUID());
+        Component ignoreButton = buildIgnoreButton(base.getUUID(), target.getUUID());
         notification = notification.append(Component.text("    ")).append(ignoreButton);
 
         return notification;
     }
 
-    static Component buildIgnoreButton(final UUID ignoreUUID) {
-        ClickEvent clickEvent = ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "ignorecontact " + ignoreUUID.toString());
+    static Component buildIgnoreButton(final UUID baseCraftUUID, final UUID ignoreUUID) {
+        ClickEvent clickEvent = ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "ignorecontact " + baseCraftUUID.toString() + " " + ignoreUUID.toString());
         TextComponent result = Component.text().content("[IGNORE]").color(NamedTextColor.DARK_RED).clickEvent(clickEvent).build();
         return result;
     }

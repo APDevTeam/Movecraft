@@ -29,27 +29,37 @@ public class IgnoreContactCommand implements CommandExecutor {
             return true;
         }
 
-        PlayerCraft playerCraft = CraftManager.getInstance().getCraftByPlayer(player);
-        if (playerCraft == null) {
+        if (args.length != 2) {
             player.sendMessage(Component.empty()
                     .append(ChatUtils.commandPrefix())
-                    .append(I18nSupport.getInternationalisedComponent("You must be piloting a craft")));
+                    .append(I18nSupport.getInternationalisedComponent("At least a base craft and a ignore craft must be given!")));
             return true;
         }
 
-        // TODO: Run this async
-        for (String arg : args) {
-            try {
-                UUID ignoredUUID = UUID.fromString(arg);
-                if (Craft.getCraftByUUID(ignoredUUID) == null) {
-                    continue;
-                }
+        Craft baseCraft;
+        Craft ignoredCraft;
 
-                playerCraft.getDataTag(ContactsManager.IGNORED_CRAFTS).add(ignoredUUID);
-            } catch(IllegalArgumentException iae) {
-                continue;
-            }
+        try {
+            UUID baseUUID = UUID.fromString(args[0]);
+            UUID ignoreUUID = UUID.fromString(args[1]);
+
+            baseCraft = Craft.getCraftByUUID(baseUUID);
+            ignoredCraft = Craft.getCraftByUUID(ignoreUUID);
+        } catch(IllegalArgumentException iae) {
+            player.sendMessage(Component.empty()
+                    .append(ChatUtils.commandPrefix())
+                    .append(I18nSupport.getInternationalisedComponent("Argument 1 and 2 must be valid crafts!")));
+            return true;
         }
+
+        if (baseCraft == null || ignoredCraft == null) {
+            player.sendMessage(Component.empty()
+                    .append(ChatUtils.commandPrefix())
+                    .append(I18nSupport.getInternationalisedComponent("Argument 1 and 2 must be valid crafts!")));
+            return true;
+        }
+
+        baseCraft.getDataTag(ContactsManager.IGNORED_CRAFTS).add(ignoredCraft.getUUID());
 
         return true;
     }
