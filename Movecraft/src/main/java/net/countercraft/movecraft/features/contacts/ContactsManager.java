@@ -84,8 +84,19 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         }
 
         List<UUID> previousContacts = base.getDataTag(Craft.CONTACTS);
-        if (previousContacts == null)
+        if (previousContacts == null) {
             previousContacts = new ArrayList<>(0);
+        }
+
+        if (base.hasDataTag(IGNORED_CRAFTS)) {
+            previousContacts.removeIf(base.getDataTag(IGNORED_CRAFTS)::contains);
+            if (base.hasDataTag(RECENT_CONTACTS)) {
+                base.getDataTag(RECENT_CONTACTS).entrySet().removeIf(entry -> {
+                    return base.getDataTag(IGNORED_CRAFTS).contains(entry.getKey());
+                });
+            }
+        }
+
 
         Set<UUID> newContacts = new HashSet<>(futureContacts);
         previousContacts.forEach(newContacts::remove);
@@ -174,6 +185,11 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         List<UUID> result = new ArrayList<>(inRangeDistanceSquared.keySet().size());
         result.addAll(inRangeDistanceSquared.keySet());
         result.sort(Comparator.comparingInt(inRangeDistanceSquared::get));
+
+        if (base.hasDataTag(IGNORED_CRAFTS)) {
+            result.removeIf(base.getDataTag(IGNORED_CRAFTS)::contains);
+        }
+
         return result;
     }
 
