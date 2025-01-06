@@ -36,7 +36,7 @@ import java.util.*;
 public class ContactsManager extends BukkitRunnable implements Listener {
     // TODO: Unify with the standard CONTACTS datatag
     private static final CraftDataTagKey<Map<UUID, Long>> RECENT_CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
-    static final CraftDataTagKey<Set<UUID>> IGNORED_CRAFTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "ignored-contacts"), craft -> new HashSet<>());
+    public static final CraftDataTagKey<Set<UUID>> IGNORED_CRAFTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "ignored-contacts"), craft -> new HashSet<>());
 
     // TODO: Change so that contacts command can not be abused to triangulate positions => Save the distance and direction in the record of recent contacts
     // TODO: Add ignore list for contacts and add a "ignore" button in the message
