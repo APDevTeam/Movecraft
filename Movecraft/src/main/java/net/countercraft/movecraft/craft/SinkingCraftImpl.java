@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.craft;
 
+import net.kyori.adventure.audience.Audience;
 import org.jetbrains.annotations.NotNull;
 
 public class SinkingCraftImpl extends BaseCraft implements SinkingCraft {
@@ -11,6 +12,7 @@ public class SinkingCraftImpl extends BaseCraft implements SinkingCraft {
         setOrigBlockCount(original.getOrigBlockCount());
         setCruiseDirection(original.getCruiseDirection());
         setLastTranslation(original.getLastTranslation());
-        setAudience(original.getAudience());
+        // If the craft is sinking we dont need an audience anymore
+        setAudience(Audience.empty());
     }
 }
