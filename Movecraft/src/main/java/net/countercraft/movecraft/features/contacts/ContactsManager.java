@@ -35,6 +35,7 @@ import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
     // TODO: Unify with the standard CONTACTS datatag
+    public static final CraftDataTagKey<Set<ContactEntry>> CONTACT_ENTRIES = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts-entries"), craft -> new HashSet<>());
     private static final CraftDataTagKey<Map<UUID, Long>> RECENT_CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "recent-contacts"), craft -> new WeakHashMap<>());
     public static final CraftDataTagKey<Set<UUID>> IGNORED_CRAFTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "ignored-contacts"), craft -> new HashSet<>());
 
@@ -45,18 +46,22 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     public void run() {
         runContacts();
         runRecentContacts();
-        cleanUpIgnoreLists();
+        cleanUpNonExistingCrafts();
     }
 
-    private void cleanUpIgnoreLists() {
+    private void cleanUpNonExistingCrafts() {
         for (World w : Bukkit.getWorlds()) {
             if (w == null)
                 continue;
 
             Set<Craft> craftsInWorld = CraftManager.getInstance().getCraftsInWorld(w);
             for (Craft base : craftsInWorld) {
+                // TODO: This can probably be unified into one thing
                 if (base.hasDataTag(IGNORED_CRAFTS)) {
                     base.getDataTag(IGNORED_CRAFTS).removeIf(ignoredUUID -> Craft.getCraftByUUID(ignoredUUID) == null);
+                }
+                if (base.hasDataTag(CONTACT_ENTRIES)) {
+                    base.getDataTag(CONTACT_ENTRIES).removeIf(contactEntry -> Craft.getCraftByUUID(contactEntry.getContactUUID()) == null);
                 }
             }
         }
@@ -88,12 +93,11 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             previousContacts = new ArrayList<>(0);
         }
 
+        // Remove ignored crafts from recent contacts
         if (base.hasDataTag(IGNORED_CRAFTS)) {
             previousContacts.removeIf(base.getDataTag(IGNORED_CRAFTS)::contains);
             if (base.hasDataTag(RECENT_CONTACTS)) {
-                base.getDataTag(RECENT_CONTACTS).entrySet().removeIf(entry -> {
-                    return base.getDataTag(IGNORED_CRAFTS).contains(entry.getKey());
-                });
+                base.getDataTag(RECENT_CONTACTS).entrySet().removeIf(entry -> base.getDataTag(IGNORED_CRAFTS).contains(entry.getKey()));
             }
         }
 
@@ -462,6 +466,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                 continue;
 
             recentContacts.remove(base);
+
+            other.getDataTag(IGNORED_CRAFTS).remove(base.getUUID());
         }
     }
 
