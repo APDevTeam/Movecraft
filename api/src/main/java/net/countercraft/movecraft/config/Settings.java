@@ -38,6 +38,7 @@ public class Settings {
     public static boolean RequireCreatePerm = false;
     public static boolean RequireNamePerm = false;
     public static boolean ReleaseCraftOnLogout = true;
+    public static long ReleaseCraftTimeOutAfterLogOut = 6000; //Ticks, this means 5 minutes
     public static int FadeWrecksAfter = 0;
     public static int FadeTickCooldown = 20;
     public static double FadePercentageOfWreckPerCycle = 10.0;

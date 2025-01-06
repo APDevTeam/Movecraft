@@ -17,14 +17,17 @@
 
 package net.countercraft.movecraft.listener;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -32,17 +35,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 
 public class PlayerListener implements Listener {
     private final Map<Craft, Long> timeToReleaseAfter = new WeakHashMap<>();
+    private final Map<UUID, Integer> logoutReleaseTaskRelation = new HashMap<>();
 
     private Set<Location> checkCraftBorders(Craft craft) {
         Set<Location> mergePoints = new HashSet<>();
@@ -93,14 +94,33 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerLogout(PlayerQuitEvent e) {
+        final PlayerCraft craft = CraftManager.getInstance().getCraftByPlayer(e.getPlayer());
+        if (craft == null)
+            return;
+
         if (!Settings.ReleaseCraftOnLogout) {
+            int taskID = Bukkit.getScheduler().scheduleSyncDelayedTask(Movecraft.getInstance(), () -> {
+                    // TODO: Do not instantly release, release based on a timer
+                    CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DISCONNECT, false);
+                    logoutReleaseTaskRelation.remove(craft.getPilotUUID());
+            }, Settings.ReleaseCraftTimeOutAfterLogOut);
+            logoutReleaseTaskRelation.put(craft.getPilotUUID(), taskID);
+
             return;
         }
 
-        Craft craft = CraftManager.getInstance().getCraftByPlayer(e.getPlayer());
-        if (craft != null)
-            // TODO: Do not instantly release, release based on a timer
-            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DISCONNECT, false);
+        CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.DISCONNECT, false);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (!Settings.ReleaseCraftOnLogout) {
+            if (logoutReleaseTaskRelation.containsKey(event.getPlayer().getUniqueId())) {
+                int taskID = logoutReleaseTaskRelation.get(event.getPlayer().getUniqueId());
+                Bukkit.getScheduler().cancelTask(taskID);
+                logoutReleaseTaskRelation.remove(event.getPlayer().getUniqueId());
+            }
+        }
     }
 
     @EventHandler
