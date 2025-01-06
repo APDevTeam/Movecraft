@@ -583,4 +583,9 @@ public abstract class BaseCraft implements Craft {
     public double getCruiseCooldownMultiplier() {
         return this.cruiseTickMultiplier;
     }
+
+    @Override
+    public <T> boolean hasDataTag(final @NotNull CraftDataTagKey<T> tagKey) {
+        return this.dataTagContainer.has(tagKey);
+    }
 }
