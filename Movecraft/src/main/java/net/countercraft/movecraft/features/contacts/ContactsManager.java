@@ -393,6 +393,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         final double angleIncrement = (360.0 / directionCompass.size());
         final double halfAngleIncrement = angleIncrement / 2;
 
+        //TODO: COnstruct the vector from the resulting angles and use the angles of those vectors, otherwise it is not
         final Map<Pair<Double, Double>, BlockFace> result = new HashMap<>();
 
         for (BlockFace face : directionCompass) {
