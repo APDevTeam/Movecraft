@@ -1,17 +1,28 @@
 package net.countercraft.movecraft.listener;
 
+import com.google.common.base.Predicates;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
+import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+
 public class CraftPilotListener implements Listener {
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onCraftPilot(@NotNull CraftPilotEvent event) {
         // Walk through all signs and set a UUID in there
         final Craft craft = event.getCraft();
@@ -29,6 +40,81 @@ public class CraftPilotListener implements Listener {
 
             craft.markTileStateWithUUID(tile);
             tile.update();
+        }
+
+        // Tracked locations => Modify correctly with subcrafts
+        if (craft instanceof SubCraft subCraft && subCraft.getParent() != null) {
+            carryOverTrackedLocations(subCraft, subCraft.getParent());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onCraftRelease(@NotNull CraftReleaseEvent event) {
+        if (event.getReason() != CraftReleaseEvent.Reason.SUB_CRAFT) {
+            return;
+        }
+        Craft released = event.getCraft();
+        if (!(released instanceof SubCraft)) {
+            return;
+        }
+        SubCraft subCraft = (SubCraft) released;
+        if (subCraft.getParent() == null) {
+            return;
+        }
+
+        // Attention: SquadronCrafts are also subcrafts! We need to make sure that they are at least intersecting the parent when we add back the tracked locations
+        final HitBox parentHitBox = subCraft.getParent().getHitBox();
+        final HitBox subCraftHitBox = subCraft.getHitBox();
+
+        if (!parentHitBox.inBounds(subCraftHitBox.getMinX(), subCraftHitBox.getMinY(), subCraftHitBox.getMinZ())) {
+            if (!parentHitBox.inBounds(subCraftHitBox.getMaxX(), subCraftHitBox.getMaxY(), subCraftHitBox.getMaxZ())) {
+                // Subcraft cant possible be within its parent anymore
+                return;
+            }
+        }
+
+        transferTrackedLocations(subCraft, subCraft.getParent(), Predicates.alwaysTrue());
+    }
+
+    private static void carryOverTrackedLocations(SubCraft subCraft, Craft parent) {
+        if (parent.getWorld() != subCraft.getWorld()) {
+            return;
+        }
+
+        transferTrackedLocations(parent, subCraft, (trackedLocation) -> {
+            MovecraftLocation absolute = trackedLocation.getAbsoluteLocation();
+            if (subCraft.getHitBox().inBounds(absolute)) {
+                if (subCraft.getHitBox().contains(absolute)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    /*
+    * Transfers TrackedLocations from a craft A to a craft B with a optional filter.
+    * This MOVES the tracked locations, so keep that in mind
+    */
+    private static void transferTrackedLocations(final Craft a, final Craft b, Predicate<TrackedLocation> filterArgument) {
+        final MovecraftLocation bMidPoint = b.getHitBox().getMidPoint();
+
+        for (Map.Entry<NamespacedKey, Set<TrackedLocation>> entry : a.getTrackedLocations().entrySet()) {
+            Set<TrackedLocation> bTrackedLocations = b.getTrackedLocations().getOrDefault(entry.getKey(), Set.of());
+            Set<TrackedLocation> aTrackedLocations = entry.getValue();
+
+            if (aTrackedLocations.isEmpty()) {
+                continue;
+            }
+
+
+            aTrackedLocations.removeIf(trackedLocation -> {
+                if (filterArgument.test(trackedLocation)) {
+                    TrackedLocation trackedLocationB = new TrackedLocation(b, trackedLocation.getAbsoluteLocation().subtract(bMidPoint));
+                    return bTrackedLocations.add(trackedLocationB);
+                }
+                return false;
+            });
         }
     }
 
