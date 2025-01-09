@@ -110,8 +110,8 @@ public class CraftPilotListener implements Listener {
 
             aTrackedLocations.removeIf(trackedLocation -> {
                 if (filterArgument.test(trackedLocation)) {
-                    TrackedLocation trackedLocationB = new TrackedLocation(b, trackedLocation.getAbsoluteLocation().subtract(bMidPoint));
-                    return bTrackedLocations.add(trackedLocationB);
+                    trackedLocation.reset(b, trackedLocation.getAbsoluteLocation());
+                    return bTrackedLocations.add(trackedLocation);
                 }
                 return false;
             });
