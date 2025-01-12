@@ -50,6 +50,9 @@ public class TrackedLocation {
      * @param location
      */
     public void reset(@NotNull Craft craft, @NotNull MovecraftLocation location) {
+        if (craft == this.craft) {
+            return;
+        }
         if (this.craft != null) {
             if (!(
                     // From parent to subcraft
