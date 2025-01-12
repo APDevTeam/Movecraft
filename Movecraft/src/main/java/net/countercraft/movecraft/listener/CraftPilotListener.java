@@ -16,6 +16,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -100,8 +101,8 @@ public class CraftPilotListener implements Listener {
         final MovecraftLocation bMidPoint = b.getHitBox().getMidPoint();
 
         for (Map.Entry<NamespacedKey, Set<TrackedLocation>> entry : a.getTrackedLocations().entrySet()) {
-            Set<TrackedLocation> bTrackedLocations = b.getTrackedLocations().getOrDefault(entry.getKey(), Set.of());
-            Set<TrackedLocation> aTrackedLocations = entry.getValue();
+            final Set<TrackedLocation> bTrackedLocations = b.getTrackedLocations().computeIfAbsent(entry.getKey(), k -> new HashSet<>());
+            final Set<TrackedLocation> aTrackedLocations = entry.getValue();
 
             if (aTrackedLocations.isEmpty()) {
                 continue;
