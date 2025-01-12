@@ -24,8 +24,13 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -65,7 +70,7 @@ public abstract class BaseCraft implements Craft {
     private Component name = Component.empty();
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
-    private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
+    private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new ConcurrentHashMap<>();
 
     @NotNull
     private final CraftDataTagContainer dataTagContainer;
