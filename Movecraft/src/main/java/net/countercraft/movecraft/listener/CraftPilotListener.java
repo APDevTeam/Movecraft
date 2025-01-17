@@ -118,6 +118,9 @@ public class CraftPilotListener implements Listener {
                             transferred.add(trackedLocation);
                         }
                         System.out.println("Absolute After Transfer: " + trackedLocation.getAbsoluteLocation().toString());
+                        if (!absoluteLocation.equals(trackedLocation.getAbsoluteLocation())) {
+                            throw new IllegalStateException("Somehow the previous and transferred absolute locations are NOT the same! This should NEVER happen!");
+                        }
                         System.out.println("TRANSFERRING END");
                     } else {
                         bTrackedLocations.add(trackedLocation);
