@@ -32,9 +32,9 @@ public class TrackedLocation {
         MovecraftLocation newAbsolute = origin.add(vector);
         System.out.println("New absolute: " + newAbsolute.toString());
         // Ugly hack, but necessary
-        Craft actualCraft = this.craft;
-        this.craft = null;
-        reset(actualCraft, newAbsolute);
+        MovecraftLocation craftMidPoint = this.craft.getHitBox().getMidPoint();
+        this.offSet = newAbsolute.subtract(craftMidPoint);
+        System.out.println("New absolute after recalculating: " + this.getAbsoluteLocation().toString());
     }
 
     /**
