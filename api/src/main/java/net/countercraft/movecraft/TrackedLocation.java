@@ -28,7 +28,10 @@ public class TrackedLocation {
         MovecraftLocation vector = MathUtils.rotateVec(rotation, absolute.subtract(origin));
 
         MovecraftLocation newAbsolute = origin.add(vector);
-        reset(this.craft, newAbsolute);
+        // Ugly hack, but necessary
+        Craft actualCraft = this.craft;
+        this.craft = null;
+        reset(actualCraft, newAbsolute);
     }
 
     /**
