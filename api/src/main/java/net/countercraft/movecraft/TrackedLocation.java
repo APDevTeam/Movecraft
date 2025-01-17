@@ -24,7 +24,11 @@ public class TrackedLocation {
      * @param rotation A clockwise or counter-clockwise direction to rotate.
      */
     public void rotate(MovecraftRotation rotation, MovecraftLocation origin) {
-        offSet = MathUtils.rotateVec(rotation, getAbsoluteLocation().subtract(origin));
+        MovecraftLocation absolute = this.getAbsoluteLocation();
+        MovecraftLocation vector = MathUtils.rotateVec(rotation, absolute.subtract(origin));
+
+        MovecraftLocation newAbsolute = origin.add(vector);
+        offSet = offSet.add(newAbsolute.subtract(absolute));
     }
 
     /**
