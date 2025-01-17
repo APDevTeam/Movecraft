@@ -108,14 +108,17 @@ public class CraftPilotListener implements Listener {
             aTrackedLocations.forEach(trackedLocation -> {
                 if (filterArgument.test(trackedLocation)) {
                     if (move) {
-
                         final MovecraftLocation absoluteLocation = trackedLocation.getAbsoluteLocation();
+                        System.out.println("TRANSFERRING");
+                        System.out.println("Original absolute: " + absoluteLocation.toString());
                         trackedLocation.reset(b, absoluteLocation);
                         if (!(bTrackedLocations.add(trackedLocation))) {
                             trackedLocation.reset(a, absoluteLocation);
                         } else {
                             transferred.add(trackedLocation);
                         }
+                        System.out.println("Absolute After Transfer: " + trackedLocation.getAbsoluteLocation().toString());
+                        System.out.println("TRANSFERRING END");
                     } else {
                         bTrackedLocations.add(trackedLocation);
                     }

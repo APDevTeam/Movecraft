@@ -24,10 +24,13 @@ public class TrackedLocation {
      * @param rotation A clockwise or counter-clockwise direction to rotate.
      */
     public void rotate(MovecraftRotation rotation, MovecraftLocation origin) {
+        // TODO: SOMEHOW "absolute" and "origin" can end up to be the same thing?! WTF?!
         MovecraftLocation absolute = this.getAbsoluteLocation();
+        System.out.println("Absolute: " + absolute.toString());
         MovecraftLocation vector = MathUtils.rotateVec(rotation, absolute.subtract(origin));
 
         MovecraftLocation newAbsolute = origin.add(vector);
+        System.out.println("New absolute: " + newAbsolute.toString());
         // Ugly hack, but necessary
         Craft actualCraft = this.craft;
         this.craft = null;
@@ -72,6 +75,8 @@ public class TrackedLocation {
         }
         this.craft = craft;
         MovecraftLocation midPoint = craft.getHitBox().getMidPoint();
+        System.out.println("Location: " + location.toString());
+        System.out.println("Midpoint: " + midPoint.toString());
         offSet = location.subtract(midPoint);
     }
 
