@@ -56,7 +56,7 @@ public class CraftPilotListener implements Listener {
                     }
                 }
                 return false;
-            });
+            }, true);
         }
     }
 
@@ -85,14 +85,14 @@ public class CraftPilotListener implements Listener {
             }
         }
 
-        transferTrackedLocations(subCraft, subCraft.getParent(), Predicates.alwaysTrue());
+        transferTrackedLocations(subCraft, subCraft.getParent(), Predicates.alwaysTrue(), true);
     }
 
     /*
     * Transfers TrackedLocations from a craft A to a craft B with a optional filter.
     * This MOVES the tracked locations, so keep that in mind
     */
-    private static void transferTrackedLocations(final Craft a, final Craft b, Predicate<TrackedLocation> filterArgument) {
+    private static void transferTrackedLocations(final Craft a, final Craft b, Predicate<TrackedLocation> filterArgument, boolean move) {
         final MovecraftLocation bMidPoint = b.getHitBox().getMidPoint();
 
         for (Map.Entry<NamespacedKey, Set<TrackedLocation>> entry : a.getTrackedLocations().entrySet()) {
@@ -103,15 +103,21 @@ public class CraftPilotListener implements Listener {
                 continue;
             }
 
+            // Commented out code: previous attempt to actually transfer the tracked locations, which technically is unnecessary unless for subcrafts like squadrons that actually move!
             List<TrackedLocation> transferred = new ArrayList<>();
             aTrackedLocations.forEach(trackedLocation -> {
                 if (filterArgument.test(trackedLocation)) {
-                    final MovecraftLocation absoluteLocation = trackedLocation.getAbsoluteLocation();
-                    trackedLocation.reset(b, absoluteLocation);
-                    if (!(bTrackedLocations.add(trackedLocation))) {
-                        trackedLocation.reset(a, absoluteLocation);
+                    if (move) {
+
+                        final MovecraftLocation absoluteLocation = trackedLocation.getAbsoluteLocation();
+                        trackedLocation.reset(b, absoluteLocation);
+                        if (!(bTrackedLocations.add(trackedLocation))) {
+                            trackedLocation.reset(a, absoluteLocation);
+                        } else {
+                            transferred.add(trackedLocation);
+                        }
                     } else {
-                        transferred.add(trackedLocation);
+                        bTrackedLocations.add(trackedLocation);
                     }
                 }
             });
