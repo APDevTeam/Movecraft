@@ -28,7 +28,7 @@ public class TrackedLocation {
         MovecraftLocation vector = MathUtils.rotateVec(rotation, absolute.subtract(origin));
 
         MovecraftLocation newAbsolute = origin.add(vector);
-        offSet = offSet.add(newAbsolute.subtract(absolute));
+        reset(this.craft, newAbsolute);
     }
 
     /**
@@ -70,6 +70,10 @@ public class TrackedLocation {
         this.craft = craft;
         MovecraftLocation midPoint = craft.getHitBox().getMidPoint();
         offSet = location.subtract(midPoint);
+    }
+
+    public void reset(@NotNull MovecraftLocation location) {
+        this.reset(this.craft, location);
     }
 
 }
