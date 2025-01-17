@@ -8,6 +8,7 @@ import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
+import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -16,9 +17,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class CraftPilotListener implements Listener {
@@ -45,7 +44,19 @@ public class CraftPilotListener implements Listener {
 
         // Tracked locations => Modify correctly with subcrafts
         if (craft instanceof SubCraft subCraft && subCraft.getParent() != null) {
-            carryOverTrackedLocations(subCraft, subCraft.getParent());
+            final Craft parent = subCraft.getParent();
+            if (parent.getWorld() != subCraft.getWorld()) {
+                return;
+            }
+            transferTrackedLocations(parent, subCraft, (trackedLocation) -> {
+                MovecraftLocation absolute = trackedLocation.getAbsoluteLocation();
+                if (subCraft.getHitBox().inBounds(absolute)) {
+                    if (subCraft.getHitBox().contains(absolute)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
         }
     }
 
@@ -77,22 +88,6 @@ public class CraftPilotListener implements Listener {
         transferTrackedLocations(subCraft, subCraft.getParent(), Predicates.alwaysTrue());
     }
 
-    private static void carryOverTrackedLocations(SubCraft subCraft, Craft parent) {
-        if (parent.getWorld() != subCraft.getWorld()) {
-            return;
-        }
-
-        transferTrackedLocations(parent, subCraft, (trackedLocation) -> {
-            MovecraftLocation absolute = trackedLocation.getAbsoluteLocation();
-            if (subCraft.getHitBox().inBounds(absolute)) {
-                if (subCraft.getHitBox().contains(absolute)) {
-                    return true;
-                }
-            }
-            return false;
-        });
-    }
-
     /*
     * Transfers TrackedLocations from a craft A to a craft B with a optional filter.
     * This MOVES the tracked locations, so keep that in mind
@@ -108,14 +103,19 @@ public class CraftPilotListener implements Listener {
                 continue;
             }
 
-
-            aTrackedLocations.removeIf(trackedLocation -> {
+            List<TrackedLocation> transferred = new ArrayList<>();
+            aTrackedLocations.forEach(trackedLocation -> {
                 if (filterArgument.test(trackedLocation)) {
-                    trackedLocation.reset(b, trackedLocation.getAbsoluteLocation());
-                    return bTrackedLocations.add(trackedLocation);
+                    final MovecraftLocation absoluteLocation = trackedLocation.getAbsoluteLocation();
+                    trackedLocation.reset(b, absoluteLocation);
+                    if (!(bTrackedLocations.add(trackedLocation))) {
+                        trackedLocation.reset(a, absoluteLocation);
+                    } else {
+                        transferred.add(trackedLocation);
+                    }
                 }
-                return false;
             });
+            aTrackedLocations.removeAll(transferred);
         }
     }
 
