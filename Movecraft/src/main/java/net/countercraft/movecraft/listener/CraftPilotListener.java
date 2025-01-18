@@ -8,7 +8,6 @@ import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -108,20 +107,17 @@ public class CraftPilotListener implements Listener {
             aTrackedLocations.forEach(trackedLocation -> {
                 if (filterArgument.test(trackedLocation)) {
                     if (move) {
+                        // Technically this (the reset call) is not necessary, but we will keep it here for potential extensions by third party addons
                         final MovecraftLocation absoluteLocation = trackedLocation.getAbsoluteLocation();
-                        System.out.println("TRANSFERRING");
-                        System.out.println("Original absolute: " + absoluteLocation.toString());
-                        trackedLocation.reset(b, absoluteLocation);
+                        trackedLocation.reset(absoluteLocation);
                         if (!(bTrackedLocations.add(trackedLocation))) {
-                            trackedLocation.reset(a, absoluteLocation);
+                            trackedLocation.reset(absoluteLocation);
                         } else {
                             transferred.add(trackedLocation);
                         }
-                        System.out.println("Absolute After Transfer: " + trackedLocation.getAbsoluteLocation().toString());
                         if (!absoluteLocation.equals(trackedLocation.getAbsoluteLocation())) {
                             throw new IllegalStateException("Somehow the previous and transferred absolute locations are NOT the same! This should NEVER happen!");
                         }
-                        System.out.println("TRANSFERRING END");
                     } else {
                         bTrackedLocations.add(trackedLocation);
                     }
