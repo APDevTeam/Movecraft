@@ -3,6 +3,7 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
@@ -318,6 +319,8 @@ public class TranslationTask extends AsyncTask {
             }
         }
 
+        updateTrackedLocations(craft, dx, dy, dz);
+
         if (!collisionBox.isEmpty() && craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
             CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.EMPTY, false);
             for (MovecraftLocation location : oldHitBox) {
@@ -337,6 +340,16 @@ public class TranslationTask extends AsyncTask {
         //prevents torpedo and rocket pilots
         preventsTorpedoRocketsPilots();
         captureYield(harvestedBlocks);
+    }
+
+    protected void updateTrackedLocations(Craft craft, int dx, int dy, int dz) {
+        craft.getTrackedLocations().values().forEach(trackedLocations -> {
+            trackedLocations.forEach(
+                    trackedLocation -> {
+                        trackedLocation.translate(dx, dy, dz);
+                    }
+            );
+        });
     }
 
     private void preventsTorpedoRocketsPilots() {
