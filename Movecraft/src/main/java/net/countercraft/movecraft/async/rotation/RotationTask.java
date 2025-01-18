@@ -166,10 +166,7 @@ public class RotationTask extends AsyncTask {
         //do {
             for (Set<TrackedLocation> locations : temp.getTrackedLocations().values()) {
                 for (TrackedLocation location : locations) {
-                    System.out.println("ROTATING");
-                    System.out.println("Original absolute: " + location.getAbsoluteLocation());
                     location.rotate(rotation, originPoint);
-                    System.out.println("ROTATING END");
                 }
             }
         //} while (temp instanceof SubCraft && (temp = ((SubCraft) temp).getParent()) != null);
