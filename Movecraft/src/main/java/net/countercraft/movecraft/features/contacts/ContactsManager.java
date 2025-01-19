@@ -339,75 +339,79 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         return result;
     }
 
-    static Map<Pair<Double, Double>, BlockFace> DIRECTION_MAPPING_4 = calcDirectionMapping4();
-    static Map<Pair<Double, Double>, BlockFace> DIRECTION_MAPPING_8 = calcDirectionMapping8();
-    static Map<Pair<Double, Double>, BlockFace> DIRECTION_MAPPING_16 = calcDirectionMapping16();
+    static BlockFace[] DIRECTION_MAPPING_4 = calcDirectionMapping4();
+    static BlockFace[] DIRECTION_MAPPING_8 = calcDirectionMapping8();
+    static BlockFace[] DIRECTION_MAPPING_16 = calcDirectionMapping16();
 
-    static Map<Pair<Double, Double>, BlockFace> calcDirectionMapping4() {
-        List<BlockFace> directionCompass = new ArrayList<>();
-        directionCompass.add(BlockFace.NORTH);
-        directionCompass.add(BlockFace.EAST);
-        directionCompass.add(BlockFace.SOUTH);
-        directionCompass.add(BlockFace.WEST);
-
-        return calcDirectionMapping(directionCompass);
+    static BlockFace[] calcDirectionMapping4() {
+        List<BlockFace> list = List.of(
+                BlockFace.NORTH,
+                BlockFace.EAST,
+                BlockFace.SOUTH,
+                BlockFace.WEST
+        );
+        return calcDirectionMapping(list);
     }
 
-    static Map<Pair<Double, Double>, BlockFace> calcDirectionMapping8() {
-        List<BlockFace> directionCompass = new ArrayList<>();
-        directionCompass.add(BlockFace.NORTH);
-        directionCompass.add(BlockFace.NORTH_EAST);
-        directionCompass.add(BlockFace.EAST);
-        directionCompass.add(BlockFace.SOUTH_EAST);
-        directionCompass.add(BlockFace.SOUTH);
-        directionCompass.add(BlockFace.SOUTH_WEST);
-        directionCompass.add(BlockFace.WEST);
-        directionCompass.add(BlockFace.NORTH_WEST);
-
-        return calcDirectionMapping(directionCompass);
+    static BlockFace[] calcDirectionMapping8() {
+        List<BlockFace> list = List.of(
+                BlockFace.NORTH,
+                BlockFace.NORTH_EAST,
+                BlockFace.EAST,
+                BlockFace.SOUTH_EAST,
+                BlockFace.SOUTH,
+                BlockFace.SOUTH_WEST,
+                BlockFace.WEST,
+                BlockFace.NORTH_WEST
+        );
+        return calcDirectionMapping(list);
     }
 
-    static Map<Pair<Double, Double>, BlockFace> calcDirectionMapping16() {
-        List<BlockFace> directionCompass = new ArrayList<>();
-        directionCompass.add(BlockFace.NORTH);
-        directionCompass.add(BlockFace.NORTH_NORTH_EAST);
-        directionCompass.add(BlockFace.NORTH_EAST);
-        directionCompass.add(BlockFace.EAST_NORTH_EAST);
-        directionCompass.add(BlockFace.EAST);
-        directionCompass.add(BlockFace.EAST_SOUTH_EAST);
-        directionCompass.add(BlockFace.SOUTH_EAST);
-        directionCompass.add(BlockFace.SOUTH_SOUTH_EAST);
-        directionCompass.add(BlockFace.SOUTH);
-        directionCompass.add(BlockFace.SOUTH_SOUTH_WEST);
-        directionCompass.add(BlockFace.SOUTH_WEST);
-        directionCompass.add(BlockFace.WEST_SOUTH_WEST);
-        directionCompass.add(BlockFace.WEST);
-        directionCompass.add(BlockFace.WEST_NORTH_WEST);
-        directionCompass.add(BlockFace.NORTH_WEST);
-        directionCompass.add(BlockFace.NORTH_NORTH_WEST);
-
-        return calcDirectionMapping(directionCompass);
+    static BlockFace[] calcDirectionMapping16() {
+        List<BlockFace> list = List.of(
+                BlockFace.NORTH,
+                BlockFace.NORTH_NORTH_EAST,
+                BlockFace.NORTH_EAST,
+                BlockFace.EAST_NORTH_EAST,
+                BlockFace.EAST,
+                BlockFace.EAST_SOUTH_EAST,
+                BlockFace.SOUTH_EAST,
+                BlockFace.SOUTH_SOUTH_EAST,
+                BlockFace.SOUTH,
+                BlockFace.SOUTH_SOUTH_WEST,
+                BlockFace.SOUTH_WEST,
+                BlockFace.WEST_SOUTH_WEST,
+                BlockFace.WEST,
+                BlockFace.WEST_NORTH_WEST,
+                BlockFace.NORTH_WEST,
+                BlockFace.NORTH_NORTH_WEST
+        );
+        return calcDirectionMapping(list);
     }
 
-    static Map<Pair<Double, Double>, BlockFace> calcDirectionMapping(List<BlockFace> directionCompass) {
-        final double angleIncrement = (360.0 / directionCompass.size());
-        final double halfAngleIncrement = angleIncrement / 2;
-
-        //TODO: COnstruct the vector from the resulting angles and use the angles of those vectors, otherwise it is not
-        final Map<Pair<Double, Double>, BlockFace> result = new HashMap<>();
-
-        for (BlockFace face : directionCompass) {
-            double angle = getAngleAroundYAxis(face.getModX(), face.getModZ());
-            double borderLeft = angle - halfAngleIncrement;
-            double borderRight = angle + halfAngleIncrement;
-            result.put(new Pair<>(borderLeft, borderRight), face);
+    static BlockFace[] calcDirectionMapping(final List<BlockFace> entries) {
+        BlockFace[] result = new BlockFace[entries.size()];
+        int entriesCalculated = 0;
+        for (BlockFace entry : entries) {
+            double degrees = getAngleAroundYAxis(entry.getModX(), entry.getModZ());
+            int index = getIndexOnArray(degrees, result.length);
+            if (index >= 0 && index < result.length) {
+                entriesCalculated++;
+                result[index] = entry;
+            }
         }
-
+        if (entriesCalculated != result.length) {
+            throw new IllegalStateException("Calculated array does not make sense!");
+        }
         return result;
     }
 
     static final double getAngleAroundYAxis(final Vector2d vector) {
-        return Math.atan2(-vector.x(), vector.y()) * 180 / Math.PI;
+        double degrees = Math.toDegrees(Math.atan2(-vector.x(), vector.y()));
+        while (degrees < 0) {
+            degrees += 360.0D;
+        }
+        return degrees;
     }
 
     static final double getAngleAroundYAxis(final double x, final double z) {
@@ -422,24 +426,28 @@ public class ContactsManager extends BukkitRunnable implements Listener {
 
         // Alternatively calculate the angle around the Y axis for this vector and then choose the direction that is closest to this angle
         // Or divide by 16 and round, that should get the closest value
-        double angle = getAngleAroundYAxis(vector.x(), vector.y());
+        double angleDegrees = getAngleAroundYAxis(vector.x(), vector.y());
 
-        final Map<Pair<Double, Double>, BlockFace> directionMap = grabDirectionMap(vector.lengthSquared());
-
-        for (Map.Entry<Pair<Double, Double>, BlockFace> entry : directionMap.entrySet()) {
-            final Pair<Double, Double> filter = entry.getKey();
-            if (filter.getLeft() <= angle && filter.getRight() >= angle) {
-                return entry.getValue();
-            }
+        final BlockFace[] directionMap = grabDirectionMap(vector.lengthSquared());
+        int index = getIndexOnArray(angleDegrees, directionMap.length);
+        if (index >= 0 && index < directionMap.length) {
+            return directionMap[index];
         }
+
         return BlockFace.SELF;
+    }
+
+    static int getIndexOnArray(double angleDegrees, int arrayLength) {
+        final double divisor = 360.0D / arrayLength;
+        int index = (int) Math.round(angleDegrees / divisor) % arrayLength;
+        return index;
     }
 
     // TODO: Make this dependant on the max settings for contacts and use percentages!
     static final double RANGE_FOR_16_DIRECTIONS = 512 * 512;
     static final double RANGE_FOR_8_DIRECTIONS = 1024 * 1024;
 
-    static Map<Pair<Double, Double>, BlockFace> grabDirectionMap(double lengthSquared) {
+    static BlockFace[] grabDirectionMap(double lengthSquared) {
         if (lengthSquared < RANGE_FOR_16_DIRECTIONS) {
             return DIRECTION_MAPPING_16;
         }
