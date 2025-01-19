@@ -43,6 +43,12 @@ public class PlayerCraftImpl extends BaseCraft implements PlayerCraft {
         if (this.pilot.get() == null) {
             this.pilot = new WeakReference<> (Bukkit.getPlayer(this.getPilotUUID()));
             this.setAudience(this.pilot.get());
+        } else {
+            Player bukkitPilot = Bukkit.getPlayer(this.getPilotUUID());
+            if (!this.pilot.get().isOnline() || (this.pilot.get() != bukkitPilot)) {
+                this.pilot = new WeakReference<> (bukkitPilot);
+                this.setAudience(this.pilot.get());
+            }
         }
         return this.pilot.get();
     }
