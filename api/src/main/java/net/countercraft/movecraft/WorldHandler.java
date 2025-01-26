@@ -16,6 +16,7 @@ public abstract class WorldHandler {
     public abstract void setBlockFast(@NotNull Location location, @NotNull BlockData data);
     public abstract void setBlockFast(@NotNull Location location, @NotNull MovecraftRotation rotation, @NotNull BlockData data);
 
+    @Deprecated
     public static @NotNull String getPackageName(@NotNull String minecraftVersion) {
         String[] parts = minecraftVersion.split("\\.");
         if (parts.length < 2)

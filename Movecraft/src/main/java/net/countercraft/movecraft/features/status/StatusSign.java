@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.features.status;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -23,6 +24,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 public final class StatusSign implements Listener {
+
+    @Inject
+    public StatusSign(){}
 
     @EventHandler
     public void onCraftDetect(CraftDetectEvent event) {
