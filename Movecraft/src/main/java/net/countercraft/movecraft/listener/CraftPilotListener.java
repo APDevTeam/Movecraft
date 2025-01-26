@@ -109,9 +109,9 @@ public class CraftPilotListener implements Listener {
                     if (move) {
                         // Technically this (the reset call) is not necessary, but we will keep it here for potential extensions by third party addons
                         final MovecraftLocation absoluteLocation = trackedLocation.getAbsoluteLocation();
-                        trackedLocation.reset(absoluteLocation);
+                        trackedLocation.reset(b, absoluteLocation);
                         if (!(bTrackedLocations.add(trackedLocation))) {
-                            trackedLocation.reset(absoluteLocation);
+                            trackedLocation.reset(a, absoluteLocation);
                         } else {
                             transferred.add(trackedLocation);
                         }

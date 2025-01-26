@@ -163,6 +163,7 @@ public class RotationTask extends AsyncTask {
 
         // Rotates the craft's tracked locations, and all parent craft's.
         Craft temp = craft;
+        // recursion through all subcrafts is not necessary as the trackedlocations are transferred to the subcraft
         //do {
             for (Set<TrackedLocation> locations : temp.getTrackedLocations().values()) {
                 for (TrackedLocation location : locations) {
