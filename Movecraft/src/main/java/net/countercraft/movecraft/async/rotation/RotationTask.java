@@ -162,17 +162,16 @@ public class RotationTask extends AsyncTask {
         }
 
         // Rotates the craft's tracked locations, and all parent craft's.
+        craft.getCraftOrigin().rotate(originPoint, rotation);
         Craft temp = craft;
         // recursion through all subcrafts is not necessary as the trackedlocations are transferred to the subcraft
         //do {
             for (Set<TrackedLocation> locations : temp.getTrackedLocations().values()) {
                 for (TrackedLocation location : locations) {
-                    location.rotate(rotation, originPoint);
+                    location.rotate(rotation);
                 }
             }
         //} while (temp instanceof SubCraft && (temp = ((SubCraft) temp).getParent()) != null);
-        // Lastly, rotate the refernce point as the trackedlocations need the center at the old location while it rotates!!
-        craft.getCraftOrigin().rotate(originPoint, rotation);
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         //rotate entities in the craft
