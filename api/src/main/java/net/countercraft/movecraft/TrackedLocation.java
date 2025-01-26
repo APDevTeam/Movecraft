@@ -58,8 +58,8 @@ public class TrackedLocation {
         Craft.CraftOrigin origin = craft.getCraftOrigin();
 
         int x = origin.getX() + this.dx;
-        int y = origin.getX() + this.dy;
-        int z = origin.getX() + this.dz;
+        int y = origin.getY() + this.dy;
+        int z = origin.getZ() + this.dz;
 
         return new MovecraftLocation(x, y, z);
     }
