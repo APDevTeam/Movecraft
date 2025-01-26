@@ -40,7 +40,9 @@ import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3i;
 
+import javax.naming.Name;
 import java.util.*;
 
 public interface Craft {
@@ -51,12 +53,74 @@ public interface Craft {
     CraftDataTagKey<Counter<RequiredBlockEntry>> MOVEBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "moveblocks"), craft -> new Counter<>());
     CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);
     CraftDataTagKey<Integer> NON_NEGLIGIBLE_SOLID_BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "non-negligible-solid-blocks"), Craft::getOrigBlockCount);
+    CraftDataTagKey<CraftOrigin> CRAFT_ORIGIN = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "craft-origin"), CraftOrigin::new);
 
     // Java disallows private or protected fields in interfaces, this is a workaround
     class Hidden {
         // Concurrent so we don't have problems when accessing async (useful for addon plugins that want to do stuff async, for example NPC crafts with complex off-thread pathfinding)
         protected static final Map<UUID, Craft> uuidToCraft = Collections.synchronizedMap(new WeakHashMap<>());
     }
+
+    public class CraftOrigin {
+
+        private int x;
+        private int y;
+        private int z;
+
+        public CraftOrigin(final @NotNull Craft craft) {
+
+        }
+
+        public void translate(int dx, int dy, int dz) {
+            this.x += dx;
+            this.y += dy;
+            this.z += dz;
+        }
+
+        public void rotate(final MovecraftLocation rotationPoint, final MovecraftRotation rotation) {
+            MovecraftLocation oldAbsolute = this.getLocation();
+            MovecraftLocation vector = oldAbsolute.subtract(rotationPoint);
+            MovecraftLocation vectorRotated = MathUtils.rotateVec(rotation, vector);
+            MovecraftLocation newAbsolute = rotationPoint.add(vectorRotated);
+            this.copyValues(newAbsolute);
+        }
+
+        public void copyValues(final MovecraftLocation location) {
+            this.x = location.getX();
+            this.y = location.getY();
+            this.z = location.getZ();
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public void setX(int x) {
+            this.x = x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public void setY(int y) {
+            this.y = y;
+        }
+
+        public int getZ() {
+            return z;
+        }
+
+        public void setZ(int z) {
+            this.z = z;
+        }
+
+        public MovecraftLocation getLocation() {
+            return new MovecraftLocation(x, y, z);
+        }
+
+    }
+
     public static Craft getCraftByUUID(final UUID uuid) {
         return Hidden.uuidToCraft.getOrDefault(uuid, null);
     }
@@ -293,4 +357,8 @@ public interface Craft {
     }
 
     Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations();
+
+    public default CraftOrigin getCraftOrigin() {
+        return this.getDataTag(CRAFT_ORIGIN);
+    }
 }
