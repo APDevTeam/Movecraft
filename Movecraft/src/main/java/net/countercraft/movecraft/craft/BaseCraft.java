@@ -540,6 +540,9 @@ public abstract class BaseCraft implements Craft {
     @Override
     @NotNull
     public Audience getAudience() {
+        if (this.audience == null) {
+            return Audience.empty();
+        }
         return audience;
     }
 
