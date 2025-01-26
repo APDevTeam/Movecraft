@@ -41,11 +41,11 @@ public class TrackedLocation {
      * Rotates the stored location.
      * @param rotation A clockwise or counter-clockwise direction to rotate.
      */
-    public void rotate(MovecraftRotation rotation, MovecraftLocation origin) {
+    public void rotate(MovecraftRotation rotation, MovecraftLocation rotationPoint) {
         MovecraftLocation absolute = this.getAbsoluteLocation();
-        MovecraftLocation vector = MathUtils.rotateVec(rotation, absolute.subtract(origin));
+        MovecraftLocation vector = MathUtils.rotateVec(rotation, absolute.subtract(rotationPoint));
 
-        MovecraftLocation newAbsolute = origin.add(vector);
+        MovecraftLocation newAbsolute = rotationPoint.add(vector);
         reinit(newAbsolute);
     }
 

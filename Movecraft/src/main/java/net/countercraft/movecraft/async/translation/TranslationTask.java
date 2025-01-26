@@ -319,7 +319,8 @@ public class TranslationTask extends AsyncTask {
             }
         }
 
-        updateTrackedLocations(craft, dx, dy, dz);
+        // Update the reference location for trackedlocations
+        craft.getCraftOrigin().translate(dx, dy, dz);
 
         if (!collisionBox.isEmpty() && craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
             CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.EMPTY, false);
@@ -340,16 +341,6 @@ public class TranslationTask extends AsyncTask {
         //prevents torpedo and rocket pilots
         preventsTorpedoRocketsPilots();
         captureYield(harvestedBlocks);
-    }
-
-    protected void updateTrackedLocations(Craft craft, int dx, int dy, int dz) {
-        craft.getTrackedLocations().values().forEach(trackedLocations -> {
-            trackedLocations.forEach(
-                    trackedLocation -> {
-                        trackedLocation.translate(dx, dy, dz);
-                    }
-            );
-        });
     }
 
     private void preventsTorpedoRocketsPilots() {
