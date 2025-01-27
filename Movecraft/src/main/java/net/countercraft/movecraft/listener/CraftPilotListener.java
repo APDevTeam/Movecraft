@@ -47,15 +47,7 @@ public class CraftPilotListener implements Listener {
             if (parent.getWorld() != subCraft.getWorld()) {
                 return;
             }
-            transferTrackedLocations(parent, subCraft, (trackedLocation) -> {
-                MovecraftLocation absolute = trackedLocation.getAbsoluteLocation();
-                if (subCraft.getHitBox().inBounds(absolute)) {
-                    if (subCraft.getHitBox().contains(absolute)) {
-                        return true;
-                    }
-                }
-                return false;
-            }, true);
+            transferTrackedLocations(parent, subCraft, (trackedLocation) -> subCraft.getHitBox().inBounds(trackedLocation.getAbsoluteLocation()) && subCraft.getHitBox().contains(trackedLocation.getAbsoluteLocation()), true);
         }
     }
 
