@@ -63,60 +63,25 @@ public interface Craft {
 
     public class CraftOrigin {
 
-        private int x;
-        private int y;
-        private int z;
+        private MovecraftLocation location;
 
         public CraftOrigin(final @NotNull Craft craft) {
-
+            this.location = craft.getHitbox().getMidPoint();
         }
 
         public void translate(int dx, int dy, int dz) {
-            this.x += dx;
-            this.y += dy;
-            this.z += dz;
+            this.location = this.location.translate(dx, dy, dz);
         }
 
         public void rotate(final MovecraftLocation rotationPoint, final MovecraftRotation rotation) {
             MovecraftLocation oldAbsolute = this.getLocation();
             MovecraftLocation vector = oldAbsolute.subtract(rotationPoint);
             MovecraftLocation vectorRotated = MathUtils.rotateVec(rotation, vector);
-            MovecraftLocation newAbsolute = rotationPoint.add(vectorRotated);
-            this.copyValues(newAbsolute);
-        }
-
-        public void copyValues(final MovecraftLocation location) {
-            this.x = location.getX();
-            this.y = location.getY();
-            this.z = location.getZ();
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public void setX(int x) {
-            this.x = x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        public void setY(int y) {
-            this.y = y;
-        }
-
-        public int getZ() {
-            return z;
-        }
-
-        public void setZ(int z) {
-            this.z = z;
+            this.location = rotationPoint.add(vectorRotated);
         }
 
         public MovecraftLocation getLocation() {
-            return new MovecraftLocation(x, y, z);
+            return this.location;
         }
 
     }
