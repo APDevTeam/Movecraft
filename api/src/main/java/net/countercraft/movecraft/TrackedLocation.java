@@ -10,9 +10,7 @@ import java.util.HashSet;
 
 public class TrackedLocation {
 
-    private int dx;
-    private int dy;
-    private int dz;
+    private MovecraftLocation vector;
 
     private WeakReference<Craft> craft;
 
@@ -28,15 +26,9 @@ public class TrackedLocation {
     }
 
     protected void reinit(@NotNull MovecraftLocation location) {
-        reinit(location.getX(), location.getY(), location.getZ());
-    }
-
-    protected void reinit(final int x, final int y, final int z) {
         Craft craft = this.getCraft();
         Craft.CraftOrigin origin = craft.getCraftOrigin();
-        this.dx = x - origin.getX();
-        this.dy = y - origin.getY();
-        this.dz = z - origin.getZ();
+        this.vector = location.subtract(origin);
     }
 
     /**
@@ -59,11 +51,7 @@ public class TrackedLocation {
      * @param rotation A clockwise or counter-clockwise direction to rotate.
      */
     public void rotate(MovecraftRotation rotation) {
-        MovecraftLocation newVector = MathUtils.rotateVec(rotation, new MovecraftLocation(this.dx, this.dy, this.dz));
-
-        this.dx = newVector.getX();
-        this.dy = newVector.getY();
-        this.dz = newVector.getZ();
+        this.vector = MathUtils.rotateVec(rotation, new MovecraftLocation(this.dx, this.dy, this.dz));
     }
 
     /**
@@ -74,11 +62,7 @@ public class TrackedLocation {
         Craft craft = this.getCraft();
         Craft.CraftOrigin origin = craft.getCraftOrigin();
 
-        int x = origin.getX() + this.dx;
-        int y = origin.getY() + this.dy;
-        int z = origin.getZ() + this.dz;
-
-        return new MovecraftLocation(x, y, z);
+        return this.vector.add(origin);
     }
 
     /**
