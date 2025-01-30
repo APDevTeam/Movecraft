@@ -132,7 +132,7 @@ flyblocks:
         - 2.0
     furnace: # Furnaces for cargo? really guys?
         - 0.0
-        - N50
+        - 50
     "#anvil": # anvils are OP armor, so limit it
         - 0.0
         - 1.0
