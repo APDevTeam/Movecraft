@@ -5,22 +5,29 @@ import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 
 public class TrackedLocation {
-    private MovecraftLocation offSet;
-    private final Craft craft;
+
+    private MovecraftLocation vector;
+
+    private WeakReference<Craft> craft;
 
     /**
      * Creates a new TrackedLocation instance which tracks a location about a craft's midpoint.
-     * @param craft The craft that's that tied to the location.
+     * @param craft The craft this trackedlocation belongs to
      * @param location The absolute position to track. This location will be stored as a relative
      *                 location to the craft's central hitbox.
      */
     public TrackedLocation(@NotNull Craft craft, @NotNull MovecraftLocation location) {
-        this.craft = craft;
-        MovecraftLocation midPoint = craft.getHitBox().getMidPoint();
-        offSet = location.subtract(midPoint);
+        this.craft = new WeakReference<>(craft);
+        reinit(location);
+    }
+
+    protected void reinit(@NotNull MovecraftLocation location) {
+        Craft craft = this.getCraft();
+        this.vector = location.subtract(craft.getCraftOrigin());
     }
 
     /**
@@ -42,8 +49,8 @@ public class TrackedLocation {
      * Rotates the stored location.
      * @param rotation A clockwise or counter-clockwise direction to rotate.
      */
-    public void rotate(MovecraftRotation rotation, MovecraftLocation origin) {
-        offSet = MathUtils.rotateVec(rotation, getAbsoluteLocation().subtract(origin));
+    public void rotate(MovecraftRotation rotation) {
+        this.vector = MathUtils.rotateVec(rotation, this.vector);
     }
 
     /**
@@ -51,16 +58,18 @@ public class TrackedLocation {
      * @return Returns the absolute location instead of a vector.
      */
     public MovecraftLocation getAbsoluteLocation() {
-        MovecraftLocation midPoint = craft.getHitBox().getMidPoint();
-        return offSet.add(midPoint);
+        Craft craft = this.getCraft();
+        return this.vector.add(craft.getCraftOrigin());
     }
 
     /**
-     * Gets the stored location as a position vector relative to the midpoint.
-     * @return Returns the absolute location instead of a vector.
+     * NEVER USE THIS UNLESS ABSOLUTELY NECESSARY
+     * @param craft
+     * @param location
      */
-    public MovecraftLocation getOffSet() {
-        return offSet;
+    public void reset(@NotNull Craft craft, @NotNull MovecraftLocation location) {
+        this.craft = new WeakReference<>(craft);
+        reinit(location);
     }
 
     /**
@@ -68,6 +77,9 @@ public class TrackedLocation {
      * @return Returns the craft.
      */
     public Craft getCraft() {
-        return craft;
+        if (this.craft.get() == null) {
+            throw new RuntimeException("Craft of tracked location is null! This indicates that the craft object was destroyed but somehow the tracked location is still around!");
+        }
+        return this.craft.get();
     }
 }
