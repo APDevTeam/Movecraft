@@ -27,8 +27,7 @@ public class TrackedLocation {
 
     protected void reinit(@NotNull MovecraftLocation location) {
         Craft craft = this.getCraft();
-        Craft.CraftOrigin origin = craft.getCraftOrigin();
-        this.vector = location.subtract(origin);
+        this.vector = location.subtract(craft.getCraftOrigin());
     }
 
     /**
@@ -51,7 +50,7 @@ public class TrackedLocation {
      * @param rotation A clockwise or counter-clockwise direction to rotate.
      */
     public void rotate(MovecraftRotation rotation) {
-        this.vector = MathUtils.rotateVec(rotation, new MovecraftLocation(this.dx, this.dy, this.dz));
+        this.vector = MathUtils.rotateVec(rotation, this.vector);
     }
 
     /**
@@ -60,9 +59,7 @@ public class TrackedLocation {
      */
     public MovecraftLocation getAbsoluteLocation() {
         Craft craft = this.getCraft();
-        Craft.CraftOrigin origin = craft.getCraftOrigin();
-
-        return this.vector.add(origin);
+        return this.vector.add(craft.getCraftOrigin());
     }
 
     /**
