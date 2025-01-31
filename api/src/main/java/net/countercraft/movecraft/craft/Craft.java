@@ -56,37 +56,14 @@ public interface Craft {
     CraftDataTagKey<Counter<RequiredBlockEntry>> MOVEBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "moveblocks"), craft -> new Counter<>());
     CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);
     CraftDataTagKey<Integer> NON_NEGLIGIBLE_SOLID_BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "non-negligible-solid-blocks"), Craft::getOrigBlockCount);
-    CraftDataTagKey<CraftOrigin> CRAFT_ORIGIN = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "craft-origin"), CraftOrigin::new);
+    CraftDataTagKey<MovecraftLocation> CRAFT_ORIGIN = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "craft-origin"), craft -> {
+        return craft.getHitBox().getMidPoint();
+    });
 
     // Java disallows private or protected fields in interfaces, this is a workaround
     class Hidden {
         // Concurrent so we don't have problems when accessing async (useful for addon plugins that want to do stuff async, for example NPC crafts with complex off-thread pathfinding)
         protected static final Map<UUID, Craft> uuidToCraft = Collections.synchronizedMap(new WeakHashMap<>());
-    }
-
-    public class CraftOrigin {
-
-        private MovecraftLocation location;
-
-        public CraftOrigin(final @NotNull Craft craft) {
-            this.location = craft.getHitbox().getMidPoint();
-        }
-
-        public void translate(int dx, int dy, int dz) {
-            this.location = this.location.translate(dx, dy, dz);
-        }
-
-        public void rotate(final MovecraftLocation rotationPoint, final MovecraftRotation rotation) {
-            MovecraftLocation oldAbsolute = this.getLocation();
-            MovecraftLocation vector = oldAbsolute.subtract(rotationPoint);
-            MovecraftLocation vectorRotated = MathUtils.rotateVec(rotation, vector);
-            this.location = rotationPoint.add(vectorRotated);
-        }
-
-        public MovecraftLocation getLocation() {
-            return this.location;
-        }
-
     }
 
     public static Craft getCraftByUUID(final UUID uuid) {
@@ -345,7 +322,7 @@ public interface Craft {
         return 1;
     }
 
-    public default CraftOrigin getCraftOrigin() {
+    public default MovecraftLocation getCraftOrigin() {
         return this.getDataTag(CRAFT_ORIGIN);
     }
 }

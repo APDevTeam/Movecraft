@@ -323,7 +323,7 @@ public class TranslationTask extends AsyncTask {
         }
 
         // Update the reference location for trackedlocations
-        craft.getCraftOrigin().translate(dx, dy, dz);
+        craft.setDataTag(Craft.CRAFT_ORIGIN, craft.getCraftOrigin().translate(dx, dy, dz));
 
         if (!collisionBox.isEmpty() && craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
             CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.EMPTY, false);
