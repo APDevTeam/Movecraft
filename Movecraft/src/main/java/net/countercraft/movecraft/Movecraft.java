@@ -250,7 +250,7 @@ public class Movecraft extends JavaPlugin {
         MovecraftSignRegistry.INSTANCE.register("Scuttle", new ScuttleSign());
         getServer().getPluginManager().registerEvents(new CraftPilotListener(), this);
         getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
-        getServer().getPluginManager().registerEvents(new SignListener(), this);
+        getServer().getPluginManager().registerEvents(new SignListener(this), this);
         // Moved to compat section!
         //getServer().getPluginManager().registerEvents(new SignListener(), this);
 
