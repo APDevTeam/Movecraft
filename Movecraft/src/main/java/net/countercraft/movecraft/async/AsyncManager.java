@@ -334,7 +334,7 @@ public class AsyncManager extends BukkitRunnable {
 
                 final long craftAge = System.currentTimeMillis() - craft.getOrigPilotTime();
                 final long stayAfloatDuration = (long) craft.getOrigBlockCount() * (long) craft.getType().getIntProperty(CraftType.ALTERNATIVE_SINKING_TIME_BEFORE_DISINTEGRATION);
-                if (stayAfloatDuration > 0 && craftAge <= craft.getOrigPilotTime() + stayAfloatDuration) {
+                if (stayAfloatDuration > 0 && craftAge <= stayAfloatDuration) {
                     // Craft is still afloat => Does not begin to sink or disintegrate yet
                     continue;
                 }
