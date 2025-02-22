@@ -381,14 +381,13 @@ public class AsyncManager extends BukkitRunnable {
                     int explosions = MathUtils.randomBetween(RANDOM, minExplosions, maxExplosions);
                     for (int i = 0; i < explosions && !blocks.isEmpty(); i++) {
                         MovecraftLocation movecraftLocation = blocks.removeFirst();
-                        toRemove.add(movecraftLocation);
                         Location bukkitLocation = movecraftLocation.toBukkit(craft.getWorld());
                         if (bukkitLocation.getBlock().isEmpty()) {
                             continue;
                         }
                         anyExplosion |= true;
 
-                        updateCommands.add(new ExplosionUpdateCommand(bukkitLocation, 4.0F, false));
+                        updateCommands.add(new ExplosionUpdateCommand(bukkitLocation, 6.0F, false));
                     }
                 }
                 if (RANDOM.nextDouble() <= disintegrationChance) {
