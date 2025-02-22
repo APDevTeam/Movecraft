@@ -194,6 +194,18 @@ final public class CraftType {
     public static final NamespacedKey MOVE_BREAK_BLOCKS = buildKey("move_break_blocks");
 
     public static final NamespacedKey FALL_OUT_OF_WORLD_BLOCK_CHANCE = buildKey("fall_out_of_world_block_chance");
+
+    // TODO: Create a explosion property => min, max power, incendiary, etc
+    public static final NamespacedKey USE_ALTERNATIVE_SINKING_PROCESS = buildKey("use_alternative_sinking_process");
+    public static final NamespacedKey ALTERNATIVE_SINKING_TIME_BEFORE_DISINTEGRATION = buildKey("afloat_timeout_before_sinking_per_block");
+    public static final NamespacedKey ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS = buildKey("alternative_sinking_min_disintegrations");
+    public static final NamespacedKey ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS = buildKey("alternative_sinking_max_disintegrations");
+    public static final NamespacedKey ALTERNATIVE_SINKING_MIN_EXPLOSIONS = buildKey("alternative_sinking_max_explosions");
+    public static final NamespacedKey ALTERNATIVE_SINKING_MAX_EXPLOSIONS = buildKey("alternative_sinking_max_explosions");
+    public static final NamespacedKey ALTERNATIVE_SINKING_EXPLOSION_CHANCE = buildKey("alternative_sinking_explosion_chance");
+    public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_SOUND = buildKey("alternative_sinking_disintegration_sound");
+    public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE = buildKey("alternative_sinking_disintegration_sound_chance");
+    public static final NamespacedKey ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE = buildKey("alternative_sinking_max_remaining_size_percentage");
     //endregion
 
     @Contract("_ -> new")
@@ -580,6 +592,17 @@ final public class CraftType {
         registerProperty(new MaterialSetProperty("moveBreakBlocks", MOVE_BREAK_BLOCKS,  type -> EnumSet.noneOf(Material.class)));
 
         registerProperty(new DoubleProperty("fallOutOfWorldBlockChance", FALL_OUT_OF_WORLD_BLOCK_CHANCE, type -> 0.0D));
+
+        registerProperty(new IntegerProperty("alternativeSinkingDisintegrationStartDelayPerBlock", ALTERNATIVE_SINKING_TIME_BEFORE_DISINTEGRATION, type -> 0));
+        registerProperty(new BooleanProperty("useAlternativeSinkProcess", USE_ALTERNATIVE_SINKING_PROCESS, type -> false));
+        registerProperty(new DoubleProperty("alternativeSinkingExplosionChance", ALTERNATIVE_SINKING_EXPLOSION_CHANCE, type -> 0.0D));
+        registerProperty(new IntegerProperty("alternativeSinkingMinExplosion", ALTERNATIVE_SINKING_MIN_EXPLOSIONS, type -> 1));
+        registerProperty(new IntegerProperty("alternativeSinkingMaxExplosion", ALTERNATIVE_SINKING_MAX_EXPLOSIONS, type -> 4));
+        registerProperty(new DoubleProperty("alternativeSinkingDisintegrationChance", ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE, type -> 0.5D));
+        registerProperty(new IntegerProperty("alternativeSinkingMinDisintegrations", ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS, type -> 25));
+        registerProperty(new IntegerProperty("alternativeSinkingMaxDisintegrations", ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS, type -> 100));
+        registerProperty(new StringProperty("alternativeSinkingDisintegrationSound", ALTERNATIVE_SINKING_DISINTEGRATION_SOUND, type -> ""));
+        registerProperty(new DoubleProperty("alternativeSinkingMaxRemainingPercentage", ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE, type -> 0.25D));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN

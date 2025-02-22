@@ -32,10 +32,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.OptionalInt;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class MathUtils {
 
@@ -283,6 +280,16 @@ public class MathUtils {
 
             result.add(i);
         }
+        return result;
+    }
+
+    public static int randomBetween(final Random random, final int a, final int b) {
+        if (a == b) {
+            return a;
+        }
+        int aReal = Math.min(Math.abs(a), Math.abs(b));
+        int bReal = Math.max(Math.abs(a), Math.abs(b));
+        int result = random.nextInt(bReal - aReal) + aReal;
         return result;
     }
 }
