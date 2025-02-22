@@ -292,69 +292,54 @@ public class AsyncManager extends BukkitRunnable {
     //Controls sinking crafts
     private void processSinking() {
         // Copy the crafts before iteration to prevent concurrent modifications
-        List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
+        List<Craft> crafts = Lists.newArrayList((Iterable)CraftManager.getInstance());
         for (Craft craft : crafts) {
-            if (!(craft instanceof SinkingCraft))
-                continue;
-            if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < (craft.getWorld().getMinHeight() +5 )) {
-
+            if (!(craft instanceof net.countercraft.movecraft.craft.SinkingCraft))
+                continue; 
+            if (craft.getHitBox().isEmpty()) {
                 CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
                 continue;
-            }
+            } 
             if (craft.getHitBox().getMinY() == craft.getWorld().getMinHeight()) {
                 removeBottomLayer(craft);
-                MovecraftLocation start = new MovecraftLocation(
-                    craft.getHitBox().getMinX(), 
-                    craft.getHitBox().getMinY() + 1, 
-                    craft.getHitBox().getMinZ()
-                );
-                MovecraftLocation end = new MovecraftLocation(
-                    craft.getHitBox().getMaxX(), 
-                    craft.getHitBox().getMaxY(), 
-                    craft.getHitBox().getMaxZ()
-                );
+                MovecraftLocation start = new MovecraftLocation(craft.getHitBox().getMinX(), craft.getHitBox().getMinY() + 1, craft.getHitBox().getMinZ());
+                MovecraftLocation end = new MovecraftLocation(craft.getHitBox().getMaxX(), craft.getHitBox().getMaxY(), craft.getHitBox().getMaxZ());
                 SolidHitBox newHitBox = new SolidHitBox(start, end);
-                craft.setHitBox(newHitBox);
+                craft.setHitBox((HitBox)newHitBox);
                 continue;
-            }
-
-            long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
+            } 
+            long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50L;
             if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS))
-                continue;
-
+                continue; 
             int dx = 0;
             int dz = 0;
             if (craft.getType().getBoolProperty(CraftType.KEEP_MOVING_ON_SINK)) {
                 dx = craft.getLastTranslation().getX();
                 dz = craft.getLastTranslation().getZ();
-            }
+            } 
             craft.translate(dx, -1, dz);
             craft.setLastCruiseUpdate(System.currentTimeMillis());
-        }
+        } 
+    }
+    
+    private void removeBottomLayer(Craft craft) {
+        if (craft.getHitBox().isEmpty())
+            return; 
+        int bottomY = craft.getHitBox().getMinY();
+        int width = craft.getHitBox().getXLength();
+        int length = craft.getHitBox().getZLength();
+        int startX = craft.getHitBox().getMinX();
+        int startZ = craft.getHitBox().getMinZ();
+        World world = craft.getWorld();
+        for (int x = startX; x < startX + width; x++) {
+            for (int z = startZ; z < startZ + length; z++) {
+                Block block = world.getBlockAt(x, bottomY, z);
+                if (block.getType() != Material.AIR)
+                    block.setType(Material.AIR); 
+            } 
+        } 
     }
 
-
-private void removeBottomLayer(Craft craft) {
-    if (craft.getHitBox().isEmpty()) {
-        return;
-    }
-
-    int bottomY = craft.getHitBox().getMinY();
-    int width = craft.getHitBox().getXLength();
-    int length = craft.getHitBox().getZLength();
-    int startX = craft.getHitBox().getMinX();
-    int startZ = craft.getHitBox().getMinZ();
-    World world = craft.getWorld();
-
-    for (int x = startX; x < startX + width; x++) {
-        for (int z = startZ; z < startZ + length; z++) {
-            Block block = world.getBlockAt(x, bottomY, z);
-            if (block.getType() != Material.AIR) {
-                block.setType(Material.AIR);
-            }
-        }
-    }
-}
 
     public void run() {
         clearAll();
