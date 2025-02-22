@@ -377,8 +377,8 @@ public class AsyncManager extends BukkitRunnable {
             }
         }
         // Recalculate hitbox
-        oldHitbox.removeAll(toRemove);
         BitmapHitBox newHitBox = new BitmapHitBox(oldHitbox);
+        newHitBox.removeAll(toRemove);
         craft.setHitBox(newHitBox);
     }
 
