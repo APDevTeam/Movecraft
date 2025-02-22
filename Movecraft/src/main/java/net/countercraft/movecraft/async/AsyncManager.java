@@ -32,21 +32,27 @@ import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
+import net.countercraft.movecraft.util.hitboxes.SetHitBox;
+import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.util.Vector;
+import org.bukkit.block.Block;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import static net.countercraft.movecraft.craft.type.CraftType.FALL_OUT_OF_WORLD_BLOCK_CHANCE;
 
 @Deprecated
 public class AsyncManager extends BukkitRunnable {
@@ -312,10 +318,15 @@ public class AsyncManager extends BukkitRunnable {
             if (!(craft instanceof SinkingCraft))
                 continue;
 
-            if (craft.getHitBox().isEmpty() || craft.getHitBox().getMinY() < (craft.getWorld().getMinHeight() +5 )) {
+            if (craft.getHitBox().isEmpty() /*|| craft.getHitBox().getMinY() < (craft.getWorld().getMinHeight() +5 )*/) {
                 CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
                 continue;
             }
+            if (craft.getHitBox().getMinY() == craft.getWorld().getMinHeight()) {
+                removeBottomLayer(craft);
+            }
+
+
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
             if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS))
                 continue;
@@ -329,6 +340,46 @@ public class AsyncManager extends BukkitRunnable {
             craft.translate(dx, -1, dz);
             craft.setLastCruiseUpdate(System.currentTimeMillis());
         }
+    }
+
+    static final Random RANDOM = new Random();
+
+    private void removeBottomLayer(Craft craft) {
+        if (craft.getHitBox().isEmpty()) {
+            return;
+        }
+
+        int bottomY = craft.getHitBox().getMinY();
+        World world = craft.getWorld();
+
+        final double chance = craft.getType().getDoubleProperty(FALL_OUT_OF_WORLD_BLOCK_CHANCE);
+
+        List<MovecraftLocation> toRemove = new ArrayList<>();
+        Set<MovecraftLocation> oldHitbox = craft.getHitBox().asSet();
+
+        for (MovecraftLocation movecraftLocation : oldHitbox) {
+            Location location = movecraftLocation.toBukkit(world);
+            if (movecraftLocation.getY() == bottomY) {
+                Block block = world.getBlockAt(location);
+                if (!block.getType().isAir()) {
+                    // set void air!
+                    block.setType(Material.VOID_AIR);
+                }
+
+                if (chance > 0.0D && RANDOM.nextDouble() <= chance) {
+                    FallingBlock fallingBlock = world.spawnFallingBlock(location, block.getBlockData());
+                    fallingBlock.setDropItem(false);
+                    Vector velocity = new Vector(RANDOM.nextDouble() - 0.5D, fallingBlock.getVelocity().getY() / 2.0D, RANDOM.nextDouble() - 0.5D);
+                    fallingBlock.setVelocity(velocity.normalize().multiply(0.5D));
+                }
+
+                toRemove.add(movecraftLocation);
+            }
+        }
+        // Recalculate hitbox
+        oldHitbox.removeAll(toRemove);
+        BitmapHitBox newHitBox = new BitmapHitBox(oldHitbox);
+        craft.setHitBox(newHitBox);
     }
 
     public void run() {

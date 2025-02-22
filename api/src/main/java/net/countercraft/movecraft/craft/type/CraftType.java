@@ -192,6 +192,8 @@ final public class CraftType {
     public static final NamespacedKey ALLOW_INTERNAL_COLLISION_EXPLOSION = buildKey("allow_internal_collision_explosion");
 
     public static final NamespacedKey MOVE_BREAK_BLOCKS = buildKey("move_break_blocks");
+
+    public static final NamespacedKey FALL_OUT_OF_WORLD_BLOCK_CHANCE = buildKey("fall_out_of_world_block_chance");
     //endregion
 
     @Contract("_ -> new")
@@ -576,6 +578,8 @@ final public class CraftType {
         registerProperty(new BooleanProperty("allowInternalCollisionExplosion", ALLOW_INTERNAL_COLLISION_EXPLOSION, type -> false));
 
         registerProperty(new MaterialSetProperty("moveBreakBlocks", MOVE_BREAK_BLOCKS,  type -> EnumSet.noneOf(Material.class)));
+
+        registerProperty(new DoubleProperty("fallOutOfWorldBlockChance", FALL_OUT_OF_WORLD_BLOCK_CHANCE, type -> 0.0D));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN
