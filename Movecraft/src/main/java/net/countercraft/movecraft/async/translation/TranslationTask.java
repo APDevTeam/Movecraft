@@ -692,10 +692,10 @@ public class TranslationTask extends AsyncTask {
         double scaleFactor = 1.0;
         if (craft.getWorld().getEnvironment() == Environment.NETHER) { // if in nether
             world = Bukkit.getWorld(worldName.substring(0, worldName.length() - 7)); // remove _nether from world name
-            scaleFactor = 8.0;
+            scaleFactor = 1.0;
         } else { // if in overworld
             world = Bukkit.getWorld(worldName += "_nether"); // add _nether to world name
-            scaleFactor = 0.125;
+            scaleFactor = 1.0;
         }
 
         // scale destination x and z based on negative most corner of portal
