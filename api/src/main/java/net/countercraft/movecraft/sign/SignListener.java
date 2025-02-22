@@ -11,8 +11,6 @@ import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -32,8 +30,6 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,10 +40,8 @@ import java.util.function.Function;
 public class SignListener implements Listener {
 
     public static SignListener INSTANCE;
-    protected final Plugin MOVECRAFT_INSTANCE;
 
-    public SignListener(final Plugin movecraftInstance) {
-        MOVECRAFT_INSTANCE = movecraftInstance;
+    public SignListener() {
         INSTANCE = this;
     }
 
@@ -425,9 +419,6 @@ public class SignListener implements Listener {
         }
     }
 
-    protected static Set<Location> PROCESSING = new HashSet<>();
-    protected static Set<Location> ON_COOLDOWN = Collections.synchronizedSet(new HashSet<>());
-
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onSignClick(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
@@ -436,33 +427,13 @@ public class SignListener implements Listener {
         }
         BlockState state = block.getState();
         if (state instanceof Sign sign) {
+            SignWrapper wrapper = this.getSignWrapper(sign, event);
             ItemStack heldItem = event.getItem();
             if (heldItem == null) {
                 heldItem = event.getHand() == EquipmentSlot.HAND ? event.getPlayer().getInventory().getItem(EquipmentSlot.OFF_HAND) : event.getPlayer().getInventory().getItem(EquipmentSlot.HAND);
             }
             boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
 
-            // Always cancel if on craft => Avoid clicking empty sides and entering edit mode
-            if (onCraft) {
-                event.setCancelled(true);
-            }
-
-            boolean sneaking = event.getPlayer().isSneaking();
-            // Allow editing and breaking signs with tools
-            if (heldItem != null && !onCraft) {
-                // Allow the usage of the colors and wax for things => Cleaner solution: Use NMS to check if the item is an instanceof of SignApplicator...
-                if (Tags.SIGN_EDIT_MATERIALS.contains(heldItem.getType()) && event.getAction().isRightClick()) {
-                    return;
-                }
-                if (Tags.SIGN_BYPASS_RIGHT_CLICK.contains(heldItem.getType()) && (event.getAction().isRightClick())) {
-                    return;
-                }
-                if (sneaking && Tags.SIGN_BYPASS_LEFT_CLICK.contains(heldItem.getType()) && (event.getAction().isLeftClick())) {
-                    return;
-                }
-            }
-
-            SignWrapper wrapper = this.getSignWrapper(sign, event);
             AbstractMovecraftSign ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
 
             // If the side is empty, we should try a different side, like, the next side that is not empty and which has a signHandler
@@ -487,37 +458,38 @@ public class SignListener implements Listener {
                 }
             }
 
+            // Always cancel if on craft => Avoid clicking empty sides and entering edit mode
+            if (onCraft && wrapper.isEmpty()) {
+                event.setCancelled(true);
+            }
+
+            boolean sneaking = event.getPlayer().isSneaking();
+            // Allow editing and breaking signs with tools
+            if (heldItem != null && !onCraft) {
+                // Allow the usage of the colors and wax for things => Cleaner solution: Use NMS to check if the item is an instanceof of SignApplicator...
+                if (Tags.SIGN_EDIT_MATERIALS.contains(heldItem.getType()) && event.getAction().isRightClick()) {
+                    return;
+                }
+                if (Tags.SIGN_BYPASS_RIGHT_CLICK.contains(heldItem.getType()) && (event.getAction().isRightClick())) {
+                    return;
+                }
+                if (sneaking && Tags.SIGN_BYPASS_LEFT_CLICK.contains(heldItem.getType()) && (event.getAction().isLeftClick())) {
+                    return;
+                }
+            }
+
             if (ams == null) {
                 ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
             }
 
             // Would be one more readable line if using Optionals but Nullables were wanted
             if (ams != null) {
-                // Click rate limiting
-                final Location signLocation = sign.getLocation();
-                if (!ON_COOLDOWN.add(signLocation)) {
-                    event.setCancelled(true);
-                    // TODO: Send message
-                    return;
-                } else {
-                    // TODO: MOve to config option
-                    Bukkit.getScheduler().runTaskLaterAsynchronously(MOVECRAFT_INSTANCE, () -> {
-                        ON_COOLDOWN.remove(signLocation);
-                    }, 5);
-                }
-                // TODO: Unnecessary?
-                if (!PROCESSING.add(signLocation)) {
-                    // Already running
-                    return;
-                }
-
                 boolean success = ams.processSignClick(event.getAction(), wrapper, event.getPlayer());
                 // Always cancel, regardless of the success
                 event.setCancelled(true);
                 if (ams.shouldCancelEvent(success, event.getAction(), sneaking, onCraft ? AbstractMovecraftSign.EventType.SIGN_CLICK_ON_CRAFT : AbstractMovecraftSign.EventType.SIGN_CLICK)) {
                     event.setCancelled(true);
                 }
-                PROCESSING.remove(signLocation);
             }
         }
     }
