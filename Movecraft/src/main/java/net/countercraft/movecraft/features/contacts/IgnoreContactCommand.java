@@ -59,6 +59,14 @@ public class IgnoreContactCommand implements CommandExecutor {
             return true;
         }
 
+        PlayerCraft playerCraft = CraftManager.getInstance().getCraftByPlayer(player);
+        if (playerCraft == null || !playerCraft.getUUID().equals(baseCraft.getUUID())) {
+            player.sendMessage(Component.empty()
+                    .append(ChatUtils.commandPrefix())
+                    .append(I18nSupport.getInternationalisedComponent("You cant modify the ignore list of a craft that is not yours!")));
+            return true;
+        }
+
         baseCraft.getDataTag(ContactsManager.IGNORED_CRAFTS).add(ignoredCraft.getUUID());
 
         return true;
