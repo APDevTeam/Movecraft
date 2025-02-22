@@ -32,6 +32,8 @@ import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
+import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.World;
