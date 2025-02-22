@@ -33,11 +33,13 @@ import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
+import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -305,6 +307,8 @@ public class AsyncManager extends BukkitRunnable {
         }
     }
 
+    static final BlockFace[] CHECK_DIRECTIONS = new BlockFace[] {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN};
+
     //Controls sinking crafts
     private void processSinking() {
         //copy the crafts before iteration to prevent concurrent modifications
@@ -350,7 +354,26 @@ public class AsyncManager extends BukkitRunnable {
 
                 Set<MovecraftLocation> toRemove = new HashSet<>();
                 List<MovecraftLocation> blocks = new ArrayList<>(craft.getHitBox().asSet());
+
+                blocks.removeIf(movecraftLocation -> {
+                    Location bukkitLocation = movecraftLocation.toBukkit(craft.getWorld());
+                    if (bukkitLocation.getBlock().isEmpty()) {
+                        return true;
+                    }
+                    Block block = bukkitLocation.getBlock();
+                    boolean hasAirNextToIt = false;
+                    for (BlockFace face : CHECK_DIRECTIONS) {
+                        Block relative = block.getRelative(face);
+                        if (relative.isEmpty()) {
+                            hasAirNextToIt = true;
+                            break;
+                        }
+                    }
+                    return !hasAirNextToIt;
+                });
+
                 Collections.shuffle(blocks);
+
                 List<UpdateCommand> updateCommands = new ArrayList<>();
                 // Also cause a explosion every now and then
                 boolean anyExplosion = false;
@@ -389,8 +412,9 @@ public class AsyncManager extends BukkitRunnable {
 
                 MapUpdateManager.getInstance().scheduleUpdates(updateCommands);
 
+                // TODO: Is this truly necessary?
                 if (toRemove.size() > 0) {
-                    BitmapHitBox newHitBox = new BitmapHitBox(craft.getHitBox());
+                    SetHitBox newHitBox = new SetHitBox(craft.getHitBox());
                     newHitBox.removeAll(toRemove);
                     craft.setHitBox(newHitBox);
                 }
