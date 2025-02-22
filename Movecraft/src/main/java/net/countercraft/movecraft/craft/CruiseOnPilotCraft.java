@@ -39,6 +39,11 @@ public class CruiseOnPilotCraft extends BaseCraft implements PilotedCraft {
     }
 
     @Override
+    public @NotNull Audience getAudience() {
+        return Audience.empty();
+    }
+
+    @Override
     public @NotNull UUID getPilotUUID() {
         return this.pilotUUID;
     }

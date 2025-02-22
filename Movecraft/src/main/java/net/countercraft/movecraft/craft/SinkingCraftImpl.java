@@ -15,4 +15,9 @@ public class SinkingCraftImpl extends BaseCraft implements SinkingCraft {
         // If the craft is sinking we dont need an audience anymore
         setAudience(Audience.empty());
     }
+
+    @Override
+    public @NotNull Audience getAudience() {
+        return Audience.empty();
+    }
 }
