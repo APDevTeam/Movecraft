@@ -353,6 +353,7 @@ public class AsyncManager extends BukkitRunnable {
                 Collections.shuffle(blocks);
                 List<UpdateCommand> updateCommands = new ArrayList<>();
                 // Also cause a explosion every now and then
+                boolean anyExplosion = false;
                 if (RANDOM.nextDouble() <= explosionChance) {
                     int explosions = MathUtils.randomBetween(RANDOM, minExplosions, maxExplosions);
                     for (int i = 0; i < explosions && !blocks.isEmpty(); i++) {
@@ -362,6 +363,7 @@ public class AsyncManager extends BukkitRunnable {
                         if (bukkitLocation.getBlock().isEmpty()) {
                             continue;
                         }
+                        anyExplosion |= true;
 
                         updateCommands.add(new ExplosionUpdateCommand(bukkitLocation, 4.0F, false));
                     }
@@ -399,7 +401,7 @@ public class AsyncManager extends BukkitRunnable {
                 final double remainingSizePercentage = ((double)currentSize) / ((double)originalSize);
 
                 // We are still not damaged enough to actually sink, so postpone the uninevitable
-                if (maxRemainingPercentageBeforeSinking >= remainingSizePercentage) {
+                if (anyExplosion || (maxRemainingPercentageBeforeSinking <= remainingSizePercentage)) {
                     continue;
                 }
             }
