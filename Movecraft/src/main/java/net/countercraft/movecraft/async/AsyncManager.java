@@ -361,16 +361,14 @@ public class AsyncManager extends BukkitRunnable {
             Location location = movecraftLocation.toBukkit(world);
             if (movecraftLocation.getY() == bottomY) {
                 Block block = world.getBlockAt(location);
-                if (block.getType().isAir()) {
-                    // set void air!
-                    continue;
-                }
 
-                if (chance > 0.0D && RANDOM.nextDouble() <= chance) {
-                    FallingBlock fallingBlock = world.spawnFallingBlock(location, block.getBlockData());
-                    fallingBlock.setDropItem(false);
-                    Vector velocity = new Vector(RANDOM.nextDouble() - 0.5D, fallingBlock.getVelocity().getY() / 2.0D, RANDOM.nextDouble() - 0.5D);
-                    fallingBlock.setVelocity(velocity.normalize().multiply(0.5D));
+                if (!block.getType().isAir()) {
+                    if (chance > 0.0D && RANDOM.nextDouble() <= chance) {
+                        FallingBlock fallingBlock = world.spawnFallingBlock(location, block.getBlockData());
+                        fallingBlock.setDropItem(false);
+                        Vector velocity = new Vector(RANDOM.nextDouble() - 0.5D, fallingBlock.getVelocity().getY() / 2.0D, RANDOM.nextDouble() - 0.5D);
+                        fallingBlock.setVelocity(velocity.normalize().multiply(0.5D));
+                    }
                 }
 
                 block.setType(Material.VOID_AIR);
