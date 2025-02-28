@@ -28,7 +28,7 @@ public interface ContactProvider {
     public double getDetectionMultiplier(boolean overWaterLine, MovecraftWorld world);
 
     public default @NotNull List<UUID> getContactUUIDs(Craft self, @NotNull Set<Craft> candidates) {
-        Map<Craft, Integer> inRangeDistanceSquared = new HashMap<>();
+        Map<UUID, Integer> inRangeDistanceSquared = new HashMap<>();
         for (Craft target : candidates) {
             if (target instanceof SubCraft)
                 continue;
@@ -59,11 +59,11 @@ public interface ContactProvider {
             if (distanceSquared > detectionRange)
                 continue;
 
-            inRangeDistanceSquared.put(target, distanceSquared);
+            inRangeDistanceSquared.put(target.getUUID(), distanceSquared);
         }
 
         List<UUID> result = new ArrayList<>(inRangeDistanceSquared.keySet().size());
-        inRangeDistanceSquared.keySet().forEach(c -> result.add(c.getUUID()));
+        inRangeDistanceSquared.keySet().forEach(result::add);
         result.sort(Comparator.comparingInt(inRangeDistanceSquared::get));
         return result;
     }
