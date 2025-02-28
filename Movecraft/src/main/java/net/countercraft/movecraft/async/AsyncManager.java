@@ -426,7 +426,11 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
 
-            if (craft.getHitBox().getMinY() == craft.getWorld().getMinHeight()) {
+            // The hitbox can be modified here, so check again
+            if (craft.getHitBox().isEmpty()) {
+                CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUNK, false);
+                continue;
+            } else if (craft.getHitBox().getMinY() == craft.getWorld().getMinHeight()) {
                 removeBottomLayer(craft);
             }
 
@@ -469,7 +473,7 @@ public class AsyncManager extends BukkitRunnable {
                     fallingBlock.setVelocity(velocity.normalize().multiply(0.5D));
                 }
 
-                updateCommands.add(new BlockCreateCommand(world, movecraftLocation, Material.VOID_AIR));
+                updateCommands.add(new BlockCreateCommand(world, movecraftLocation, Material.AIR));
 
                 toRemove.add(movecraftLocation);
             }
@@ -487,7 +491,11 @@ public class AsyncManager extends BukkitRunnable {
         clearAll();
 
         processCruise();
-        processSinking();
+        try {
+            processSinking();
+        } catch(IndexOutOfBoundsException ioobe) {
+            ioobe.printStackTrace();
+        }
         processAlgorithmQueue();
 
         // now cleanup craft that are bugged and have not moved in the past 60 seconds,
