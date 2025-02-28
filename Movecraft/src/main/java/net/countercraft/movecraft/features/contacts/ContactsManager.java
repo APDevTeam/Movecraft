@@ -16,7 +16,9 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -314,8 +316,8 @@ public class ContactsManager extends BukkitRunnable implements Listener {
     }
 
     static Component buildIgnoreButton(final UUID baseCraftUUID, final UUID ignoreUUID) {
-        ClickEvent clickEvent = ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "ignorecontact " + baseCraftUUID.toString() + " " + ignoreUUID.toString());
-        TextComponent result = Component.text().content("[IGNORE]").color(NamedTextColor.DARK_RED).clickEvent(clickEvent).build();
+        ClickEvent clickEvent = ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/ignorecontact " + baseCraftUUID.toString() + " " + ignoreUUID.toString());
+        Component result = Component.text("[IGNORE]").color(NamedTextColor.DARK_RED).clickEvent(clickEvent);
         return result;
     }
 
