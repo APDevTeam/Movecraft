@@ -46,6 +46,21 @@ public class TrackedLocation {
     }
 
     /**
+     * Creates a new TrackedLocation instance which tracks a location about a craft's midpoint.
+     * @param craft The craft that's that tied to the location.
+     * @param location The absolute position to track. This location will be stored as a relative
+     *                 location to the craft's central hitbox.
+     * @param key The namespaced key that references a set of tracked locations stored within the craft.
+     */
+    public TrackedLocation(@NotNull Craft craft, @NotNull MovecraftLocation location, @NotNull NamespacedKey key) {
+        this(craft, location);
+        if (craft.getTrackedLocations().get(key) == null) {
+            craft.getTrackedLocations().put(key, new HashSet<>());
+        }
+        craft.getTrackedLocations().get(key).add(this);
+    }
+
+    /**
      * Rotates the stored location.
      * @param rotation A clockwise or counter-clockwise direction to rotate.
      */
@@ -81,5 +96,13 @@ public class TrackedLocation {
             throw new RuntimeException("Craft of tracked location is null! This indicates that the craft object was destroyed but somehow the tracked location is still around!");
         }
         return this.craft.get();
+    }
+
+    /**
+     * Gets the craft associated with the tracked location.
+     * @return Returns the craft.
+     */
+    public Craft getCraft() {
+        return craft;
     }
 }
