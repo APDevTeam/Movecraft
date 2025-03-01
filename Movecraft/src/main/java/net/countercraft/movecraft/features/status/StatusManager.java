@@ -135,20 +135,8 @@ public class StatusManager extends BukkitRunnable implements Listener {
         int nonNegligibleSolidBlocks = craft.getDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS);
 
         // Build up counters of the fly and move blocks
-        Counter<RequiredBlockEntry> flyBlocks = new Counter<>();
-        flyBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS));
-        Counter<RequiredBlockEntry> moveBlocks = new Counter<>();
-        moveBlocks.putAll(craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS));
-        for (Material m : materials.getKeySet()) {
-            for (RequiredBlockEntry entry : flyBlocks.getKeySet()) {
-                if(entry.contains(m))
-                    flyBlocks.add(entry, materials.get(m));
-            }
-            for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
-                if(entry.contains(m))
-                    moveBlocks.add(entry, materials.get(m));
-            }
-        }
+        Counter<RequiredBlockEntry> flyBlocks = craft.getDataTag(Craft.FLYBLOCKS);
+        Counter<RequiredBlockEntry> moveBlocks = craft.getDataTag(Craft.MOVEBLOCKS);
 
         // now see if any of the resulting percentages are below the threshold specified in sinkPercent
         double sinkPercent = craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;
