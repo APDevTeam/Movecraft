@@ -12,6 +12,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+
 public class ContactsCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] args) {
@@ -57,11 +59,15 @@ public class ContactsCommand implements CommandExecutor {
         ComponentPaginator paginator = new ComponentPaginator(
                 I18nSupport.getInternationalisedComponent("Contacts"),
                 (pageNumber) -> "/contacts " + pageNumber);
-        for (Craft target : base.getDataTag(Craft.CONTACTS)) {
-            if (target.getHitBox().isEmpty())
+        for (UUID target : base.getDataTag(Craft.CONTACTS)) {
+            Craft targetCraft = Craft.getCraftByUUID(target);
+            if (targetCraft == null) {
+                continue;
+            }
+            if (targetCraft.getHitBox().isEmpty())
                 continue;
 
-            Component notification = ContactsManager.contactMessage(false, base, target);
+            Component notification = ContactsManager.contactMessage(false, base, targetCraft);
             paginator.addLine(notification);
         }
         if (paginator.isEmpty()) {

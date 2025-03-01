@@ -34,10 +34,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 public final class InteractListener implements Listener {
-    private final Map<Player, Long> timeMap = new WeakHashMap<>();
+    public static final Map<UUID, Long> INTERACTION_TIME_MAP = new WeakHashMap<>();
+    public static final Map<UUID, Long> PLAYER_INTERACTION_TIME_MAP = new WeakHashMap<>();
 
     @EventHandler(priority = EventPriority.LOWEST) // LOWEST so that it runs before the other events
     public void onPlayerInteract(@NotNull PlayerInteractEvent e) {
@@ -105,17 +107,30 @@ public final class InteractListener implements Listener {
             if (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT)
                     && type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN))
                 tickCooldown *= currentGear; // Account for gear shifts
-            Long lastTime = timeMap.get(p);
-            if (lastTime != null) {
-                long ticksElapsed = (System.currentTimeMillis() - lastTime) / 50;
+            Long lastTimePlayer = PLAYER_INTERACTION_TIME_MAP.get(p.getUniqueId());
+            Long lastTimeCraft = INTERACTION_TIME_MAP.get(craft.getUUID());
+            if (lastTimeCraft != null || lastTimePlayer != null) {
+                Long lastTime = null;
+                if (lastTimeCraft == null) {
+                    lastTime = lastTimePlayer;
+                }
+                else if (lastTimePlayer == null) {
+                    lastTime = lastTimeCraft;
+                }
+                else {
+                    lastTime = Math.min(INTERACTION_TIME_MAP.get(craft.getUUID()), PLAYER_INTERACTION_TIME_MAP.get(p.getUniqueId()));
+                }
+                if (lastTime != null) {
+                    long ticksElapsed = (System.currentTimeMillis() - lastTime) / 50;
 
-                // if the craft should go slower underwater, make time pass more slowly there
-                if (craft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER)
-                        && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
-                    ticksElapsed /= 2;
+                    // if the craft should go slower underwater, make time pass more slowly there
+                    if (craft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER)
+                            && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
+                        ticksElapsed /= 2;
 
-                if (ticksElapsed < tickCooldown)
-                    return; // Not enough time has passed, so don't do anything
+                    if (ticksElapsed < tickCooldown)
+                        return; // Not enough time has passed, so don't do anything
+                }
             }
 
             if (!p.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")) {
@@ -135,7 +150,8 @@ public final class InteractListener implements Listener {
                     dy *= currentGear; // account for gear shifts
 
                 craft.translate(craft.getWorld(), 0, dy, 0);
-                timeMap.put(p, System.currentTimeMillis());
+                INTERACTION_TIME_MAP.put(craft.getUUID(), System.currentTimeMillis());
+                PLAYER_INTERACTION_TIME_MAP.put(p.getUniqueId(), System.currentTimeMillis());
                 craft.setLastCruiseUpdate(System.currentTimeMillis());
                 return;
             }
@@ -154,7 +170,8 @@ public final class InteractListener implements Listener {
             }
 
             craft.translate(craft.getWorld(), dx, dy, dz);
-            timeMap.put(p, System.currentTimeMillis());
+            INTERACTION_TIME_MAP.put(craft.getUUID(), System.currentTimeMillis());
+            PLAYER_INTERACTION_TIME_MAP.put(p.getUniqueId(), System.currentTimeMillis());
             craft.setLastCruiseUpdate(System.currentTimeMillis());
         }
     }

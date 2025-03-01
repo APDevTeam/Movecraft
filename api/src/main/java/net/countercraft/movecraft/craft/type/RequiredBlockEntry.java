@@ -28,15 +28,23 @@ public class RequiredBlockEntry {
     private final boolean numericMax;
     private final double min;
     private final boolean numericMin;
-
+    private final boolean ignoreForSinkCheck;
+    /* Displayname for use in "too much flyblock" messages instead of the long list*/
+    private final String displayName;
 
     public RequiredBlockEntry(EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, @NotNull String name) {
+        this(materials, min, max, name, false, "");
+    }
+
+    public RequiredBlockEntry(EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, @NotNull String name, boolean ignoreForSinkCheck, final String displayName) {
         this.materials = materials;
         this.min = min.getRight().doubleValue();
         this.numericMin = min.getLeft();
         this.max = max.getRight().doubleValue();
         this.numericMax = max.getLeft();
         this.name = name;
+        this.ignoreForSinkCheck = ignoreForSinkCheck;
+        this.displayName = displayName;
     }
 
     /**
@@ -91,6 +99,9 @@ public class RequiredBlockEntry {
      * @return <code>true</code> if the count and size pass the min and max bounds, <code>false</code> if it does not
      */
     public boolean check(int count, int size, double sinkPercent) {
+        if (this.ignoreForSinkCheck)
+            return true;
+
         double blockPercent = 100D * (double) count / size;
         if(numericMin) {
             if(count < min)
@@ -179,5 +190,9 @@ public class RequiredBlockEntry {
 
     public String getName () {
         return name;
+    }
+
+    public String getDisplayName() {
+        return this.displayName;
     }
 }

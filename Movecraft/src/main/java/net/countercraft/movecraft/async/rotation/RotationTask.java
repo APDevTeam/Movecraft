@@ -23,10 +23,7 @@ import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.SubCraft;
+import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
@@ -43,8 +40,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.*;
+import org.bukkit.util.Vector;
 
 import java.util.HashSet;
 import java.util.List;
@@ -165,14 +162,18 @@ public class RotationTask extends AsyncTask {
         }
 
         // Rotates the craft's tracked locations, and all parent craft's.
+        MovecraftLocation oldOrigin = craft.getCraftOrigin();
+        MovecraftLocation vectorRotated = MathUtils.rotateVec(rotation, oldOrigin.subtract(originPoint));
+        craft.setDataTag(Craft.CRAFT_ORIGIN, originPoint.add(vectorRotated));
         Craft temp = craft;
-        do {
-            for (Set<TrackedLocation> locations : craft.getTrackedLocations().values()) {
+        // recursion through all subcrafts is not necessary as the trackedlocations are transferred to the subcraft
+        //do {
+            for (Set<TrackedLocation> locations : temp.getTrackedLocations().values()) {
                 for (TrackedLocation location : locations) {
-                    location.rotate(rotation, originPoint);
+                    location.rotate(rotation);
                 }
             }
-        } while (temp instanceof SubCraft && (temp = ((SubCraft) temp).getParent()) != null);
+        //} while (temp instanceof SubCraft && (temp = ((SubCraft) temp).getParent()) != null);
 
         updates.add(new CraftRotateCommand(getCraft(),originPoint, rotation));
         //rotate entities in the craft
@@ -208,6 +209,7 @@ public class RotationTask extends AsyncTask {
         craft1.getAudience().sendMessage(faceMessage);
 
         craftsInWorld = CraftManager.getInstance().getCraftsInWorld(craft1.getWorld());
+        //TODO: Sure??? We only need to do this for the parent actually...
         for (Craft craft : craftsInWorld) {
             if (newHitBox.intersection(craft.getHitBox()).isEmpty() || craft == craft1) {
                 continue;
@@ -256,7 +258,7 @@ public class RotationTask extends AsyncTask {
                 (oldHitBox.getMaxY() + oldHitBox.getMinY())/2.0,
                 (oldHitBox.getMaxZ() + oldHitBox.getMinZ())/2.0);
 
-        List<EntityType> entityList = List.of(EntityType.PLAYER, EntityType.TNT);
+        List<EntityType> entityList = List.of(EntityType.PLAYER, EntityType.TNT, EntityType.ITEM_FRAME, EntityType.PAINTING, EntityType.TNT_MINECART, EntityType.GLOW_ITEM_FRAME);
         for(Entity entity : craft.getWorld().getNearbyEntities(midpoint,
                 oldHitBox.getXLength() / 2.0 + 1,
                 oldHitBox.getYLength() / 2.0 + 2,
@@ -267,6 +269,46 @@ public class RotationTask extends AsyncTask {
                     || craft instanceof SinkingCraft)) {
                 continue;
             }// Player is onboard this craft
+
+            // Do not move moving projectiles
+            if (entity instanceof Projectile projectile) {
+                if (projectile.isOnGround()) {
+                    continue;
+                }
+                Vector velocity = entity.getVelocity();
+                if (entity instanceof Fireball fireball) {
+                    velocity = fireball.getAcceleration();
+                }
+                if (Math.abs(velocity.lengthSquared()) >= 0.25) {
+                    continue;
+                }
+            }
+
+            if (entity instanceof Player) {
+                boolean skip = false;
+                // Player => Check for other craft
+                for (Craft craftTmp : MathUtils.craftsNearLocFast(CraftManager.getInstance().getCraftsInWorld(entity.getWorld()), entity.getLocation())) {
+                    if (craftTmp == craft) {
+                        continue;
+                    }
+                    if (craftTmp instanceof PilotedCraft pilotedCraft && pilotedCraft.getPilot() == entity) {
+                        skip = true;
+                        break;
+                    }
+                    if (craftTmp.getHitBox().contains(entity.getLocation().getBlockX(), entity.getLocation().getBlockY(), entity.getLocation().getBlockZ())) {
+                        // Because of squadrons implementing SubCraft...
+                        if (craftTmp instanceof SubCraftImpl) {
+                            continue;
+                        }
+                        skip = true;
+                        break;
+                    }
+                }
+                // DO NOT MOVE THIS PLAYER
+                if (skip) {
+                    continue;
+                }
+            }
 
             Location adjustedPLoc = entity.getLocation().subtract(tOP);
 

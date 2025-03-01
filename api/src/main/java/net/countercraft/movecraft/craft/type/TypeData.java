@@ -465,6 +465,29 @@ public final class TypeData {
     }
 
     @NotNull
+    private static Boolean parseBool(@NotNull Object input) {
+        if (input instanceof String) {
+            String str = (String) input;
+            boolean bool = Boolean.parseBoolean(str);
+            return bool;
+        }
+        else if (input instanceof Boolean) {
+            return (Boolean) input;
+        }
+        else
+            return (Boolean) input;
+    }
+
+    @NotNull
+    private static String parseString(@NotNull Object input) {
+        if (input instanceof String) {
+            return (String)input;
+        }
+        else
+            return (String) input;
+    }
+
+    @NotNull
     private static EnumSet<Material> parseMaterials(String key, Object materials) {
         EnumSet<Material> result = EnumSet.noneOf(Material.class);
         if(materials instanceof ArrayList) {
@@ -509,11 +532,13 @@ public final class TypeData {
             EnumSet<Material> materials = parseMaterials(key, entry.getKey());
 
             var limits = (ArrayList<?>) entry.getValue();
-            if(limits.size() != 2)
+            if(!(limits.size() == 2 || limits.size() == 3))
                 throw new IllegalArgumentException("Block entry range for key " + key + " and value '" + entry.getKey()
                         + "' must be a pair, but found " + limits.size() + " entries");
             var min = parseLimit(limits.get(0));
             var max = parseLimit(limits.get(1));
+            var ignoreBool =  limits.size() > 2 ? parseBool(limits.get(2)) : false;
+            var displayName = limits.size() > 3 ? parseString(limits.get(3)) : "";
 
             String name;
             String s = null;
@@ -528,7 +553,7 @@ public final class TypeData {
                 s = (String)entryKey;
             }
             if (s == null) {
-                out.add(new RequiredBlockEntry(materials, min, max, null));
+                out.add(new RequiredBlockEntry(materials, min, max, null, ignoreBool, displayName));
                 continue;
             }
             if (s.charAt(0) == '#' && s.length() > 1) {
@@ -541,7 +566,7 @@ public final class TypeData {
             } else {
                 name = s;
             }
-            out.add(new RequiredBlockEntry(materials, min, max, name));
+            out.add(new RequiredBlockEntry(materials, min, max, name, ignoreBool, displayName));
         }
         return out;
     }

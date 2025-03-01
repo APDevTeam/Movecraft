@@ -16,6 +16,9 @@ commands:
   pilot:
     description: Pilots the craft at your feet
     usage: /pilot [crafttypename]
+  ignorecontact:
+    description: Ignore a specific craft in contacts
+    usage: /ignorecontact <base craft> <craft to ignore>
   contacts:
     description: reports on all crafts within detection range
     usage: /contacts <page>

@@ -65,7 +65,7 @@ public class CraftReportCommand implements CommandExecutor {
                 name = name.color(NamedTextColor.BLUE);
             line = line.append(name).append(Component.text(" "));
             if (craft instanceof PilotedCraft pilotedCraft)
-                line = line.append(Component.text(pilotedCraft.getPilot().getName()));
+                line = line.append(Component.text(pilotedCraft.getPilot() == null ? pilotedCraft.getPilotUUID().toString() : pilotedCraft.getPilot().getName()));
             else
                 line = line.append(I18nSupport.getInternationalisedComponent("None"));
             line = line.append(Component.text(" "));

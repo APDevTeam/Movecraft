@@ -134,6 +134,7 @@ public class TranslationTask implements Supplier<Effect> {
         } else {
             var fuelSource = findFuelHolders(craft.getType(), fuelSources);
             if(fuelSource == null){
+                // TODO: If configured, and if this is not on the ground, scuttle the vehicle
                 return () -> craft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Translation - Failed Craft out of fuel"));
             }
             callFuelEvent(craft, findFuelStack(craft.getType(), fuelSource));

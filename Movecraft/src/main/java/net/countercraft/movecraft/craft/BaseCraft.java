@@ -1,16 +1,11 @@
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.CruiseDirection;
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.MovecraftRotation;
-import net.countercraft.movecraft.TrackedLocation;
+import net.countercraft.movecraft.*;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
@@ -24,23 +19,18 @@ import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -74,17 +64,20 @@ public abstract class BaseCraft implements Craft {
     private double burningFuel;
     private int origBlockCount;
     @NotNull
+    // TODO: rework this into a "CraftAudience" to also support crews later
     private Audience audience;
     @NotNull
-    private String name = "";
+    private Component name = Component.empty();
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
-    private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
+    private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new ConcurrentHashMap<>();
 
     @NotNull
     private final CraftDataTagContainer dataTagContainer;
 
     private final UUID uuid = UUID.randomUUID();
+
+    private double cruiseTickMultiplier = 1;
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         Hidden.uuidToCraft.put(uuid, this);
@@ -243,6 +236,9 @@ public abstract class BaseCraft implements Craft {
     public void setCruising(boolean cruising) {
         audience.sendActionBar(Component.text().content("Cruising " + (cruising ? "enabled" : "disabled")));
         this.cruising = cruising;
+        if (!this.cruising) {
+            this.setCruiseCooldownMultiplier(1);
+        }
     }
 
     @Override
@@ -262,6 +258,9 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setCruiseDirection(CruiseDirection cruiseDirection) {
+        if (this.cruiseDirection != null && cruiseDirection != null && !cruiseDirection.equals(this.cruiseDirection)) {
+            this.setCruiseCooldownMultiplier(1);
+        }
         this.cruiseDirection = cruiseDirection;
     }
 
@@ -492,12 +491,12 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     @NotNull
-    public String getName() {
+    public Component getName() {
         return name;
     }
 
     @Override
-    public void setName(@NotNull String name) {
+    public void setName(@NotNull Component name) {
         this.name = name;
     }
 
@@ -541,6 +540,9 @@ public abstract class BaseCraft implements Craft {
     @Override
     @NotNull
     public Audience getAudience() {
+        if (this.audience == null) {
+            return Audience.empty();
+        }
         return audience;
     }
 
@@ -579,4 +581,19 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations() {return trackedLocations;}
+
+    @Override
+    public void setCruiseCooldownMultiplier(double value) {
+        this.cruiseTickMultiplier = value;
+    }
+
+    @Override
+    public double getCruiseCooldownMultiplier() {
+        return this.cruiseTickMultiplier;
+    }
+
+    @Override
+    public <T> boolean hasDataTag(final @NotNull CraftDataTagKey<T> tagKey) {
+        return this.dataTagContainer.has(tagKey);
+    }
 }
