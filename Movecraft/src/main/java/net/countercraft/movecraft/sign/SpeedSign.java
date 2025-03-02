@@ -2,6 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.ChatMessageType;
@@ -85,4 +86,11 @@ public class SpeedSign extends AbstractInformationSign {
         return;
     }
 
+    @Override
+    public void onCraftStopCruising(Craft craft, SignListener.SignWrapper sign, CraftStopCruiseEvent.Reason reason) {
+        if (reason != CraftStopCruiseEvent.Reason.CRAFT_SUNK) {
+            this.refreshSign(craft, sign, true, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
+            this.sendUpdatePacket(craft, sign, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
+        }
+    }
 }
