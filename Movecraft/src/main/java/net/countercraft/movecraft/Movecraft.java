@@ -106,49 +106,7 @@ public class Movecraft extends JavaPlugin {
             logger.info("No PilotTool setting, using default of stick");
         }
 
-        String minecraftVersion = getServer().getMinecraftVersion();
-        getLogger().info("Loading support for " + minecraftVersion);
-        try {
-            final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + WorldHandler.getPackageName(minecraftVersion) + ".IWorldHandler");
-            // Check if we have a NMSHandler class at that location.
-            if (WorldHandler.class.isAssignableFrom(worldHandlerClazz)) { // Make sure it actually implements NMS
-                worldHandler = (WorldHandler) worldHandlerClazz.getConstructor().newInstance(); // Set our handler
-
-                // Try to setup the smooth teleport handler
-                try {
-                    final Class<?> smoothTeleportClazz = Class.forName("net.countercraft.movecraft.support." + WorldHandler.getPackageName(minecraftVersion) + ".ISmoothTeleport");
-                    if (SmoothTeleport.class.isAssignableFrom(smoothTeleportClazz)) {
-                        smoothTeleport = (SmoothTeleport) smoothTeleportClazz.getConstructor().newInstance();
-                    }
-                    else {
-                        smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
-                        getLogger().warning("Did not find smooth teleport, falling back to bukkit teleportation provider.");
-                    }
-                }
-                catch (final ReflectiveOperationException e) {
-                    if (Settings.Debug) {
-                        e.printStackTrace();
-                    }
-                    smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
-                    getLogger().warning("Falling back to bukkit teleportation provider.");
-                }
-            }
-        }
-        catch (final Exception e) {
-            e.printStackTrace();
-            getLogger().severe("Could not find support for this version.");
-            if (!Settings.DisableNMSCompatibilityCheck) {
-                // Disable ourselves and exit
-                setEnabled(false);
-                return;
-            }
-            else {
-                // Server owner claims to know what they are doing, warn them of the possible consequences
-                getLogger().severe("WARNING!\n\t"
-                        + "Running Movecraft on an incompatible version can corrupt your world and break EVERYTHING!\n\t"
-                        + "We provide no support for any issues.");
-            }
-        }
+        initializeNMSHandlers();
 
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
@@ -271,6 +229,76 @@ public class Movecraft extends JavaPlugin {
         //getServer().getPluginManager().registerEvents(new StatusSign(), this);
 
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
+    }
+
+    private void initializeNMSHandlers() {
+        String minecraftVersion = getServer().getMinecraftVersion();
+        getLogger().info("Loading support for " + minecraftVersion);
+        try {
+            for (String packageName : WorldHandler.getPackageNames(minecraftVersion)) {
+                try {
+                    final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + packageName + ".IWorldHandler");
+                    // Check if we have a NMSHandler class at that location.
+                    if (WorldHandler.class.isAssignableFrom(worldHandlerClazz)) { // Make sure it actually implements NMS
+                        worldHandler = (WorldHandler) worldHandlerClazz.getConstructor().newInstance(); // Set our handler
+
+                        // Try to setup the smooth teleport handler
+                        try {
+                            final Class<?> smoothTeleportClazz = Class.forName("net.countercraft.movecraft.support." + packageName + ".ISmoothTeleport");
+                            if (SmoothTeleport.class.isAssignableFrom(smoothTeleportClazz)) {
+                                smoothTeleport = (SmoothTeleport) smoothTeleportClazz.getConstructor().newInstance();
+                            }
+                            else {
+                                smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
+                                getLogger().warning("Did not find smooth teleport, falling back to bukkit teleportation provider.");
+                            }
+                        }
+                        catch (final ReflectiveOperationException e) {
+                            if (Settings.Debug) {
+                                e.printStackTrace();
+                            }
+                            smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
+                            getLogger().warning("Falling back to bukkit teleportation provider.");
+                        }
+                    }
+                } catch(ClassNotFoundException classNotFoundException) {
+                    // Ignored, continue to search
+                    // Initializing worldhandler worked but somehow no teleport handler was found! So throw the exception further up
+                    if (worldHandler != null) {
+                        throw classNotFoundException;
+                    }
+                }
+            }
+            if (worldHandler == null || smoothTeleport == null) {
+                getLogger().severe("Could not find support for this version.");
+                if (!Settings.DisableNMSCompatibilityCheck) {
+                    // Disable ourselves and exit
+                    setEnabled(false);
+                    return;
+                }
+                else {
+                    // Server owner claims to know what they are doing, warn them of the possible consequences
+                    getLogger().severe("WARNING!\n\t"
+                            + "Running Movecraft on an incompatible version can corrupt your world and break EVERYTHING!\n\t"
+                            + "We provide no support for any issues.");
+                }
+            }
+        }
+        catch (final Exception e) {
+            e.printStackTrace();
+            getLogger().severe("Could not find support for this version.");
+            if (!Settings.DisableNMSCompatibilityCheck) {
+                // Disable ourselves and exit
+                setEnabled(false);
+                return;
+            }
+            else {
+                // Server owner claims to know what they are doing, warn them of the possible consequences
+                getLogger().severe("WARNING!\n\t"
+                        + "Running Movecraft on an incompatible version can corrupt your world and break EVERYTHING!\n\t"
+                        + "We provide no support for any issues.");
+            }
+        }
     }
 
     @Override
