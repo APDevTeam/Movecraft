@@ -83,11 +83,4 @@ public class TrackedLocation {
         return this.craft.get();
     }
 
-    /**
-     * Gets the craft associated with the tracked location.
-     * @return Returns the craft.
-     */
-    public Craft getCraft() {
-        return craft;
-    }
 }
