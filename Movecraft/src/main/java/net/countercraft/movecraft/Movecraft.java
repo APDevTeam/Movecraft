@@ -236,6 +236,7 @@ public class Movecraft extends JavaPlugin {
         getLogger().info("Loading support for " + minecraftVersion);
         try {
             for (String packageName : WorldHandler.getPackageNames(minecraftVersion)) {
+                getLogger().info("Searching for version support classes for package subname " + packageName + "...");
                 try {
                     final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + packageName + ".IWorldHandler");
                     // Check if we have a NMSHandler class at that location.
@@ -267,6 +268,11 @@ public class Movecraft extends JavaPlugin {
                     if (worldHandler != null) {
                         throw classNotFoundException;
                     }
+                }
+
+                if (worldHandler != null && smoothTeleport != null) {
+                    getLogger().info("Found version support for " + minecraftVersion + "!");
+                    break;
                 }
             }
             if (worldHandler == null || smoothTeleport == null) {
