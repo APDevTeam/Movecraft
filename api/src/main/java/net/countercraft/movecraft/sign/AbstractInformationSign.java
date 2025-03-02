@@ -51,19 +51,14 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
         super.onCraftDetect(event, sign);
         this.refreshSign(event.getCraft(), sign, true, REFRESH_CAUSE.CRAFT_DETECT);
         sign.block().update();
+        this.sendUpdatePacket(event.getCraft(), sign, REFRESH_CAUSE.CRAFT_DETECT);
     }
 
     @Override
     public boolean processSignTranslation(Craft translatingCraft, SignListener.SignWrapper movingData, @Nullable List<MovecraftLocation> signLocations) {
         //SignListener.SignWrapper wrapperTmp = new SignListener.SignWrapper(null, movingData::line, movingData.lines(), movingData::line, BlockFace.SELF);
         if (this.refreshSign(translatingCraft, movingData, false, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT)) {
-            for (MovecraftLocation movecraftLocation : signLocations) {
-                Block block = movecraftLocation.toBukkit(translatingCraft.getWorld()).getBlock();
-                if (block instanceof Sign sign) {
-                    SignListener.SignWrapper wrapperTmpTmp = new SignListener.SignWrapper(sign, movingData::line, movingData.lines(), movingData::line, movingData.facing());
-                    this.sendUpdatePacket(translatingCraft, wrapperTmpTmp, REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
-                }
-            }
+            // All cool, we dont need to call the sendPacket method as that will be called by the listener itself
         }
         // We looped over the lines, so we HAVE to return true here
         return true;
@@ -146,15 +141,10 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
      */
     protected abstract void performUpdate(Component[] newComponents, SignListener.SignWrapper sign, REFRESH_CAUSE refreshCause);
 
-    /*
-    Gets called after performUpdate has been called
-     */
-    protected void sendUpdatePacket(Craft craft, SignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
-        if (sign.block() == null) {
-            return;
-        }
-        for (Player player : sign.block().getLocation().getNearbyPlayers(16)) {
-            player.sendSignChange(sign.block().getLocation(), sign.lines());
+    @Override
+    public void onCraftStatusUpdate(Craft craft, final SignListener.SignWrapper sign) {
+        if (this.refreshSign(craft, sign, false, REFRESH_CAUSE.SIGN_CLICK)) {
+            this.sendUpdatePacket(craft, sign, REFRESH_CAUSE.SIGN_CLICK);
         }
     }
 }

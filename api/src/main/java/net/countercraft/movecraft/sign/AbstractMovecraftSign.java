@@ -177,4 +177,21 @@ public abstract class AbstractMovecraftSign {
     // Called by the event handler when SignChangeEvent is being cought
     // Return true, if everything was ok
     public abstract boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign);
+
+    public static void sendUpdatePacketRaw(final SignListener.SignWrapper wrapper, Collection<Player> recipients) {
+        if (wrapper.block() == null || wrapper.side() == null) {
+            return;
+        }
+        for (Player player : recipients) {
+            player.sendSignChange(wrapper.block().getLocation(), wrapper.lines(), wrapper.side().getColor(), wrapper.side().isGlowingText());
+        }
+    }
+
+    public static void sendUpdatePacketRaw(final SignListener.SignWrapper wrapper) {
+        sendUpdatePacketRaw(wrapper, wrapper.block().getLocation().getNearbyPlayers(16));
+    }
+
+    public void sendUpdatePacket(@Nullable Craft craft, SignListener.SignWrapper sign, AbstractInformationSign.REFRESH_CAUSE refreshCause) {
+        sendUpdatePacketRaw(sign);
+    }
 }

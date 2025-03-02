@@ -5,7 +5,6 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftDetectEvent;
-import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.sign.AbstractInformationSign;
 import net.countercraft.movecraft.sign.SignListener;
 import net.countercraft.movecraft.util.Counter;
@@ -89,7 +88,7 @@ public class StatusSign extends AbstractInformationSign {
     @Override
     protected boolean refreshSign(@Nullable Craft craft, SignListener.SignWrapper sign, boolean fillDefault, REFRESH_CAUSE refreshCause) {
         // Calculate blocks and store them temporary, not pretty but works!
-        calcdisplayComponents(craft);
+        calcDisplayComponents(craft);
         // Access violation prevention
         while(displayComponents.size() < 2) {
             displayComponents.add(EMPTY);
@@ -97,7 +96,7 @@ public class StatusSign extends AbstractInformationSign {
         return super.refreshSign(craft, sign, fillDefault, refreshCause);
     }
 
-    protected void calcdisplayComponents(@Nullable Craft craft) {
+    protected void calcDisplayComponents(@Nullable Craft craft) {
         displayComponents.clear();
 
         if (craft == null) {

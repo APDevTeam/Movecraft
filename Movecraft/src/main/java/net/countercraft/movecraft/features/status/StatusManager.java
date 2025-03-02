@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.features.status;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -13,6 +14,7 @@ import net.countercraft.movecraft.features.status.events.CraftStatusUpdateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
+import net.countercraft.movecraft.sign.SignListener;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
@@ -123,6 +125,9 @@ public class StatusManager extends BukkitRunnable implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftStatusUpdate(@NotNull CraftStatusUpdateEvent e) {
         Craft craft = e.getCraft();
+
+        SignListener.INSTANCE.onStatusUpdate(craft);
+
         if (craft instanceof SinkingCraft)
             return;
         if (craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) == 0.0)

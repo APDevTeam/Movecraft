@@ -30,7 +30,7 @@ public class SignTranslateEvent extends CraftEvent{
         for (String s : lines) {
             components.add(Component.text(s));
         }
-        this.backing = new SignListener.SignWrapper(null, components::get, components, components::set, BlockFace.SELF);
+        this.backing = new SignListener.SignWrapper(null, null, components::get, components, components::set, BlockFace.SELF);
     }
 
     public SignTranslateEvent(@NotNull Craft craft, @NotNull SignListener.SignWrapper backing, @NotNull List<MovecraftLocation> locations) throws IndexOutOfBoundsException{

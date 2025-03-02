@@ -111,15 +111,20 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
     // Return true if you modified anything
     public boolean processSignTranslation(final Craft translatingCraft, SignListener.SignWrapper movingData, @Nullable List<MovecraftLocation> signLocations) {
         // DO nothing by default
-        return false;
+        return true;
     }
 
     public void onSignMovedByCraft(SignTranslateEvent event) {
         this.processSignTranslation(event.getCraft(), event.getBacking(), event.getLocations());
+        this.sendUpdatePacket(event.getCraft(), event.getBacking(), AbstractInformationSign.REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
     }
 
     // Gets called by internalProcessSign if a craft is found
     // Always override this as the validation has been made already when this is being called
     protected abstract boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player);
+
+    public void onCraftStatusUpdate(final Craft craft, final SignListener.SignWrapper sign) {
+        // Do nothing by default
+    }
 
 }

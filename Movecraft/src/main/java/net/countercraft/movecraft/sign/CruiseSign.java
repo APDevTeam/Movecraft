@@ -49,6 +49,7 @@ public class CruiseSign extends AbstractCruiseSign {
     @Override
     protected void onAfterStoppingCruise(Craft craft, SignListener.SignWrapper signWrapper, Player player) {
         super.onAfterStoppingCruise(craft, signWrapper, player);
+        // TODO: WTF?!
         if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
             CraftManager.getInstance().addReleaseTask(craft);
         }

@@ -48,6 +48,7 @@ public class SignListener implements Listener {
     // Keep this, it is good to abstract away the sign
     public record SignWrapper(
             @Nullable Sign block,
+            @Nullable SignSide side,
             Function<Integer, Component> getLine,
             List<Component> lines,
             BiConsumer<Integer, Component> setLine,
@@ -201,6 +202,7 @@ public class SignListener implements Listener {
         }
         SignWrapper wrapper = new SignWrapper(
                 sign,
+                signSide,
                 signSide::line,
                 signSide.lines(),
                 signSide::line,
@@ -240,6 +242,7 @@ public class SignListener implements Listener {
         }
         SignWrapper wrapper = new SignWrapper(
                 sign,
+                sign.getSide(side),
                 signChangeEvent::line,
                 signChangeEvent.lines(),
                 signChangeEvent::line,
@@ -291,7 +294,7 @@ public class SignListener implements Listener {
         Set<Sign> signsToUpdate = new HashSet<>();
         for(Map.Entry<SignWrapper, List<SignWrapper>> entry : signs.entrySet()){
             final List<Component> components = new ArrayList<>(entry.getKey().lines());
-            SignWrapper backingForEvent = new SignWrapper(null, components::get, components, components::set, entry.getKey().facing());
+            SignWrapper backingForEvent = new SignWrapper(null, null, components::get, components, components::set, entry.getKey().facing());
             // if(!event.isUpdated()){
             //     continue;
             // }
@@ -306,23 +309,31 @@ public class SignListener implements Listener {
             for (String s : entry.getKey().rawLines()) {
                 System.out.println(" - " + s);
             }*/
-            AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(backingForEvent.line(0));
-            if (acs != null) {
+            AbstractMovecraftSign ams = MovecraftSignRegistry.INSTANCE.getCraftSign(backingForEvent.line(0));
+            if (ams != null && ams instanceof AbstractCraftSign acs) {
                 if (acs.processSignTranslation(craft, backingForEvent, wrapperToLocs.get(entry.getKey())) && (!checkEventIsUpdated || !SignWrapper.areSignsEqualIgnoreFace(backingForEvent, entry.getKey()))) {
                     // Values get changed definitely, but perhaps it does not get applied to the sign after all?
                     for(SignWrapper wrapperTmp : entry.getValue()){
                         wrapperTmp.copyContent(backingForEvent::line, (i) -> i < backingForEvent.lines().size());
                         if (wrapperTmp.block() != null) {
-                            signsToUpdate.add(wrapperTmp.block());
+                            //signsToUpdate.add(wrapperTmp.block());
+                            acs.sendUpdatePacket(craft, wrapperTmp, AbstractInformationSign.REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
                         }
                     }
                 }
             }
-
-        }
-
-        for (Sign sign : signsToUpdate) {
-            sign.update(false, false);
+            // Not a signhandler sing but it has content, so send an update anyway
+            else if (ams != null) {
+                for(SignWrapper wrapperTmp : entry.getValue()){
+                    wrapperTmp.copyContent(backingForEvent::line, (i) -> i < backingForEvent.lines().size());
+                    if (wrapperTmp.block() != null) {
+                        //signsToUpdate.add(wrapperTmp.block());
+                        ams.sendUpdatePacket(craft, wrapperTmp, AbstractInformationSign.REFRESH_CAUSE.SIGN_MOVED_BY_CRAFT);
+                    }
+                }
+            } else {
+                entry.getValue().forEach(AbstractMovecraftSign::sendUpdatePacketRaw);
+            }
         }
     }
 
@@ -492,6 +503,29 @@ public class SignListener implements Listener {
                 }
             }
         }
+    }
+
+    public void onStatusUpdate(final Craft craft) {
+        if (craft == null) {
+            return;
+        }
+
+        final World world = craft.getWorld();
+        craft.getHitBox().forEach(
+                (mloc) -> {
+                    Block block = mloc.toBukkit(world).getBlock();
+                    BlockState state = block.getState();
+                    if (state instanceof Sign sign) {
+                        for (SignWrapper wrapper : this.getSignWrappers(sign)) {
+                            // Would be one more readable line if using Optionals but Nullables were wanted
+                            AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(wrapper.line(0));
+                            if (acs != null) {
+                                acs.onCraftStatusUpdate(craft, wrapper);
+                            }
+                        }
+                    }
+                }
+        );
     }
 
 }
