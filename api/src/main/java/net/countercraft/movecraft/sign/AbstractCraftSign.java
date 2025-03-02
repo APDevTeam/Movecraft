@@ -5,6 +5,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -124,6 +125,10 @@ public abstract class AbstractCraftSign extends AbstractMovecraftSign {
     protected abstract boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player);
 
     public void onCraftStatusUpdate(final Craft craft, final SignListener.SignWrapper sign) {
+        // Do nothing by default
+    }
+
+    public void onCraftStopCruising(final Craft craft, final SignListener.SignWrapper sign, CraftStopCruiseEvent.Reason reason) {
         // Do nothing by default
     }
 

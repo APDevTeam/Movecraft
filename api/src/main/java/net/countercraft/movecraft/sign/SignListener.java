@@ -5,7 +5,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.events.SignTranslateEvent;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
@@ -340,21 +342,9 @@ public class SignListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
     public void onCraftDetect(CraftDetectEvent event) {
         final World world = event.getCraft().getWorld();
-        event.getCraft().getHitBox().forEach(
-                (mloc) -> {
-                    Block block = mloc.toBukkit(world).getBlock();
-                    BlockState state = block.getState();
-                    if (state instanceof Sign sign) {
-                        for (SignWrapper wrapper : this.getSignWrappers(sign)) {
-                            // Would be one more readable line if using Optionals but Nullables were wanted
-                            AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(wrapper.line(0));
-                            if (acs != null) {
-                                acs.onCraftDetect(event, wrapper);
-                            }
-                        }
-                    }
-                }
-        );
+        final Craft craft = event.getCraft();
+
+        executeForAllCraftSigns(craft, (acs, wrapper) -> acs.onCraftDetect(event, wrapper));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
@@ -510,6 +500,23 @@ public class SignListener implements Listener {
             return;
         }
 
+        executeForAllCraftSigns(craft, (acs, wrapper) -> acs.onCraftStatusUpdate(craft, wrapper));
+    }
+
+    @EventHandler
+    public void onCraftStopCruising(final CraftStopCruiseEvent event) {
+        if (event.getCraft() == null || (event.getCraft() instanceof SinkingCraft)) {
+            return;
+        }
+
+        final Craft craft = event.getCraft();
+
+        executeForAllCraftSigns(craft, (acs, wrapper) -> {
+            acs.onCraftStopCruising(craft, wrapper, event.getReason());
+        });
+    }
+
+    void executeForAllCraftSigns(final @NotNull Craft craft, BiConsumer<AbstractCraftSign, SignWrapper> functionToRun) {
         final World world = craft.getWorld();
         craft.getHitBox().forEach(
                 (mloc) -> {
@@ -517,10 +524,9 @@ public class SignListener implements Listener {
                     BlockState state = block.getState();
                     if (state instanceof Sign sign) {
                         for (SignWrapper wrapper : this.getSignWrappers(sign)) {
-                            // Would be one more readable line if using Optionals but Nullables were wanted
                             AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(wrapper.line(0));
                             if (acs != null) {
-                                acs.onCraftStatusUpdate(craft, wrapper);
+                                functionToRun.accept(acs, wrapper);
                             }
                         }
                     }
