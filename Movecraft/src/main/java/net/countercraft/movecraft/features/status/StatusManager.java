@@ -10,6 +10,7 @@ import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.features.status.events.CraftStatusUpdateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.WorldManager;
@@ -181,7 +182,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
         // If the craft is sinking, let the player know and sink the craft.
         if (sinking) {
             craft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Player - Craft is sinking"));
-            craft.setCruising(false);
+            craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
             CraftManager.getInstance().sink(craft);
         }
     }

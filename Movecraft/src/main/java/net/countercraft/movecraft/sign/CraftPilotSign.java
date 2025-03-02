@@ -8,6 +8,7 @@ import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.Pair;
@@ -122,7 +123,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
                             new BukkitRunnable() {
                                 @Override
                                 public void run() {
-                                    craft.setCruising(false);
+                                    craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
                                     CraftManager.getInstance().sink(craft);
                                 }
                             }.runTaskLater(Movecraft.getInstance(), (craftType.getIntProperty(CraftType.CRUISE_ON_PILOT_LIFETIME)));

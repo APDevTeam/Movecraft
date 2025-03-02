@@ -7,6 +7,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -233,11 +234,13 @@ public abstract class BaseCraft implements Craft {
     }
 
     @Override
-    public void setCruising(boolean cruising) {
+    public void setCruising(boolean cruising, CraftStopCruiseEvent.Reason reason) {
         audience.sendActionBar(Component.text().content("Cruising " + (cruising ? "enabled" : "disabled")));
         this.cruising = cruising;
         if (!this.cruising) {
             this.setCruiseCooldownMultiplier(1);
+            CraftStopCruiseEvent event = new CraftStopCruiseEvent(this, reason);
+            Bukkit.getPluginManager().callEvent(event);
         }
     }
 

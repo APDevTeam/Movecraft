@@ -2,6 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import org.bukkit.entity.Player;
 
 /*
@@ -45,7 +46,7 @@ public abstract class AbstractCruiseSign extends AbstractToggleSign {
             CruiseDirection cruiseDirection = this.getCruiseDirection(signWrapper);
             this.setCraftCruising(player, cruiseDirection, craft);
         } else {
-            craft.setCruising(false);
+            craft.setCruising(false, CraftStopCruiseEvent.Reason.SIGN_INTERACTION);
         }
     }
 

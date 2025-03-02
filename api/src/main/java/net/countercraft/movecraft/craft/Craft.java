@@ -25,6 +25,7 @@ import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.MathUtils;
@@ -163,7 +164,11 @@ public interface Craft {
      * Sets the craft to cruise or not cruise.
      * @param cruising the desired cruise state
      */
-    void setCruising(boolean cruising);
+    default void setCruising(boolean cruising) {
+        setCruising(cruising, CraftStopCruiseEvent.Reason.UNKNOWN);
+    }
+
+    void setCruising(boolean cruising, CraftStopCruiseEvent.Reason reason);
 
     /**
      * Gets the disabled status of the craft

@@ -4,6 +4,7 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -35,12 +36,12 @@ public class CruiseCommand implements TabExecutor {
                 return true;
             }
             if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {
-                craft.setCruising(false);
+                craft.setCruising(false, CraftStopCruiseEvent.Reason.COMMAND);
                 return true;
             }
 
             if(craft.getCruising()){
-                craft.setCruising(false);
+                craft.setCruising(false, CraftStopCruiseEvent.Reason.COMMAND);
                 return true;
             }
             // Normalize yaw from [-360, 360] to [0, 360]
@@ -66,7 +67,7 @@ public class CruiseCommand implements TabExecutor {
                 player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("You must be piloting a craft"));
                 return true;
             }
-            craft.setCruising(false);
+            craft.setCruising(false, CraftStopCruiseEvent.Reason.COMMAND);
             return true;
         }
         if (!player.hasPermission("movecraft.commands") || !player.hasPermission("movecraft.commands.cruise")) {

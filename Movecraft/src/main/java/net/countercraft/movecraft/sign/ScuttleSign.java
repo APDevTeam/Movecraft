@@ -6,6 +6,7 @@ import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftScuttleEvent;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -76,7 +77,7 @@ public class ScuttleSign extends AbstractCraftSign {
         if(e.isCancelled())
             return false;
 
-        craft.setCruising(false);
+        craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
         CraftManager.getInstance().sink(craft);
         player.sendMessage(MOVECRAFT_COMMAND_PREFIX
                 + I18nSupport.getInternationalisedString("Scuttle - Scuttle Activated"));
