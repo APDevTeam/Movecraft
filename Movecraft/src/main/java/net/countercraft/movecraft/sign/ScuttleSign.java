@@ -55,10 +55,10 @@ public class ScuttleSign extends AbstractCraftSign {
                     + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return false;
         }
-        if (craft instanceof PilotedCraft pc) {
-            if (player.getUniqueId().equals(pc.getPilotUUID())) {
-                return true;
-            }
+        // Checks if the given player is the owner/pilot of the given craft
+        // If it isnt a piloted craft, it returns true
+        if (super.canPlayerUseSignOn(player, craft) && (craft instanceof PilotedCraft)) {            
+            return true;            
         }
         // Check for "can scuttle others" permission
         if (this.permissionString != null || !this.permissionString.isBlank()) {
