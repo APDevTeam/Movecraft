@@ -30,6 +30,9 @@ public abstract class AsyncChunk<T extends Chunk> {
                 } catch(ClassNotFoundException classNotFoundException) {
                     // Ignore
                 }
+                if (temp != null ) {
+                    break;
+                }
             }
             if (temp == null) {
                 throw new ClassNotFoundException(lastPackageName);
