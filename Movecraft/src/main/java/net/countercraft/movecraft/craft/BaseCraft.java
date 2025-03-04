@@ -356,7 +356,31 @@ public abstract class BaseCraft implements Craft {
 
         // Dynamic Fly Block Speed
         int cruiseTickCooldown = (int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_TICK_COOLDOWN, w);
-        if (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
+        if (!materials.isEmpty() && type.getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) != null && (type.getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) instanceof Map<?, ?> mapping)) {
+            double modifier = 0.0D;
+            final double shipSize = this.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER) ? (double) this.getDataTag(Craft.NON_NEGLIGIBLE_BLOCKS) : (double) this.getDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS);
+            for (Map.Entry<?, ?> entry : mapping.entrySet()) {
+                if (!((entry.getKey() instanceof EnumSet<?>) && (entry.getValue() instanceof Double))) {
+                    continue;
+                }
+                EnumSet<?> mappingMats = (EnumSet<?>) entry.getKey();
+                Double value = (Double) entry.getValue();
+                // Value represents speed modifier if the ship is 100% made of that block
+                int blockCount = 0;
+                for (Object obj : mappingMats) {
+                    if (obj instanceof Material mat) {
+                        blockCount += materials.get(mat);
+                    }
+                }
+                double effectiveModifier = value * (((double)blockCount) / shipSize);
+
+                modifier += effectiveModifier;
+            }
+            // Now, calculate the actual speed and apply it!
+            // Return at least one as a safeguard
+            return Math.max((int) Math.round((20.0 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / modifier) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
+        }
+        else if (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
             if (materials.isEmpty()) {
                 return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
             }
@@ -365,10 +389,13 @@ public abstract class BaseCraft implements Craft {
             for (Material m : flyBlockMaterials) {
                 count += materials.get(m);
             }
+            // Percentual amount of blocks of the craft
             double ratio = count / hitBox.size();
             double speed = (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) * 1.5)
                     * (ratio - 0.5)
+                    // Add the base speed to it (current cruise speed + 1)
                         + (20.0 / cruiseTickCooldown) + 1;
+            // Return at least one as a safeguard
             return Math.max((int) Math.round((20.0 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / speed) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
         }
 

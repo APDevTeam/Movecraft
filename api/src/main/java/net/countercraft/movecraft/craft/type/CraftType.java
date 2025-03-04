@@ -169,6 +169,7 @@ final public class CraftType {
     public static final NamespacedKey DYNAMIC_LAG_MIN_SPEED = buildKey("dynamic_lag_min_speed");
     public static final NamespacedKey DYNAMIC_FLY_BLOCK_SPEED_FACTOR = buildKey("dynamic_fly_block_speed_factor");
     public static final NamespacedKey DYNAMIC_FLY_BLOCK = buildKey("dynamic_fly_block");
+    public static final NamespacedKey SPEED_MODIFIER_BLOCKS = buildKey("speed_modifier_blocks");
     public static final NamespacedKey CHEST_PENALTY = buildKey("chest_penalty");
     public static final NamespacedKey GRAVITY_INCLINE_DISTANCE = buildKey("gravity_incline_distance");
     public static final NamespacedKey GRAVITY_DROP_DISTANCE = buildKey("gravity_drop_distance");
@@ -530,6 +531,31 @@ final public class CraftType {
                 type -> 0D));
         registerProperty(new MaterialSetProperty("dynamicFlyBlock", DYNAMIC_FLY_BLOCK,
                 type -> EnumSet.noneOf(Material.class)));
+        registerProperty(new ObjectPropertyImpl("speedModifierBlocks", SPEED_MODIFIER_BLOCKS,
+                (data, type, fileKey, namespacedKey) -> {
+                    var map = data.getData(fileKey).getBackingData();
+                    if(map.isEmpty())
+                        throw new TypeData.InvalidValueException("Value for " + fileKey + " must not be an empty map");
+
+                    Map<EnumSet<Material>, Double> modifierMapping = new HashMap<>();
+                    for(var i : map.entrySet()) {
+                        EnumSet<Material> materials = Tags.parseMaterials(i.getKey());
+                        Object o = i.getValue();
+                        double modifier;
+                        if (o instanceof String)
+                            modifier = Double.parseDouble((String) o);
+                        else if (o instanceof Integer)
+                            modifier = ((Integer) o).doubleValue();
+                        else
+                            modifier = (double) o;
+                        modifierMapping.put(materials, modifier);
+                    }
+                    return modifierMapping;
+                },
+                type -> {
+                    return Map.of();
+                }
+        ));
         registerProperty(new DoubleProperty("chestPenalty", CHEST_PENALTY, type -> 0D));
         registerProperty(new IntegerProperty("gravityInclineDistance", GRAVITY_INCLINE_DISTANCE, type -> -1));
         registerProperty(new IntegerProperty("gravityDropDistance", GRAVITY_DROP_DISTANCE, type -> -8));
@@ -568,7 +594,6 @@ final public class CraftType {
                     return fuelTypes;
                 }
         ));
-        reigsterProperty(new Booleanproperty("sinkWhenOutOfFuel", SINK_WHEN_OUT_OF_FUEL, type -> false);
         registerProperty(new BooleanProperty("sinkWhenOutOfFuel", SINK_WHEN_OUT_OF_FUEL, type -> false));
         registerProperty(new ObjectPropertyImpl("disableTeleportToWorlds", DISABLE_TELEPORT_TO_WORLDS,
                 (data, type, fileKey, namespacedKey) -> data.getStringList(fileKey),
