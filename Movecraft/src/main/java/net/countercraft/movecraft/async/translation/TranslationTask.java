@@ -151,6 +151,10 @@ public class TranslationTask extends AsyncTask {
 
         if (!(dy < 0 && dx == 0 && dz == 0) && !checkFuel()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+            if (craft.getType().getBoolProperty(CraftType.SINK_WHEN_OUT_OF_FUEL)) {
+                craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
+                CraftManager.getInstance().sink(craft);
+            }
             return;
         }
 
