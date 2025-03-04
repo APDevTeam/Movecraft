@@ -95,6 +95,10 @@ public class RotationTask extends AsyncTask {
         if (!checkFuel()) {
             failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel");
             failed = true;
+            if (craft.getType().getBoolProperty(CraftType.SINK_WHEN_OUT_OF_FUEL)) {
+                craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
+                CraftManager.getInstance().sink(craft);
+            }
             return;
         }
         // if a subcraft, find the parent craft. If not a subcraft, it is it's own parent
