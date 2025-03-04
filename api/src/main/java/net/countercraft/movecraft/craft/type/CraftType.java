@@ -569,6 +569,7 @@ final public class CraftType {
                 }
         ));
         reigsterProperty(new Booleanproperty("sinkWhenOutOfFuel", SINK_WHEN_OUT_OF_FUEL, type -> false);
+        registerProperty(new BooleanProperty("sinkWhenOutOfFuel", SINK_WHEN_OUT_OF_FUEL, type -> false));
         registerProperty(new ObjectPropertyImpl("disableTeleportToWorlds", DISABLE_TELEPORT_TO_WORLDS,
                 (data, type, fileKey, namespacedKey) -> data.getStringList(fileKey),
                 type -> new ArrayList<>()
