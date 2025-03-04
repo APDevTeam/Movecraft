@@ -174,6 +174,7 @@ final public class CraftType {
     public static final NamespacedKey GRAVITY_DROP_DISTANCE = buildKey("gravity_drop_distance");
     public static final NamespacedKey COLLISION_SOUND = buildKey("collision_sound");
     public static final NamespacedKey FUEL_TYPES = buildKey("fuel_types");
+    public static final NamespacedKey SINK_WHEN_OUT_OF_FUEL = buildKey("sink_when_out_of_fuel");
     public static final NamespacedKey DISABLE_TELEPORT_TO_WORLDS = buildKey("disable_teleport_to_worlds");
     public static final NamespacedKey TELEPORTATION_COOLDOWN = buildKey("teleportation_cooldown");
     public static final NamespacedKey GEAR_SHIFTS = buildKey("gear_shifts");
@@ -567,6 +568,7 @@ final public class CraftType {
                     return fuelTypes;
                 }
         ));
+        reigsterProperty(new Booleanproperty("sinkWhenOutOfFuel", SINK_WHEN_OUT_OF_FUEL, type -> false);
         registerProperty(new ObjectPropertyImpl("disableTeleportToWorlds", DISABLE_TELEPORT_TO_WORLDS,
                 (data, type, fileKey, namespacedKey) -> data.getStringList(fileKey),
                 type -> new ArrayList<>()
