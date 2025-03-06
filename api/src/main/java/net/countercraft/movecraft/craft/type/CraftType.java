@@ -169,6 +169,8 @@ final public class CraftType {
     public static final NamespacedKey DYNAMIC_LAG_MIN_SPEED = buildKey("dynamic_lag_min_speed");
     public static final NamespacedKey DYNAMIC_FLY_BLOCK_SPEED_FACTOR = buildKey("dynamic_fly_block_speed_factor");
     public static final NamespacedKey DYNAMIC_FLY_BLOCK = buildKey("dynamic_fly_block");
+    private static final NamespacedKey SPEED_MODIFIER_MAX_SPEED = buildKey("speed_modifier_max_speed");
+    public static final NamespacedKey PER_WORLD_MODIFIER_MAX_SPEED = buildKey("per_world_speed_modifier_max_speed");
     public static final NamespacedKey SPEED_MODIFIER_BLOCKS = buildKey("speed_modifier_blocks");
     public static final NamespacedKey CHEST_PENALTY = buildKey("chest_penalty");
     public static final NamespacedKey GRAVITY_INCLINE_DISTANCE = buildKey("gravity_incline_distance");
@@ -531,6 +533,9 @@ final public class CraftType {
                 type -> 0D));
         registerProperty(new MaterialSetProperty("dynamicFlyBlock", DYNAMIC_FLY_BLOCK,
                 type -> EnumSet.noneOf(Material.class)));
+        registerProperty(new DoubleProperty("speedModifierMaxSpeed", SPEED_MODIFIER_MAX_SPEED, type -> type.getDoubleProperty(CRUISE_SPEED)));
+        registerProperty(new PerWorldProperty<>("perWorldSpeedModifierMaxSpeed", PER_WORLD_MODIFIER_MAX_SPEED,
+                (type, worldName) -> type.getDoubleProperty(SPEED_MODIFIER_MAX_SPEED)));
         registerProperty(new ObjectPropertyImpl("speedModifierBlocks", SPEED_MODIFIER_BLOCKS,
                 (data, type, fileKey, namespacedKey) -> {
                     var map = data.getData(fileKey).getBackingData();

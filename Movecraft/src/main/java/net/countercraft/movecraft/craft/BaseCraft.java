@@ -381,12 +381,24 @@ public abstract class BaseCraft implements Craft {
 
                 modifier += effectiveModifier;
             }
-            // Recalculate the tick cooldown to a speed in m/s and for whatever reason add 1 to it
-            double speed = (20.0 / cruiseTickCooldown) + 1;
-            speed += modifier;
+            // Recalculate the tick cooldown to a speed in m/s
+            //tickcooldown = (int) Math.round((1.0 + data.get(CRUISE_SKIP_BLOCKS)) * 20.0 / type.getDoubleProperty(CRUISE_SPEED))
+            // => CruiseSpeed = Math.round((1 + CruiseSkipBlocks) * 20 / tickCooldown)
+            final int skipDistance = (cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) ? ((int) type.getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, w) + 1) : ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1);
+            double normalSpeedUnmodified = (cruiseTickCooldown + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+            double speedInMetersPerSecond = 20.0 * skipDistance / normalSpeedUnmodified;
+            speedInMetersPerSecond += modifier;
+
+            // Apply max limit
+            speedInMetersPerSecond = Math.min((double)this.type.getPerWorldProperty(CraftType.PER_WORLD_MODIFIER_MAX_SPEED, this.getWorld()), Math.max(1.0D, speedInMetersPerSecond));
+
+            // Recalculate speed to cooldown ticks again
+            int speed = Math.max(1, (int) Math.round(20.0 * skipDistance / speedInMetersPerSecond));
+
             // Now, calculate the actual speed and apply it!
             // Return at least one as a safeguard
-            return Math.max((int) Math.round((20.0 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / speed) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
+            //return Math.max((int) Math.round((20.0 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / speed) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
+            return (speed + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
         }
         else if (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
             if (materials.isEmpty()) {
