@@ -172,7 +172,7 @@ public class Tags {
         if (tagged != null) {
             returnSet.addAll(tagged);
         } else {
-            returnSet.add(Material.valueOf(materialName.toUpperCase()));
+            returnSet.add(Material.matchMaterial(materialName));
         }
         return returnSet;
     }
