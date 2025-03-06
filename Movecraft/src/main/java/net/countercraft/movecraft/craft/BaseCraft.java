@@ -381,9 +381,12 @@ public abstract class BaseCraft implements Craft {
 
                 modifier += effectiveModifier;
             }
+            // Recalculate the tick cooldown to a speed in m/s and for whatever reason add 1 to it
+            double speed = (20.0 / cruiseTickCooldown) + 1;
+            speed += modifier;
             // Now, calculate the actual speed and apply it!
             // Return at least one as a safeguard
-            return Math.max((int) Math.round((20.0 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / modifier) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
+            return Math.max((int) Math.round((20.0 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / speed) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
         }
         else if (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
             if (materials.isEmpty()) {
