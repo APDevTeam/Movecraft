@@ -377,6 +377,7 @@ public abstract class BaseCraft implements Craft {
                         blockCount += materials.get(mat);
                     }
                 }
+                // TODO: Maybe change it so that the value represents the modifier value per single block? That would be more intuitive but also enforce a minimum size for max speed
                 double effectiveModifier = value * (((double)blockCount) / shipSize);
 
                 modifier += effectiveModifier;
