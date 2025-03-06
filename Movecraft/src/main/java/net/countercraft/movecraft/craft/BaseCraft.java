@@ -356,7 +356,12 @@ public abstract class BaseCraft implements Craft {
 
         // Dynamic Fly Block Speed
         int cruiseTickCooldown = (int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_TICK_COOLDOWN, w);
-        if (!materials.isEmpty() && type.getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) != null && (type.getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) instanceof Map<?, ?> mapping)) {
+        if (
+            !materials.isEmpty() 
+            && type.getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) != null 
+            && (type.getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) instanceof Map<?, ?> mapping)
+            && !mapping.isEmpty()
+        ) {
             double modifier = 0.0D;
             final double shipSize = this.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER) ? (double) this.getDataTag(Craft.NON_NEGLIGIBLE_BLOCKS) : (double) this.getDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS);
             for (Map.Entry<?, ?> entry : mapping.entrySet()) {
