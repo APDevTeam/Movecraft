@@ -1,0 +1,147 @@
+#Before you start editing this template go to this github page that contains what ever flag does
+#If a flag is commented it means it had no default value and you should set it yourself using the page
+#github page link: https://github.com/APDevTeam/Movecraft/wiki/Type-File
+name: template
+maxSize: 1
+minSize: 1
+allowedBlocks: 
+    - "#planks"
+    - water
+    - lava
+    - "#logs"
+    - "#glass"
+    - lapis_block
+    - dispenser
+    - note_block
+    - "#beds"
+    - sticky_piston
+    - piston
+    - piston_head
+    - "#wool"
+    - gold_block
+    - iron_block
+    - "#slabs"
+    - bricks
+    - bookshelf
+    - torch
+    - fire
+    - "#stairs"
+    - "#chests"
+    - redstone_wire
+    - diamond_block
+    - crafting_table
+    - furnace
+    - blast_furnace
+    - smoker
+    - "#signs"
+    - "#doors"
+    - ladder
+    - lever
+    - "#pressure_plates"
+    - redstone_torch
+    - redstone_wall_torch
+    - "#buttons"
+    - clay
+    - "#fences"
+    - netherrack
+    - glowstone
+    - cake
+    - repeater
+    - "#trapdoors"
+    - "#stone_bricks"
+    - iron_bars
+    - "#fence_gates"
+    - nether_brick
+    - enchanting_table
+    - brewing_stand
+    - cauldron
+    - end_stone
+    - dragon_egg
+    - redstone_lamp
+    - ender_chest
+    - tripwire_hook
+    - tripwire
+    - emerald_block
+    - beacon
+    - "#walls"
+    - flower_pot
+    - "#heads"
+    - "#anvil"
+    - comparator
+    - daylight_detector
+    - redstone_block
+    - hopper
+    - quartz_block
+    - chiseled_quartz_block
+    - quartz_pillar
+    - smooth_quartz
+    - activator_rail
+    - dropper
+    - "#terracotta"
+    - "#concrete"
+    - slime_block
+    - "#carpets"
+    - coal_block
+    - end_stone_bricks
+    - smooth_stone
+    - bell
+    - cartography_table
+    - composter
+    - fletching_table
+    - grindstone
+    - lantern
+    - lectern
+    - loom
+    - smithing_table
+    - stonecutter
+
+speed: 1.0
+allowHorizontalMovement: true
+allowRemoteSign: true
+allowVerticalMovement: true
+allowVerticalTakeoffAndLanding: true
+canBeNamed: true
+canCruise: false
+canDirectControl: true
+canHover: false
+canStaticMove: false
+canTeleport: false
+canSwitchWorld: false
+chestPenalty: 0.0
+collisionExplosion: 0.0
+cruiseOnPilot: false
+cruiseOnPilotVertMove: 0
+cruiseSkipBlocks: 0
+#cruiseSpeed:
+#detectionMultiplier:
+dynamicFlyBlock: 0
+dynamicFlyBlockSpeedFactor: 0.0
+dynamicLagSpeedFactor: 0.0
+dynamicLagPowerFactor: 0.0
+explodeOnCrash: 0.0
+flyblocks: None
+focusedExplosion: false
+forbiddenBlocks: None
+forbiddenHoverOverBlocks: None
+forbiddenSignStrings: None
+fuelBurnRate: 0.0
+harvestBlocks: None
+harvesterBladeBlocks: None
+hoverLimit: 0
+keepMovingOnSink: false
+maxHeightAboveGround: -1
+maxHeightLimit: 254
+minHeightLimit: 0
+moveEntities: true
+overallSinkPercent: 0.0
+onlyMovePlayers: true
+passthroughBlocks: None
+requireWaterContact: false
+rotateAtMidpoint: false
+sinkPercent: 0.0
+sinkTickRate: 0
+smokeOnSink: 0
+staticWaterLevel: 0
+#underwaterDetectionMultiplier: 
+#vertCruiseSkipBlocks: 
+#vertCruiseSpeed: 
