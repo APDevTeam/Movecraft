@@ -7,6 +7,7 @@ repositories {
     maven("https://repo.maven.apache.org/maven2/")
     maven("https://oss.sonatype.org/content/repositories/snapshots/")
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://repo.aikar.co/content/groups/aikar/")
 }
 
 group = "net.countercraft"
