@@ -197,7 +197,7 @@ public class TranslationTask extends AsyncTask {
             ) && blockObstructed;
             // air never obstructs anything (changed 4/18/2017 to prevent drilling machines)
 
-            if (blockObstructed && !harvestBlocks.isEmpty() && harvestBlocks.contains(testMaterial)) {
+            if (!(craft instanceof SinkingCraft ) && blockObstructed && !harvestBlocks.isEmpty() && harvestBlocks.contains(testMaterial)) {
                 Material tmpType = oldLocation.toBukkit(craft.getWorld()).getBlock().getType();
                 if (harvesterBladeBlocks.size() > 0 && harvesterBladeBlocks.contains(tmpType)) {
                     blockObstructed = false;
