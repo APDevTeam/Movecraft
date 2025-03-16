@@ -10,6 +10,7 @@ import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.Pair;
+import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -31,6 +32,7 @@ import java.util.Set;
 public final class SubcraftRotateSign implements Listener {
     private static final String HEADER = "Subcraft Rotate";
     private final Set<MovecraftLocation> rotating = new HashSet<>();
+    private long lastRotateTime = 0;
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onSignClick(@NotNull PlayerInteractEvent event) {
@@ -57,6 +59,13 @@ public final class SubcraftRotateSign implements Listener {
             event.setCancelled(true);
             return;
         }
+
+        // time checks before rotation
+        if (getLastRotateTime() + 1e9 > System.nanoTime()) {
+            event.getPlayer().sendMessage(I18nSupport.getInternationalisedComponent("Rotation - Turning Too Quickly"));
+            return;
+        }   
+        setLastRotateTime(System.nanoTime());
 
         // rotate subcraft
         String craftTypeStr = ChatColor.stripColor(sign.getLine(1));
@@ -136,5 +145,13 @@ public final class SubcraftRotateSign implements Listener {
                 rotating.remove(startPoint);
             }
         }.runTaskLater(Movecraft.getInstance(), 4);
+    }
+
+    public long getLastRotateTime() {
+        return lastRotateTime;
+    }
+
+    public void setLastRotateTime(long lastRotateTime) {
+        this.lastRotateTime = lastRotateTime;
     }
 }
