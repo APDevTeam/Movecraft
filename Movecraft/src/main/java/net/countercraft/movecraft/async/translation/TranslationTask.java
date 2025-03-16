@@ -235,7 +235,6 @@ public class TranslationTask extends AsyncTask {
             }
             Material testType = test.toBukkit(world).getBlock().getType();
             if (craft.getType().getMaterialSetProperty(CraftType.FORBIDDEN_HOVER_OVER_BLOCKS).contains(testType)) {
-                // Why is there no return here? Shouldnt there be one?
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over block"),
                         testType.name().toLowerCase().replace("_", " ")));
                 return;
