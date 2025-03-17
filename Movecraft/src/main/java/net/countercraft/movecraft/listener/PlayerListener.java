@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -42,7 +43,12 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 public class PlayerListener implements Listener {
-    private final Map<Craft, Long> timeToReleaseAfter = new WeakHashMap<>();
+    private final Map<Craft, Long> timeToReleaseAfter;
+
+    @Inject
+    public PlayerListener() {
+        timeToReleaseAfter = new WeakHashMap<>();
+    }
 
     private Set<Location> checkCraftBorders(Craft craft) {
         Set<Location> mergePoints = new HashSet<>();

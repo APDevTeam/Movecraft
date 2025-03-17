@@ -17,6 +17,7 @@
 
 package net.countercraft.movecraft.listener;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -54,6 +55,9 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 public class BlockListener implements Listener {
+    @Inject
+    public BlockListener(){}
+
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(@NotNull BlockBreakEvent e) {
         if (!Settings.ProtectPilotedCrafts)

@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.features.status;
 
+import jakarta.inject.Inject;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -10,6 +11,7 @@ import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.features.status.events.CraftStatusUpdateEvent;
+import net.countercraft.movecraft.lifecycle.Worker;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
@@ -31,12 +33,28 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class StatusManager extends BukkitRunnable implements Listener {
+public class StatusManager implements Listener, Worker {
     private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
+    private final @NotNull CraftManager craftManager;
+
+    @Inject
+    public StatusManager(@NotNull CraftManager craftManager){
+        this.craftManager = craftManager;
+    }
+
+    @Override
+    public boolean isAsync() {
+        return true;
+    }
+
+    @Override
+    public int getPeriod() {
+        return 1;
+    }
 
     @Override
     public void run() {
-        for (Craft c : CraftManager.getInstance().getCrafts()) {
+        for (Craft c : craftManager.getCrafts()) {
             long ticksElapsed = (System.currentTimeMillis() - c.getDataTag(LAST_STATUS_CHECK)) / 50;
             if (ticksElapsed <= Settings.SinkCheckTicks)
                 continue;
@@ -176,7 +194,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
         if (sinking) {
             craft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Player - Craft is sinking"));
             craft.setCruising(false);
-            CraftManager.getInstance().sink(craft);
+            craftManager.sink(craft);
         }
     }
 }
