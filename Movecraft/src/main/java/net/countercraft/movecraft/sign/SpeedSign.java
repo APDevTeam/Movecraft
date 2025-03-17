@@ -45,9 +45,9 @@ public class SpeedSign extends AbstractInformationSign {
         // TODO: Display the gear somewhere?
         switch(lineIndex) {
             case 1:
-                return Component.text(String.format("%.2f",craft.getSpeed()) + "m/s");
+                return Component.text(String.format("%.2f", craft.getCruising() ? craft.getSpeed() : 0.00D) + "m/s");
             case 2:
-                return Component.text(String.format("%.2f",craft.getMeanCruiseTime() * 1000) + "ms");
+                return Component.text(String.format("%.2f", craft.getMeanCruiseTime() * 1000) + "ms");
             case 3:
                 return Component.text(craft.getTickCooldown() + "T");
             default:
