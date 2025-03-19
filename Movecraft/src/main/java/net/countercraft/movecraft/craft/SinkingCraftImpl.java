@@ -7,17 +7,9 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
-
 public class SinkingCraftImpl extends BaseCraft implements SinkingCraft, ContactProvider {
-
-    private final UUID sinkingUUID;
-
     public SinkingCraftImpl(@NotNull Craft original) {
         super(original.getType(), original.getWorld());
-        this.sinkingUUID = original.getUUID();
-        Hidden.uuidToCraft.remove(this.getUUID());
-        Hidden.uuidToCraft.put(this.getUUID(), this);
         hitBox = original.getHitBox();
         collapsedHitBox.addAll(original.getCollapsedHitBox());
         fluidLocations = original.getFluidLocations();
@@ -26,11 +18,6 @@ public class SinkingCraftImpl extends BaseCraft implements SinkingCraft, Contact
         setLastTranslation(original.getLastTranslation());
         // If the craft is sinking we dont need an audience anymore
         setAudience(Audience.empty());
-    }
-
-    @Override
-    public UUID getUUID() {
-        return this.sinkingUUID;
     }
 
     @Override
