@@ -76,11 +76,16 @@ public abstract class BaseCraft implements Craft {
     @NotNull
     private final CraftDataTagContainer dataTagContainer;
 
-    private final UUID uuid = UUID.randomUUID();
+    private final UUID uuid;
 
     private double cruiseTickMultiplier = 1;
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
+        this(type, world, UUID.randomUUID());
+    }
+
+    public BaseCraft(@NotNull CraftType type, @NotNull World world, final @NotNull UUID uuid) {
+        this.uuid = uuid;
         Hidden.uuidToCraft.put(uuid, this);
         this.type = type;
         this.w = world;
