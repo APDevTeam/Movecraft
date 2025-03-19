@@ -53,9 +53,7 @@ public interface Craft {
     CraftDataTagKey<Counter<RequiredBlockEntry>> MOVEBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "moveblocks"), craft -> new Counter<>());
     CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);
     CraftDataTagKey<Integer> NON_NEGLIGIBLE_SOLID_BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "non-negligible-solid-blocks"), Craft::getOrigBlockCount);
-    CraftDataTagKey<MovecraftLocation> CRAFT_ORIGIN = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "craft-origin"), craft -> {
-        return craft.getHitBox().getMidPoint();
-    });
+    CraftDataTagKey<MovecraftLocation> CRAFT_ORIGIN = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "craft-origin"), craft -> craft.getHitBox().getMidPoint());
 
     // Java disallows private or protected fields in interfaces, this is a workaround
     class Hidden {
