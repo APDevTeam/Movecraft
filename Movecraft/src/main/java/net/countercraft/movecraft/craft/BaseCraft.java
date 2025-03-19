@@ -82,7 +82,7 @@ public abstract class BaseCraft implements Craft {
     private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
 
     @NotNull
-    private final CraftDataTagContainer dataTagContainer;
+    protected CraftDataTagContainer dataTagContainer;
 
     private final UUID uuid;
 
@@ -584,4 +584,12 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations() {return trackedLocations;}
+
+    /**
+     * @return copy of dataTagContainer, changes to the returned CraftDataTagContainer won't be reflected to the actual craft
+     */
+    @Override
+    public @NotNull CraftDataTagContainer getDataTagContainer() {
+        return dataTagContainer.copy(this);
+    }
 }
