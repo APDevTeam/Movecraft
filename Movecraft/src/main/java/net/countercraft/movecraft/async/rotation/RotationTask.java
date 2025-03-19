@@ -191,7 +191,7 @@ public class RotationTask extends AsyncTask {
         Craft craft1 = getCraft();
         if (craft1.getCruising()) {
             CruiseDirection direction = craft1.getCruiseDirection();
-            craft1.setCruiseDirection(direction.getRotated(rotation));
+            craft1.setCruiseDirection(direction.getRotated2D(rotation));
         }
 
         // if you rotated a subcraft, update the parent with the new blocks

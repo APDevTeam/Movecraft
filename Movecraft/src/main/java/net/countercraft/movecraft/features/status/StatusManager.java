@@ -136,7 +136,6 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
         boolean sinking = false;
         boolean disabled = false;
-        Counter<Material> materials = craft.getDataTag(Craft.MATERIALS);
         int nonNegligibleBlocks = craft.getDataTag(Craft.NON_NEGLIGIBLE_BLOCKS);
         int nonNegligibleSolidBlocks = craft.getDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS);
 

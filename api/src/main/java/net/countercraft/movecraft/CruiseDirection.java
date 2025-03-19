@@ -1,43 +1,20 @@
 package net.countercraft.movecraft;
 
 import org.bukkit.block.BlockFace;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 public enum CruiseDirection {
-    NORTH((byte) 0x3), //0x3
-    SOUTH((byte) 0x2), //0x2
-    EAST((byte) 0x4), //0x4
-    WEST((byte) 0x5), //0x5
-    UP((byte) 0x42), //0x42
-    DOWN((byte) 0x43), //0x43
-    NONE((byte) 0x0);
+    NORTH,
+    SOUTH,
+    EAST,
+    WEST,
+    UP,
+    DOWN,
+    NONE;
 
-    private final byte raw;
-
-    CruiseDirection(byte rawDirection) {
-        raw = rawDirection;
-    }
-
-    public byte getRaw() {
-        return raw;
-    }
-    public static CruiseDirection fromRaw(byte rawDirection) {
-        if(rawDirection == (byte) 0x3)
-            return NORTH;
-        else if(rawDirection == (byte) 0x2)
-            return SOUTH;
-        else if(rawDirection == (byte) 0x4)
-            return EAST;
-        else if(rawDirection == (byte) 0x5)
-            return WEST;
-        else if(rawDirection == (byte) 0x42)
-            return UP;
-        else if(rawDirection == (byte) 0x43)
-            return DOWN;
-        else
-            return NONE;
-    }
-
-    public static CruiseDirection fromBlockFace(BlockFace direction) {
+    @Contract(pure = true)
+    public static CruiseDirection fromBlockFace(@NotNull BlockFace direction) {
         return switch (direction.getOppositeFace()) {
             case NORTH -> NORTH;
             case SOUTH -> SOUTH;
@@ -49,19 +26,17 @@ public enum CruiseDirection {
         };
     }
 
-    public CruiseDirection getOpposite() {
+    public CruiseDirection getOpposite2D() {
         return switch (this) {
             case NORTH -> SOUTH;
             case SOUTH -> NORTH;
             case EAST -> WEST;
             case WEST -> EAST;
-            case UP -> DOWN;
-            case DOWN -> UP;
-            case NONE -> NONE;
+            default -> this;
         };
     }
 
-    public CruiseDirection getRotated(MovecraftRotation rotation) {
+    public CruiseDirection getRotated2D(@NotNull MovecraftRotation rotation) {
         return switch(rotation) {
             case CLOCKWISE -> switch (this) {
                 case NORTH -> EAST;
@@ -70,7 +45,7 @@ public enum CruiseDirection {
                 case WEST -> NORTH;
                 default -> this;
             };
-            case ANTICLOCKWISE -> getRotated(MovecraftRotation.CLOCKWISE).getOpposite();
+            case ANTICLOCKWISE -> getRotated2D(MovecraftRotation.CLOCKWISE).getOpposite2D();
             case NONE -> this;
         };
     }
