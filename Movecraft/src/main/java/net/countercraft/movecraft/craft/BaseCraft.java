@@ -103,19 +103,7 @@ public abstract class BaseCraft implements Craft {
     }
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
-        this.uuid = UUID.randomUUID();
-        Hidden.uuidToCraft.put(uuid, this);
-        this.type = type;
-        this.w = world;
-        hitBox = new SetHitBox();
-        collapsedHitBox = new SetHitBox();
-        fluidLocations = new SetHitBox();
-        lastCruiseUpdate = System.currentTimeMillis();
-        cruising = false;
-        disabled = false;
-        origPilotTime = System.currentTimeMillis();
-        audience = Audience.empty();
-        dataTagContainer = new CraftDataTagContainer();
+        this(type, world, UUID.randomUUID());
     }
 
 
