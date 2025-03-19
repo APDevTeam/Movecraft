@@ -82,11 +82,12 @@ public abstract class BaseCraft implements Craft {
     private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
 
     @NotNull
-    private final CraftDataTagContainer dataTagContainer;
+    protected CraftDataTagContainer dataTagContainer;
 
-    private final UUID uuid = UUID.randomUUID();
+    private final UUID uuid;
 
-    public BaseCraft(@NotNull CraftType type, @NotNull World world) {
+    public BaseCraft(@NotNull CraftType type, @NotNull World world, UUID uuid) {
+        this.uuid = uuid;
         Hidden.uuidToCraft.put(uuid, this);
         this.type = type;
         this.w = world;
@@ -99,6 +100,10 @@ public abstract class BaseCraft implements Craft {
         origPilotTime = System.currentTimeMillis();
         audience = Audience.empty();
         dataTagContainer = new CraftDataTagContainer();
+    }
+
+    public BaseCraft(@NotNull CraftType type, @NotNull World world) {
+        this(type, world, UUID.randomUUID());
     }
 
 
@@ -579,4 +584,12 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations() {return trackedLocations;}
+
+    /**
+     * @return copy of dataTagContainer, changes to the returned CraftDataTagContainer won't be reflected to the actual craft
+     */
+    @Override
+    public @NotNull CraftDataTagContainer getDataTagContainer() {
+        return dataTagContainer.copy(this);
+    }
 }

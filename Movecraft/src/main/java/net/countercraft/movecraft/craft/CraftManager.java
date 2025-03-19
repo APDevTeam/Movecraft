@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.events.CraftPostSinkEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.events.TypesReloadedEvent;
@@ -202,7 +203,10 @@ public class CraftManager implements Iterable<Craft>{
         if (craft instanceof PlayerCraft)
             playerCrafts.remove(((PlayerCraft) craft).getPilot());
 
-        crafts.add(new SinkingCraftImpl(craft));
+        SinkingCraft sinkingCraft = new SinkingCraftImpl(craft);
+        CraftPostSinkEvent postEvent = new CraftPostSinkEvent(craft, sinkingCraft);
+        Bukkit.getServer().getPluginManager().callEvent(postEvent);
+        crafts.add(sinkingCraft);
     }
 
     public void release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason, boolean force) {

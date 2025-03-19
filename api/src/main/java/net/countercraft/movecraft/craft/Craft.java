@@ -21,6 +21,7 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.TrackedLocation;
+import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
@@ -274,6 +275,8 @@ public interface Craft {
     Audience getAudience();
 
     void setAudience(Audience audience);
+
+    @NotNull CraftDataTagContainer getDataTagContainer();
 
     <T> void setDataTag(@NotNull final CraftDataTagKey<T> tagKey, final T data);
 

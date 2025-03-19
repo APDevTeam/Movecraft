@@ -4,6 +4,8 @@ import net.countercraft.movecraft.craft.Craft;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -13,6 +15,10 @@ public class CraftDataTagContainer {
 
     public CraftDataTagContainer(){
         backing = new ConcurrentHashMap<>();
+    }
+
+    private CraftDataTagContainer(Map<@NotNull CraftDataTagKey<?>, @Nullable Object> map) {
+        backing = new ConcurrentHashMap<>(map);
     }
 
     /**
@@ -52,5 +58,16 @@ public class CraftDataTagContainer {
         }
 
         backing.put(tagKey, value);
+    }
+
+    public CraftDataTagContainer copy(Craft craft) {
+        HashMap<CraftDataTagKey<?>, Object> clone = new HashMap<>();
+        for (var entry : backing.entrySet()) {
+            CraftDataTagKey<?> key = entry.getKey();
+            Object value = this.get(craft, key);
+            clone.put(key, value);
+        }
+
+        return new CraftDataTagContainer(clone);
     }
 }
