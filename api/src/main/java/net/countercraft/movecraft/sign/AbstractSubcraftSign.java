@@ -185,4 +185,11 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     protected abstract Component getDefaultTextFor(int line);
     protected abstract boolean canPlayerUseSignForCraftType(Action clickType, SignListener.SignWrapper sign, Player player, CraftType subCraftType);
 
+    @Override
+    protected boolean canPlayerUseSignOn(Player player, @Nullable Craft craft) {
+        if (super.canPlayerUseSignOn(player, craft)) {
+            return true;
+        }
+        return craft.getHitBox().inBounds(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ());
+    }
 }

@@ -150,6 +150,10 @@ public class RemoteSign extends AbstractCraftSign {
             return false;
         }
 
-        return super.canPlayerUseSignOn(player, craft);
+        if (super.canPlayerUseSignOn(player, craft)) {
+            return true;
+        }
+
+        return craft.getHitBox().inBounds(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ());
     }
 }
