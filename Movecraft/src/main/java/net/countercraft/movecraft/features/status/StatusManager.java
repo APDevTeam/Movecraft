@@ -173,9 +173,11 @@ public class StatusManager extends BukkitRunnable implements Listener {
             sinking = true;
 
         // If the craft is disabled, play a sound and disable it.
-        if (disabled && !craft.getDisabled()) {
-            craft.setDisabled(true);
-            craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
+        if (disabled != craft.getDisabled()) {
+            craft.setDisabled(disabled);
+            if (disabled) {
+                craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
+            }
         }
 
         // If the craft is sinking, let the player know and sink the craft.
