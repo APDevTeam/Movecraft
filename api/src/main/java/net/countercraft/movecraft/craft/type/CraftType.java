@@ -81,7 +81,13 @@ final public class CraftType {
     public static final NamespacedKey BLOCKED_BY_WATER = buildKey("blocked_by_water");
     private static final NamespacedKey CAN_FLY = buildKey("can_fly");
         // Private key used to calculate BLOCKED_BY_WATER
+    @Deprecated(forRemoval = true)
+    /*
+     * Use contact blocks and traction blocks instead!
+     */
     public static final NamespacedKey REQUIRE_WATER_CONTACT = buildKey("require_water_contact");
+    public static final NamespacedKey REQUIRED_CONTACT_BLOCKS = buildKey("required_contact_blocks");
+    public static final NamespacedKey TRACTION_BLOCKS = buildKey("traction_blocks");
     public static final NamespacedKey TRY_NUDGE = buildKey("try_nudge");
     public static final NamespacedKey MOVE_BLOCKS = buildKey("move_blocks");
     public static final NamespacedKey CAN_CRUISE = buildKey("can_cruise");
@@ -428,6 +434,8 @@ final public class CraftType {
         registerProperty(new BooleanProperty("blockedByWater", BLOCKED_BY_WATER, type -> true));
         registerProperty(new BooleanProperty("canFly", CAN_FLY, type -> type.getBoolProperty(BLOCKED_BY_WATER)));
         registerProperty(new BooleanProperty("requireWaterContact", REQUIRE_WATER_CONTACT, type -> false));
+        registerProperty(new MaterialSetProperty("requiredContactBlocks", REQUIRED_CONTACT_BLOCKS, type -> EnumSet.noneOf(Material.class)));
+        registerProperty(new MaterialSetProperty("tractionBlocks", TRACTION_BLOCKS, type -> EnumSet.noneOf(Material.class)));
         registerProperty(new BooleanProperty("tryNudge", TRY_NUDGE, type -> false));
         registerProperty(new RequiredBlockProperty("moveblocks", MOVE_BLOCKS, type -> new HashSet<>()));
         registerProperty(new BooleanProperty("canCruise", CAN_CRUISE, type -> false));
