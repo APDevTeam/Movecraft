@@ -45,6 +45,10 @@ public class TrackedLocation {
         craft.getTrackedLocations().get(key).add(this);
     }
 
+    public TrackedLocation(TrackedLocation trackedLocation) {
+        this(trackedLocation.getCraft(), trackedLocation.getAbsoluteLocation());
+    }
+
     /**
      * Rotates the stored location.
      * @param rotation A clockwise or counter-clockwise direction to rotate.
