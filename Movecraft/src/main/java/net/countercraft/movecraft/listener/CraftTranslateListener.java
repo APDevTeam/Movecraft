@@ -2,7 +2,9 @@ package net.countercraft.movecraft.listener;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.events.CraftPreTranslateEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
+import net.countercraft.movecraft.util.ContactBlockHelper;
 import org.bukkit.World;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
@@ -30,4 +32,10 @@ public class CraftTranslateListener implements Listener {
             }
         }
     }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCraftPreTranslate(final CraftPreTranslateEvent event) {
+        ContactBlockHelper.onPreTranslate(event);
+    }
+
 }
