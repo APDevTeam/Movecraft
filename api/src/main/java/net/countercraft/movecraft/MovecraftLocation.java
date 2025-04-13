@@ -80,6 +80,10 @@ final public class MovecraftLocation implements Comparable<MovecraftLocation>{
         return 131 * 131 * x + 131 * z + y;
     }
 
+    public MovecraftLocation add(int dX, int dY, int dZ) {
+        return new MovecraftLocation(getX() + dX, getY() + dY, getZ() + dZ);
+    }
+
     public MovecraftLocation add(MovecraftLocation l) {
         return new MovecraftLocation(getX() + l.getX(), getY() + l.getY(), getZ() + l.getZ());
     }
