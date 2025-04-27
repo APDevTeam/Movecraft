@@ -242,7 +242,7 @@ public class IWorldHandler extends WorldHandler {
         LevelChunkSection section = chunk.getSections()[chunkSection];
         if (section == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
-            chunk.setBlockState(position, Blocks.GLASS.defaultBlockState(), false);
+            chunk.setBlockState(position, Blocks.GLASS.defaultBlockState(), 0);
             section = chunk.getSections()[chunkSection];
         }
         if (section.getBlockState(position.getX() & 15, position.getY() & 15, position.getZ() & 15).equals(data)) {
