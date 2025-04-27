@@ -42,3 +42,4 @@ commands:
     usage: /craftinfo [player] [page]
 libraries:
   - org.roaringbitmap:RoaringBitmap:1.0.6
+  - org.ejml:ejml-simple:0.43
