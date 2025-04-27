@@ -51,12 +51,14 @@ public interface Craft {
     CraftDataTagKey<Counter<RequiredBlockEntry>> MOVEBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "moveblocks"), craft -> new Counter<>());
     CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);
     CraftDataTagKey<Integer> NON_NEGLIGIBLE_SOLID_BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "non-negligible-solid-blocks"), Craft::getOrigBlockCount);
+    CraftDataTagKey<MovecraftLocation> CRAFT_ORIGIN = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "craft-origin"), craft -> craft.getHitBox().getMidPoint());
 
     // Java disallows private or protected fields in interfaces, this is a workaround
     class Hidden {
         // Concurrent so we don't have problems when accessing async (useful for addon plugins that want to do stuff async, for example NPC crafts with complex off-thread pathfinding)
         protected static final Map<UUID, Craft> uuidToCraft = Collections.synchronizedMap(new WeakHashMap<>());
     }
+
     public static Craft getCraftByUUID(final UUID uuid) {
         return Hidden.uuidToCraft.getOrDefault(uuid, null);
     }
@@ -293,4 +295,8 @@ public interface Craft {
     }
 
     Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations();
+
+    public default MovecraftLocation getCraftOrigin() {
+        return this.getDataTag(CRAFT_ORIGIN);
+    }
 }

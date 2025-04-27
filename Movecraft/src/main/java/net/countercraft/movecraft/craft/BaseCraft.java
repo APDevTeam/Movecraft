@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -79,7 +80,7 @@ public abstract class BaseCraft implements Craft {
     private String name = "";
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
-    private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new HashMap<>();
+    private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new ConcurrentHashMap<>();
 
     @NotNull
     private final CraftDataTagContainer dataTagContainer;
