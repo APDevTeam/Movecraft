@@ -4,6 +4,11 @@ import org.bukkit.block.BlockFace;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+
 public enum CruiseDirection {
     NORTH,
     SOUTH,
@@ -48,6 +53,24 @@ public enum CruiseDirection {
             case ANTICLOCKWISE -> getRotated2D(MovecraftRotation.CLOCKWISE).getOpposite2D();
             case NONE -> this;
         };
+    }
+
+    public static CruiseDirection fromString(String input) {
+        final String sanitized = input.toLowerCase(Locale.ROOT);
+
+        return switch (sanitized) {
+            case "north", "n" -> CruiseDirection.NORTH;
+            case "south", "s" -> CruiseDirection.SOUTH;
+            case "east", "e" -> CruiseDirection.EAST;
+            case "west", "w" -> CruiseDirection.WEST;
+            case "up", "u" -> CruiseDirection.UP;
+            case "down", "d" -> CruiseDirection.DOWN;
+            default -> CruiseDirection.NONE;
+        };
+    }
+
+    public static List<String> valuesString() {
+        return Arrays.stream(values()).map(v -> v.toString().toLowerCase(Locale.ROOT)).toList();
     }
 }
 

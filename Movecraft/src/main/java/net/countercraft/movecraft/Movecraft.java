@@ -23,7 +23,6 @@ import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
@@ -198,16 +197,7 @@ public class Movecraft extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new InteractListener(), this);
 
-        getCommand("movecraft").setExecutor(new MovecraftCommand());
-        getCommand("release").setExecutor(new ReleaseCommand());
-        getCommand("pilot").setExecutor(new PilotCommand());
-        getCommand("rotate").setExecutor(new RotateCommand());
-        getCommand("cruise").setExecutor(new CruiseCommand());
-        getCommand("craftreport").setExecutor(new CraftReportCommand());
-        getCommand("manoverboard").setExecutor(new ManOverboardCommand());
-        getCommand("scuttle").setExecutor(new ScuttleCommand());
-        getCommand("crafttype").setExecutor(new CraftTypeCommand());
-        getCommand("craftinfo").setExecutor(new CraftInfoCommand());
+        initializeCommands();
 
         getServer().getPluginManager().registerEvents(new BlockListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
@@ -242,6 +232,21 @@ public class Movecraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new StatusSign(), this);
 
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
+    }
+
+    private void initializeCommands() {
+        MovecraftCommandManager movecraftCommandManager = new MovecraftCommandManager(this);
+
+        movecraftCommandManager.registerCommand(new MovecraftCommand());
+        movecraftCommandManager.registerCommand(new CraftInfoCommand());
+        movecraftCommandManager.registerCommand(new CraftReportCommand());
+        movecraftCommandManager.registerCommand(new CraftTypeCommand());
+        movecraftCommandManager.registerCommand(new CruiseCommand());
+        movecraftCommandManager.registerCommand(new ManOverboardCommand());
+        movecraftCommandManager.registerCommand(new PilotCommand());
+        movecraftCommandManager.registerCommand(new ReleaseCommand());
+        movecraftCommandManager.registerCommand(new RotateCommand());
+        movecraftCommandManager.registerCommand(new ScuttleCommand());
     }
 
     @Override
