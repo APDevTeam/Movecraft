@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.UUID;
 
-// TODO: Why doesnt this implement subcraft??
+// TODO: Why doesnt this implement subcraft?? => it isnt used for subcraftRotate signs! Only when used while the parent isnt piloted!
 public class SubcraftRotateCraft extends BaseCraft implements PilotedCraft {
     private WeakReference<Player> pilot;
     private final UUID pilotUUID;
