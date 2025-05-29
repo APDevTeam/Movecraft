@@ -154,15 +154,25 @@ public class ContactBlockHelper {
     }
 
     public static void onPreTranslate(CraftPreTranslateEvent event) {
+        // Check if the craft itself is still in a valid position
+        // TODO: This might be unnecessary!
         if (!isValid(event.getCraft(), event::setFailMessage)) {
-            // TODO: COpy the hitbox and translate it by the delta
-            // TODO: Provide translated hitbox and the delta!
+            event.setCancelled(true);
+        }
+        // Now check if the craft will be on a valid position after the rotation
+        if (!isValid(event.getCraft(), event::setFailMessage, new MovecraftLocation(event.getDx(), event.getDy(), event.getDz()))) {
             event.setCancelled(true);
         }
     }
 
     public static void onRotate(CraftRotateEvent event) {
+        // Check if the craft itself is still in a valid position
+        // TODO: This might be unnecessary!
         if (!isValid(event.getCraft(), event::setFailMessage)) {
+            event.setCancelled(true);
+        }
+        // Now check if the craft will be on a valid position after the rotation
+        if (!isValid(event.getCraft(), event::setFailMessage, event.getNewHitBox(), event.getRotation())) {
             event.setCancelled(true);
         }
     }
@@ -177,6 +187,15 @@ public class ContactBlockHelper {
         return isValid(craft, failureMessageSetter, hitBox, Optional.of(rotation), Optional.empty());
     }
 
+    static boolean isValid(final Craft craft, Consumer<String> failureMessageSetter, MovecraftLocation deltaTranslation) {
+        // First: Compute the translated hitbox, then pass that to the other method!
+        BitmapHitBox hitBox = new BitmapHitBox();
+        for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
+            hitBox.add(movecraftLocation.add(deltaTranslation));
+        }
+        return isValid(craft, failureMessageSetter, hitBox, deltaTranslation);
+    }
+
     static boolean isValid(final Craft craft, Consumer<String> failureMessageSetter, final HitBox hitBox, MovecraftLocation deltaTranslation) {
         return isValid(craft, failureMessageSetter, hitBox, Optional.empty(), Optional.of(deltaTranslation));
     }
@@ -186,7 +205,7 @@ public class ContactBlockHelper {
     }
 
     // TODO: Move to MOVECRAFT module and provide failure message!
-    // TODO: Add parameters for translation and rotation (defaults to null). If those are set, we need to transform the positions first!
+    // DONE: Add parameters for translation and rotation (defaults to null). If those are set, we need to transform the positions first!
     static boolean isValid(final Craft craft, Consumer<String> failureMessageSetter, final HitBox hitBox, Optional<MovecraftRotation> optRot, Optional<MovecraftLocation> optDelta) {
         // First: Do we even use traction blocks?
         // If yes, validate we have any
@@ -239,9 +258,11 @@ public class ContactBlockHelper {
                         foundAtLeastOneBlock = !checkForContactBlock.isAir();
                     }
                 }
+                // If we dont touch any outside block we can just continue as in this case the block isnt a "wheel"
                 if (!foundAtLeastOneTouchingOutSide) {
                     continue;
                 }
+                // TODO: Do all traction blocks need to touch the contact blocks? => Implementation wise it currently is the case that all traction blocks must touch one
                 if (!foundAtLeastOneBlock) {
                     // We failed :(
                     return false;
