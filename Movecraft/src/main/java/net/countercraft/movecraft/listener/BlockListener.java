@@ -54,6 +54,8 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
+import java.util.List;
+
 public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(@NotNull BlockBreakEvent e) {
@@ -85,7 +87,7 @@ public class BlockListener implements Listener {
         for (Craft craft : MathUtils.craftsNearLocFast(CraftManager.getInstance().getCrafts(), location)) {
             if (craft.getDisabled() || !(craft instanceof PilotedCraft) || !craft.getHitBox().contains(loc))
                 continue;
-            if (((PilotedCraft) craft).getPilot() == p)
+            if (((PilotedCraft) craft).getPilotUUID().equals(p.getUniqueId()))
                 continue;
 
             e.setCancelled(true);

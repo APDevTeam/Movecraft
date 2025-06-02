@@ -23,10 +23,10 @@ import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
+import net.countercraft.movecraft.features.contacts.IgnoreContactCommand;
 import net.countercraft.movecraft.features.fading.WreckManager;
 import net.countercraft.movecraft.features.status.StatusManager;
 import net.countercraft.movecraft.features.status.StatusSign;
@@ -78,6 +78,7 @@ public class Movecraft extends JavaPlugin {
         Settings.DisableSpillProtection = getConfig().getBoolean("DisableSpillProtection", false);
         Settings.DisableIceForm = getConfig().getBoolean("DisableIceForm", true);
         Settings.ReleaseOnDeath = getConfig().getBoolean("ReleaseOnDeath", false);
+        Settings.ManOverboardCooldown = getConfig().getInt("ManoverboardCooldown", 30);
 
         String[] localisations = {"en", "cz", "nl", "fr"};
         for (String s : localisations) {
@@ -105,49 +106,7 @@ public class Movecraft extends JavaPlugin {
             logger.info("No PilotTool setting, using default of stick");
         }
 
-        String minecraftVersion = getServer().getMinecraftVersion();
-        getLogger().info("Loading support for " + minecraftVersion);
-        try {
-            final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + WorldHandler.getPackageName(minecraftVersion) + ".IWorldHandler");
-            // Check if we have a NMSHandler class at that location.
-            if (WorldHandler.class.isAssignableFrom(worldHandlerClazz)) { // Make sure it actually implements NMS
-                worldHandler = (WorldHandler) worldHandlerClazz.getConstructor().newInstance(); // Set our handler
-
-                // Try to setup the smooth teleport handler
-                try {
-                    final Class<?> smoothTeleportClazz = Class.forName("net.countercraft.movecraft.support." + WorldHandler.getPackageName(minecraftVersion) + ".ISmoothTeleport");
-                    if (SmoothTeleport.class.isAssignableFrom(smoothTeleportClazz)) {
-                        smoothTeleport = (SmoothTeleport) smoothTeleportClazz.getConstructor().newInstance();
-                    }
-                    else {
-                        smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
-                        getLogger().warning("Did not find smooth teleport, falling back to bukkit teleportation provider.");
-                    }
-                }
-                catch (final ReflectiveOperationException e) {
-                    if (Settings.Debug) {
-                        e.printStackTrace();
-                    }
-                    smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
-                    getLogger().warning("Falling back to bukkit teleportation provider.");
-                }
-            }
-        }
-        catch (final Exception e) {
-            e.printStackTrace();
-            getLogger().severe("Could not find support for this version.");
-            if (!Settings.DisableNMSCompatibilityCheck) {
-                // Disable ourselves and exit
-                setEnabled(false);
-                return;
-            }
-            else {
-                // Server owner claims to know what they are doing, warn them of the possible consequences
-                getLogger().severe("WARNING!\n\t"
-                        + "Running Movecraft on an incompatible version can corrupt your world and break EVERYTHING!\n\t"
-                        + "We provide no support for any issues.");
-            }
-        }
+        initializeNMSHandlers();
 
 
         Settings.SinkCheckTicks = getConfig().getDouble("SinkCheckTicks", 100.0);
@@ -163,6 +122,8 @@ public class Movecraft extends JavaPlugin {
         Settings.FadeWrecksAfter = getConfig().getInt("FadeWrecksAfter", 0);
         Settings.FadeTickCooldown = getConfig().getInt("FadeTickCooldown", 20);
         Settings.FadePercentageOfWreckPerCycle = getConfig().getDouble("FadePercentageOfWreckPerCycle", 10.0);
+        Settings.ReleaseCraftOnLogout = getConfig().getBoolean("ReleaseCraftOnLogout", true);
+        Settings.ReleaseCraftTimeOutAfterLogOut = getConfig().getLong("ReleaseCraftTimeOutAfterLogOut", 6000);
         if (getConfig().contains("ExtraFadeTimePerBlock")) {
             Map<String, Object> temp = getConfig().getConfigurationSection("ExtraFadeTimePerBlock").getValues(false);
             for (String str : temp.keySet()) {
@@ -209,39 +170,141 @@ public class Movecraft extends JavaPlugin {
         getCommand("crafttype").setExecutor(new CraftTypeCommand());
         getCommand("craftinfo").setExecutor(new CraftInfoCommand());
 
+        // Naming scheme: If it has parameters, append a double colon except if it is a subcraft
+        // Parameters follow on the following lines
         getServer().getPluginManager().registerEvents(new BlockListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(), this);
         getServer().getPluginManager().registerEvents(new ChunkManager(), this);
-        getServer().getPluginManager().registerEvents(new AscendSign(), this);
-        getServer().getPluginManager().registerEvents(new CraftSign(), this);
-        getServer().getPluginManager().registerEvents(new CruiseSign(), this);
-        getServer().getPluginManager().registerEvents(new DescendSign(), this);
-        getServer().getPluginManager().registerEvents(new HelmSign(), this);
-        getServer().getPluginManager().registerEvents(new MoveSign(), this);
-        getServer().getPluginManager().registerEvents(new NameSign(), this);
-        getServer().getPluginManager().registerEvents(new PilotSign(), this);
-        getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
-        getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
-        getServer().getPluginManager().registerEvents(new RemoteSign(), this);
-        getServer().getPluginManager().registerEvents(new SpeedSign(), this);
-        getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
-        getServer().getPluginManager().registerEvents(new TeleportSign(), this);
-        getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
+        //getServer().getPluginManager().registerEvents(new AscendSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Ascend:", new AscendSign("Ascend:"));
+        //getServer().getPluginManager().registerEvents(new CruiseSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Cruise:", new CruiseSign("Cruise:"));
+        //getServer().getPluginManager().registerEvents(new DescendSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Descend:", new DescendSign("Descend:"));
+        //getServer().getPluginManager().registerEvents(new HelmSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("[Helm]", new HelmSign());
+        MovecraftSignRegistry.INSTANCE.register(HelmSign.PRETTY_HEADER, new HelmSign());
+        //getServer().getPluginManager().registerEvents(new MoveSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Move:", new MoveSign());
+        //getServer().getPluginManager().registerEvents(new NameSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Name:", new NameSign());
+        //getServer().getPluginManager().registerEvents(new PilotSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Pilot:", new PilotSign());
+        //getServer().getPluginManager().registerEvents(new RelativeMoveSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("RMove:", new RelativeMoveSign());
+        //getServer().getPluginManager().registerEvents(new ReleaseSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Release", new ReleaseSign());
+        //getServer().getPluginManager().registerEvents(new RemoteSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Remote Sign", new RemoteSign());
+        //getServer().getPluginManager().registerEvents(new SpeedSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Speed:", new SpeedSign());
+        MovecraftSignRegistry.INSTANCE.register("Status:", new StatusSign());
+        MovecraftSignRegistry.INSTANCE.register("Contacts:", new ContactsSign());
+        //getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Subcraft Rotate", new SubcraftRotateSign(CraftManager.getInstance()::getCraftTypeFromString, Movecraft::getInstance));
+        //getServer().getPluginManager().registerEvents(new TeleportSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Teleport:", new TeleportSign());
+        //getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
+        MovecraftSignRegistry.INSTANCE.register("Scuttle", new ScuttleSign());
         getServer().getPluginManager().registerEvents(new CraftPilotListener(), this);
         getServer().getPluginManager().registerEvents(new CraftReleaseListener(), this);
+        getServer().getPluginManager().registerEvents(new SignListener(), this);
+        // Moved to compat section!
+        //getServer().getPluginManager().registerEvents(new SignListener(), this);
+
+        MovecraftSignRegistry.INSTANCE.registerCraftPilotSigns(CraftManager.getInstance().getCraftTypes(), CraftPilotSign::new);
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
         getServer().getPluginManager().registerEvents(contactsManager, this);
-        getServer().getPluginManager().registerEvents(new ContactsSign(), this);
+        //getServer().getPluginManager().registerEvents(new ContactsSign(), this);
+        getServer().getPluginManager().registerEvents(new CraftTypeListener(), this);
+        getServer().getPluginManager().registerEvents(new CraftTranslateListener(), this);
         getCommand("contacts").setExecutor(new ContactsCommand());
+        getCommand("ignorecontact").setExecutor(new IgnoreContactCommand());
 
         var statusManager = new StatusManager();
         statusManager.runTaskTimerAsynchronously(this, 0, 1);
         getServer().getPluginManager().registerEvents(statusManager, this);
-        getServer().getPluginManager().registerEvents(new StatusSign(), this);
+        //getServer().getPluginManager().registerEvents(new StatusSign(), this);
 
         logger.info("[V " + getDescription().getVersion() + "] has been enabled.");
+    }
+
+    private void initializeNMSHandlers() {
+        String minecraftVersion = getServer().getMinecraftVersion();
+        getLogger().info("Loading support for " + minecraftVersion);
+        try {
+            for (String packageName : WorldHandler.getPackageNames(minecraftVersion)) {
+                getLogger().info("Searching for version support classes for package subname " + packageName + "...");
+                try {
+                    final Class<?> worldHandlerClazz = Class.forName("net.countercraft.movecraft.compat." + packageName + ".IWorldHandler");
+                    // Check if we have a NMSHandler class at that location.
+                    if (WorldHandler.class.isAssignableFrom(worldHandlerClazz)) { // Make sure it actually implements NMS
+                        worldHandler = (WorldHandler) worldHandlerClazz.getConstructor().newInstance(); // Set our handler
+
+                        // Try to setup the smooth teleport handler
+                        try {
+                            final Class<?> smoothTeleportClazz = Class.forName("net.countercraft.movecraft.support." + packageName + ".ISmoothTeleport");
+                            if (SmoothTeleport.class.isAssignableFrom(smoothTeleportClazz)) {
+                                smoothTeleport = (SmoothTeleport) smoothTeleportClazz.getConstructor().newInstance();
+                            }
+                            else {
+                                smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
+                                getLogger().warning("Did not find smooth teleport, falling back to bukkit teleportation provider.");
+                            }
+                        }
+                        catch (final ReflectiveOperationException e) {
+                            if (Settings.Debug) {
+                                e.printStackTrace();
+                            }
+                            smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
+                            getLogger().warning("Falling back to bukkit teleportation provider.");
+                        }
+                    }
+                } catch(ClassNotFoundException classNotFoundException) {
+                    // Ignored, continue to search
+                    // Initializing worldhandler worked but somehow no teleport handler was found! So throw the exception further up
+                    if (worldHandler != null) {
+                        throw classNotFoundException;
+                    }
+                }
+
+                if (worldHandler != null && smoothTeleport != null) {
+                    getLogger().info("Found version support for " + minecraftVersion + "!");
+                    break;
+                }
+            }
+            if (worldHandler == null || smoothTeleport == null) {
+                getLogger().severe("Could not find support for this version.");
+                if (!Settings.DisableNMSCompatibilityCheck) {
+                    // Disable ourselves and exit
+                    setEnabled(false);
+                    return;
+                }
+                else {
+                    // Server owner claims to know what they are doing, warn them of the possible consequences
+                    getLogger().severe("WARNING!\n\t"
+                            + "Running Movecraft on an incompatible version can corrupt your world and break EVERYTHING!\n\t"
+                            + "We provide no support for any issues.");
+                }
+            }
+        }
+        catch (final Exception e) {
+            e.printStackTrace();
+            getLogger().severe("Could not find support for this version.");
+            if (!Settings.DisableNMSCompatibilityCheck) {
+                // Disable ourselves and exit
+                setEnabled(false);
+                return;
+            }
+            else {
+                // Server owner claims to know what they are doing, warn them of the possible consequences
+                getLogger().severe("WARNING!\n\t"
+                        + "Running Movecraft on an incompatible version can corrupt your world and break EVERYTHING!\n\t"
+                        + "We provide no support for any issues.");
+            }
+        }
     }
 
     @Override

@@ -81,7 +81,13 @@ final public class CraftType {
     public static final NamespacedKey BLOCKED_BY_WATER = buildKey("blocked_by_water");
     private static final NamespacedKey CAN_FLY = buildKey("can_fly");
         // Private key used to calculate BLOCKED_BY_WATER
+    @Deprecated(forRemoval = true)
+    /*
+     * Use contact blocks and traction blocks instead!
+     */
     public static final NamespacedKey REQUIRE_WATER_CONTACT = buildKey("require_water_contact");
+    public static final NamespacedKey REQUIRED_CONTACT_BLOCKS = buildKey("required_contact_blocks");
+    public static final NamespacedKey TRACTION_BLOCKS = buildKey("traction_blocks");
     public static final NamespacedKey TRY_NUDGE = buildKey("try_nudge");
     public static final NamespacedKey MOVE_BLOCKS = buildKey("move_blocks");
     public static final NamespacedKey CAN_CRUISE = buildKey("can_cruise");
@@ -169,11 +175,15 @@ final public class CraftType {
     public static final NamespacedKey DYNAMIC_LAG_MIN_SPEED = buildKey("dynamic_lag_min_speed");
     public static final NamespacedKey DYNAMIC_FLY_BLOCK_SPEED_FACTOR = buildKey("dynamic_fly_block_speed_factor");
     public static final NamespacedKey DYNAMIC_FLY_BLOCK = buildKey("dynamic_fly_block");
+    private static final NamespacedKey SPEED_MODIFIER_MAX_SPEED = buildKey("speed_modifier_max_speed");
+    public static final NamespacedKey PER_WORLD_MODIFIER_MAX_SPEED = buildKey("per_world_speed_modifier_max_speed");
+    public static final NamespacedKey SPEED_MODIFIER_BLOCKS = buildKey("speed_modifier_blocks");
     public static final NamespacedKey CHEST_PENALTY = buildKey("chest_penalty");
     public static final NamespacedKey GRAVITY_INCLINE_DISTANCE = buildKey("gravity_incline_distance");
     public static final NamespacedKey GRAVITY_DROP_DISTANCE = buildKey("gravity_drop_distance");
     public static final NamespacedKey COLLISION_SOUND = buildKey("collision_sound");
     public static final NamespacedKey FUEL_TYPES = buildKey("fuel_types");
+    public static final NamespacedKey SINK_WHEN_OUT_OF_FUEL = buildKey("sink_when_out_of_fuel");
     public static final NamespacedKey DISABLE_TELEPORT_TO_WORLDS = buildKey("disable_teleport_to_worlds");
     public static final NamespacedKey TELEPORTATION_COOLDOWN = buildKey("teleportation_cooldown");
     public static final NamespacedKey GEAR_SHIFTS = buildKey("gear_shifts");
@@ -190,6 +200,22 @@ final public class CraftType {
     public static final NamespacedKey EXPLOSION_ARMING_TIME = buildKey("explosion_arming_time");
     public static final NamespacedKey DIRECTIONAL_DEPENDENT_MATERIALS = buildKey("directional_dependent_materials");
     public static final NamespacedKey ALLOW_INTERNAL_COLLISION_EXPLOSION = buildKey("allow_internal_collision_explosion");
+
+    public static final NamespacedKey MOVE_BREAK_BLOCKS = buildKey("move_break_blocks");
+
+    public static final NamespacedKey FALL_OUT_OF_WORLD_BLOCK_CHANCE = buildKey("fall_out_of_world_block_chance");
+
+    // TODO: Create a explosion property => min, max power, incendiary, etc
+    public static final NamespacedKey USE_ALTERNATIVE_SINKING_PROCESS = buildKey("use_alternative_sinking_process");
+    public static final NamespacedKey ALTERNATIVE_SINKING_TIME_BEFORE_DISINTEGRATION = buildKey("afloat_timeout_before_sinking_per_block");
+    public static final NamespacedKey ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS = buildKey("alternative_sinking_min_disintegrations");
+    public static final NamespacedKey ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS = buildKey("alternative_sinking_max_disintegrations");
+    public static final NamespacedKey ALTERNATIVE_SINKING_MIN_EXPLOSIONS = buildKey("alternative_sinking_max_explosions");
+    public static final NamespacedKey ALTERNATIVE_SINKING_MAX_EXPLOSIONS = buildKey("alternative_sinking_max_explosions");
+    public static final NamespacedKey ALTERNATIVE_SINKING_EXPLOSION_CHANCE = buildKey("alternative_sinking_explosion_chance");
+    public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_SOUND = buildKey("alternative_sinking_disintegration_sound");
+    public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE = buildKey("alternative_sinking_disintegration_sound_chance");
+    public static final NamespacedKey ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE = buildKey("alternative_sinking_max_remaining_size_percentage");
     //endregion
 
     @Contract("_ -> new")
@@ -393,11 +419,7 @@ final public class CraftType {
         registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS, type -> new HashSet<>()));
         registerProperty(new RequiredBlockProperty("detectionblocks", DETECTION_BLOCKS, type -> new HashSet<>()));
         registerProperty(new MaterialSetProperty("directionDependentMaterials", DIRECTIONAL_DEPENDENT_MATERIALS, type -> {
-            var set = EnumSet.of(Material.LADDER, Material.LEVER, Material.GRINDSTONE);
-            set.addAll(Tag.WALL_SIGNS.getValues());
-            set.addAll(Tags.WALL_TORCHES);
-            set.addAll(Tags.LANTERNS);
-            return set;
+            return EnumSet.noneOf(Material.class);
         }));
 
         registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
@@ -412,6 +434,8 @@ final public class CraftType {
         registerProperty(new BooleanProperty("blockedByWater", BLOCKED_BY_WATER, type -> true));
         registerProperty(new BooleanProperty("canFly", CAN_FLY, type -> type.getBoolProperty(BLOCKED_BY_WATER)));
         registerProperty(new BooleanProperty("requireWaterContact", REQUIRE_WATER_CONTACT, type -> false));
+        registerProperty(new MaterialSetProperty("requiredContactBlocks", REQUIRED_CONTACT_BLOCKS, type -> EnumSet.noneOf(Material.class)));
+        registerProperty(new MaterialSetProperty("tractionBlocks", TRACTION_BLOCKS, type -> EnumSet.noneOf(Material.class)));
         registerProperty(new BooleanProperty("tryNudge", TRY_NUDGE, type -> false));
         registerProperty(new RequiredBlockProperty("moveblocks", MOVE_BLOCKS, type -> new HashSet<>()));
         registerProperty(new BooleanProperty("canCruise", CAN_CRUISE, type -> false));
@@ -517,6 +541,34 @@ final public class CraftType {
                 type -> 0D));
         registerProperty(new MaterialSetProperty("dynamicFlyBlock", DYNAMIC_FLY_BLOCK,
                 type -> EnumSet.noneOf(Material.class)));
+        registerProperty(new DoubleProperty("speedModifierMaxSpeed", SPEED_MODIFIER_MAX_SPEED, type -> type.getDoubleProperty(CRUISE_SPEED)));
+        registerProperty(new PerWorldProperty<>("perWorldSpeedModifierMaxSpeed", PER_WORLD_MODIFIER_MAX_SPEED,
+                (type, worldName) -> type.getDoubleProperty(SPEED_MODIFIER_MAX_SPEED)));
+        registerProperty(new ObjectPropertyImpl("speedModifierBlocks", SPEED_MODIFIER_BLOCKS,
+                (data, type, fileKey, namespacedKey) -> {
+                    var map = data.getData(fileKey).getBackingData();
+                    if(map.isEmpty())
+                        throw new TypeData.InvalidValueException("Value for " + fileKey + " must not be an empty map");
+
+                    Map<EnumSet<Material>, Double> modifierMapping = new HashMap<>();
+                    for(var i : map.entrySet()) {
+                        EnumSet<Material> materials = Tags.parseMaterials(i.getKey());
+                        Object o = i.getValue();
+                        double modifier;
+                        if (o instanceof String)
+                            modifier = Double.parseDouble((String) o);
+                        else if (o instanceof Integer)
+                            modifier = ((Integer) o).doubleValue();
+                        else
+                            modifier = (double) o;
+                        modifierMapping.put(materials, modifier);
+                    }
+                    return modifierMapping;
+                },
+                type -> {
+                    return Map.of();
+                }
+        ));
         registerProperty(new DoubleProperty("chestPenalty", CHEST_PENALTY, type -> 0D));
         registerProperty(new IntegerProperty("gravityInclineDistance", GRAVITY_INCLINE_DISTANCE, type -> -1));
         registerProperty(new IntegerProperty("gravityDropDistance", GRAVITY_DROP_DISTANCE, type -> -8));
@@ -555,6 +607,7 @@ final public class CraftType {
                     return fuelTypes;
                 }
         ));
+        registerProperty(new BooleanProperty("sinkWhenOutOfFuel", SINK_WHEN_OUT_OF_FUEL, type -> false));
         registerProperty(new ObjectPropertyImpl("disableTeleportToWorlds", DISABLE_TELEPORT_TO_WORLDS,
                 (data, type, fileKey, namespacedKey) -> data.getStringList(fileKey),
                 type -> new ArrayList<>()
@@ -576,6 +629,21 @@ final public class CraftType {
         registerProperty(new IntegerProperty("cruiseOnPilotLifetime", CRUISE_ON_PILOT_LIFETIME, type -> 15*20));
         registerProperty(new IntegerProperty("explosionArmingTime", EXPLOSION_ARMING_TIME, type -> 1000));
         registerProperty(new BooleanProperty("allowInternalCollisionExplosion", ALLOW_INTERNAL_COLLISION_EXPLOSION, type -> false));
+
+        registerProperty(new MaterialSetProperty("moveBreakBlocks", MOVE_BREAK_BLOCKS,  type -> EnumSet.noneOf(Material.class)));
+
+        registerProperty(new DoubleProperty("fallOutOfWorldBlockChance", FALL_OUT_OF_WORLD_BLOCK_CHANCE, type -> 0.0D));
+
+        registerProperty(new IntegerProperty("alternativeSinkingDisintegrationStartDelayPerBlock", ALTERNATIVE_SINKING_TIME_BEFORE_DISINTEGRATION, type -> 0));
+        registerProperty(new BooleanProperty("useAlternativeSinkProcess", USE_ALTERNATIVE_SINKING_PROCESS, type -> false));
+        registerProperty(new DoubleProperty("alternativeSinkingExplosionChance", ALTERNATIVE_SINKING_EXPLOSION_CHANCE, type -> 0.0D));
+        registerProperty(new IntegerProperty("alternativeSinkingMinExplosion", ALTERNATIVE_SINKING_MIN_EXPLOSIONS, type -> 1));
+        registerProperty(new IntegerProperty("alternativeSinkingMaxExplosion", ALTERNATIVE_SINKING_MAX_EXPLOSIONS, type -> 4));
+        registerProperty(new DoubleProperty("alternativeSinkingDisintegrationChance", ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE, type -> 0.5D));
+        registerProperty(new IntegerProperty("alternativeSinkingMinDisintegrations", ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS, type -> 25));
+        registerProperty(new IntegerProperty("alternativeSinkingMaxDisintegrations", ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS, type -> 100));
+        registerProperty(new StringProperty("alternativeSinkingDisintegrationSound", ALTERNATIVE_SINKING_DISINTEGRATION_SOUND, type -> ""));
+        registerProperty(new DoubleProperty("alternativeSinkingMaxRemainingPercentage", ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE, type -> 0.25D));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN

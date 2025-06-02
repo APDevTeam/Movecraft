@@ -28,15 +28,21 @@ public class RequiredBlockEntry {
     private final boolean numericMax;
     private final double min;
     private final boolean numericMin;
-
+    /* Displayname for use in "too much flyblock" messages instead of the long list*/
+    private final String displayName;
 
     public RequiredBlockEntry(EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, @NotNull String name) {
+        this(materials, min, max, name, "");
+    }
+
+    public RequiredBlockEntry(EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, @NotNull String name, final String displayName) {
         this.materials = materials;
         this.min = min.getRight().doubleValue();
         this.numericMin = min.getLeft();
         this.max = max.getRight().doubleValue();
         this.numericMax = max.getLeft();
         this.name = name;
+        this.displayName = displayName;
     }
 
     /**
@@ -179,5 +185,9 @@ public class RequiredBlockEntry {
 
     public String getName () {
         return name;
+    }
+
+    public String getDisplayName() {
+        return this.displayName;
     }
 }

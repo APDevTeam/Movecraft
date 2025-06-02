@@ -1,152 +1,159 @@
 package net.countercraft.movecraft.sign;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.PlayerCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.util.MathUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.block.Block;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.LinkedList;
+import java.util.*;
 
 import static net.countercraft.movecraft.util.ChatUtils.ERROR_PREFIX;
 
-public final class RemoteSign implements Listener{
+public class RemoteSign extends AbstractCraftSign {
     private static final String HEADER = "Remote Sign";
 
-    @EventHandler
-    public final void onSignChange(SignChangeEvent event) {
-        if (!event.getLine(0).equalsIgnoreCase(HEADER)) {
-            return;
-        }
-        else if(event.getLine(1).equals("")) {
-            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Sign - Cannot be blank"));
-            event.setLine(0,"");
-            event.setLine(2,"");
-            event.setLine(3,"");
-            return;
-        }
+    public RemoteSign() {
+        super(null, false);
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onSignClick(@NotNull PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.LEFT_CLICK_BLOCK) {
-            return;
-        }
-        BlockState state = event.getClickedBlock().getState();
-        if (!(state instanceof Sign)) {
-            return;
-        }
-        Sign sign = (Sign) state;
-        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER)) {
-            return;
-        }
-        event.setCancelled(true);
-        Craft foundCraft = null;
-        for (PlayerCraft tcraft : CraftManager.getInstance().getPlayerCraftsInWorld(event.getClickedBlock().getWorld())) {
-            if (MathUtils.locationInHitBox(tcraft.getHitBox(), event.getClickedBlock().getLocation())) {
-                // don't use a craft with a null player. This is
-                // mostly to avoid trying to use subcrafts
-                foundCraft = tcraft;
-                break;
-            }
-        }
+    @Override
+    protected void onCraftIsBusy(Player player, Craft craft) {
+        // TODO: How to react?
+    }
 
-        if (foundCraft == null) {
-            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign - Must be a part of a piloted craft"));
-            return;
-        }
+    @Override
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
+        player.sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign - Must be a part of a piloted craft"));
+    }
 
-        if (!foundCraft.getType().getBoolProperty(CraftType.ALLOW_REMOTE_SIGN)) {
-            event.getPlayer().sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Sign - Not allowed on this craft"));
-            return;
-        }
-
-        String targetText = ChatColor.stripColor(sign.getLine(1));
-        if(targetText.equalsIgnoreCase(HEADER)) {
-            event.getPlayer().sendMessage(ERROR_PREFIX+I18nSupport.getInternationalisedString("Remote Sign - Cannot remote another Remote Sign"));
-            return;
-        }
-
-        if(targetText.equalsIgnoreCase("")) {
-            event.getPlayer().sendMessage("Remote Sign - Cannot be blank");
-            return;
-        }
-
-        LinkedList<MovecraftLocation> foundLocations = new LinkedList<MovecraftLocation>();
+    @Override
+    protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
+        Map<AbstractMovecraftSign, LinkedList<SignListener.SignWrapper>> foundTargetSigns = new HashMap<>();
         boolean firstError = true;
-        for (MovecraftLocation tloc : foundCraft.getHitBox()) {
-            BlockState tstate = event.getClickedBlock().getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ()).getState();
+        final String targetIdent = sign.getRaw(1);
+        for (MovecraftLocation tloc : craft.getHitBox()) {
+            BlockState tstate = craft.getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ()).getState();
             if (!(tstate instanceof Sign)) {
                 continue;
             }
             Sign ts = (Sign) tstate;
 
-            if (isEqualSign(ts, targetText)) {
-                if (isForbidden(ts)) {
-                    if (firstError) {
-                        event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Remote Sign - Forbidden string found"));
-                        firstError = false;
+            SignListener.SignWrapper[] targetSignWrappers = SignListener.INSTANCE.getSignWrappers(ts);
+
+            if (targetSignWrappers != null) {
+                for (SignListener.SignWrapper wrapper : targetSignWrappers) {
+                    // Matches source?
+                    final String signHeader = PlainTextComponentSerializer.plainText().serialize(wrapper.line(0));
+                    AbstractMovecraftSign signHandler = AbstractMovecraftSign.get(signHeader);
+                    // Ignore other remove signs
+                    if (signHandler == null || signHandler instanceof RemoteSign) {
+                        continue;
                     }
-                    event.getPlayer().sendMessage(" - ".concat(tloc.toString()).concat(" : ").concat(ts.getLine(0)));
-                } else {
-                    foundLocations.add(tloc);
+                    // But does it match the source man?
+                    if (matchesDescriptor(targetIdent, wrapper)) {
+                        // Forbidden strings
+                        if (hasForbiddenString(wrapper)) {
+                            if (firstError) {
+                                player.sendMessage(I18nSupport.getInternationalisedString("Remote Sign - Forbidden string found"));
+                                firstError = false;
+                            }
+                            player.sendMessage(" - ".concat(tloc.toString()).concat(" : ").concat(ts.getLine(0)));
+                        } else {
+                            LinkedList<SignListener.SignWrapper> value = foundTargetSigns.computeIfAbsent(signHandler, (a) -> new LinkedList<>());
+                            value.add(wrapper);
+                        }
+                    }
                 }
             }
         }
         if (!firstError) {
-            return;
+            return false;
         }
-        else if (foundLocations.isEmpty()) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Remote Sign - Could not find target sign"));
-            return;
+        else if (foundTargetSigns.isEmpty()) {
+            player.sendMessage(I18nSupport.getInternationalisedString("Remote Sign - Could not find target sign"));
+            return false;
         }
 
         if (Settings.MaxRemoteSigns > -1) {
-            int foundLocCount = foundLocations.size();
+            int foundLocCount = foundTargetSigns.size();
             if(foundLocCount > Settings.MaxRemoteSigns) {
-                event.getPlayer().sendMessage(String.format(I18nSupport.getInternationalisedString("Remote Sign - Exceeding maximum allowed"), foundLocCount, Settings.MaxRemoteSigns));
-                return;
+                player.sendMessage(String.format(I18nSupport.getInternationalisedString("Remote Sign - Exceeding maximum allowed"), foundLocCount, Settings.MaxRemoteSigns));
+                return false;
             }
         }
 
-        for (MovecraftLocation foundLoc : foundLocations) {
-            Block newBlock = event.getClickedBlock().getWorld().getBlockAt(foundLoc.getX(), foundLoc.getY(), foundLoc.getZ());
+        // call the handlers!
+        foundTargetSigns.entrySet().forEach(entry -> {
+            AbstractMovecraftSign signHandler = entry.getKey();
+            for (SignListener.SignWrapper wrapper : entry.getValue()) {
+                signHandler.processSignClick(clickType, wrapper, player);
+            }
+        });
 
-            PlayerInteractEvent newEvent = new PlayerInteractEvent(event.getPlayer(), event.getAction(), event.getItem(), newBlock, event.getBlockFace());
+        return true;
+    }
 
-            //TODO: DON'T DO THIS
-            Bukkit.getServer().getPluginManager().callEvent(newEvent);
+    @Override
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
+        String target = sign.getRaw(1);
+        if (target.isBlank()) {
+            player.sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Sign - Cannot be blank"));
+            return false;
         }
-        
-        event.setCancelled(true);
+
+        if (hasForbiddenString(sign)) {
+            player.sendMessage(I18nSupport.getInternationalisedString("Remote Sign - Forbidden string found"));
+            return false;
+        }
+
+        return true;
     }
-    private boolean isEqualSign(Sign test, String target) {
-        return !ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(HEADER) && ( ChatColor.stripColor(test.getLine(0)).equalsIgnoreCase(target)
-                || ChatColor.stripColor(test.getLine(1)).equalsIgnoreCase(target)
-                || ChatColor.stripColor(test.getLine(2)).equalsIgnoreCase(target)
-                || ChatColor.stripColor(test.getLine(3)).equalsIgnoreCase(target) );
-    }
-    private boolean isForbidden(Sign test) {
-        for (int i = 0; i < 4; i++) {
-            String t = test.getLine(i).toLowerCase();
-            if(Settings.ForbiddenRemoteSigns.contains(t))
+
+    protected static boolean hasForbiddenString(SignListener.SignWrapper wrapper) {
+        for (int i = 0; i < wrapper.lines().size(); i++) {
+            String s = wrapper.getRaw(i).toLowerCase();
+            if(Settings.ForbiddenRemoteSigns.contains(s))
                 return true;
         }
         return false;
+    }
+
+    // Walks through all strings on the wrapper and if any of the non-header strings match it returns true
+    protected static boolean matchesDescriptor(final String descriptor, final SignListener.SignWrapper potentialTarget) {
+        for (int i = 1; i < potentialTarget.lines().size(); i++) {
+            String targetStr = potentialTarget.getRaw(i);
+            if (descriptor.equalsIgnoreCase(targetStr)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
+        return isSignValid(Action.PHYSICAL, sign, event.getPlayer());
+    }
+
+    @Override
+    protected boolean canPlayerUseSignOn(Player player, @Nullable Craft craft) {
+        if (!craft.getType().getBoolProperty(CraftType.ALLOW_REMOTE_SIGN)) {
+            player.sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Sign - Not allowed on this craft"));
+            return false;
+        }
+
+        if (super.canPlayerUseSignOn(player, craft)) {
+            return true;
+        }
+
+        return craft.getHitBox().inBounds(player.getLocation().getX(), player.getLocation().getY(), player.getLocation().getZ());
     }
 }

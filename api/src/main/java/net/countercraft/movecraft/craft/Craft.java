@@ -25,12 +25,15 @@ import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -40,11 +43,14 @@ import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3i;
 
+import javax.naming.Name;
 import java.util.*;
 
 public interface Craft {
-    CraftDataTagKey<List<Craft>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
+    // TODO: Unify with RECENT_CONTACTS tag and use a object to also store distance and direction
+    CraftDataTagKey<List<UUID>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
     CraftDataTagKey<Double> FUEL = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
     CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
     CraftDataTagKey<Counter<RequiredBlockEntry>> FLYBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "flyblocks"), craft -> new Counter<>());
@@ -156,7 +162,11 @@ public interface Craft {
      * Sets the craft to cruise or not cruise.
      * @param cruising the desired cruise state
      */
-    void setCruising(boolean cruising);
+    default void setCruising(boolean cruising) {
+        setCruising(cruising, CraftStopCruiseEvent.Reason.UNKNOWN);
+    }
+
+    void setCruising(boolean cruising, CraftStopCruiseEvent.Reason reason);
 
     /**
      * Gets the disabled status of the craft
@@ -250,9 +260,18 @@ public interface Craft {
     Map<Location, BlockData> getPhaseBlocks();
 
     @NotNull
-    String getName();
+    default String getNameRaw() {
+            Component compname = this.getName();
+            return PlainTextComponentSerializer.plainText().serialize(compname);
+    }
 
-    void setName(@NotNull String name);
+    Component getName();
+
+    default void setName(@NotNull String name) {
+        this.setName(Component.text(name));
+    }
+
+    void setName(Component name);
 
     @NotNull
     MutableHitBox getCollapsedHitBox();
@@ -281,6 +300,8 @@ public interface Craft {
 
     <T> T getDataTag(@NotNull final CraftDataTagKey<T> tagKey);
 
+    <T> boolean hasDataTag(@NotNull final CraftDataTagKey<T> tagKey);
+
     public default void markTileStateWithUUID(TileState tile) {
         // Add the marker
         tile.getPersistentDataContainer().set(
@@ -295,6 +316,14 @@ public interface Craft {
     }
 
     Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations();
+
+    public default void setCruiseCooldownMultiplier(double value) {
+        // Do nothing by default
+    }
+
+    public default double getCruiseCooldownMultiplier() {
+        return 1;
+    }
 
     public default MovecraftLocation getCraftOrigin() {
         return this.getDataTag(CRAFT_ORIGIN);

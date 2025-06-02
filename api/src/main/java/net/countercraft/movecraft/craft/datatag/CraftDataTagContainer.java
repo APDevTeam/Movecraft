@@ -53,4 +53,8 @@ public class CraftDataTagContainer {
 
         backing.put(tagKey, value);
     }
+
+    public <T> boolean has(@NotNull CraftDataTagKey<T> tagKey) {
+        return backing.containsKey(tagKey);
+    }
 }

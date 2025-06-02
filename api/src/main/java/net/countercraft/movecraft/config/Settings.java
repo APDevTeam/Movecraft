@@ -37,11 +37,14 @@ public class Settings {
     public static boolean DisableIceForm = true;
     public static boolean RequireCreatePerm = false;
     public static boolean RequireNamePerm = false;
+    public static boolean ReleaseCraftOnLogout = true;
+    public static long ReleaseCraftTimeOutAfterLogOut = 6000; //Ticks, this means 5 minutes
     public static int FadeWrecksAfter = 0;
     public static int FadeTickCooldown = 20;
     public static double FadePercentageOfWreckPerCycle = 10.0;
     public static Map<Material, Integer> ExtraFadeTimePerBlock = new HashMap<>();
     public static int ManOverboardTimeout = 60;
+    public static int ManOverboardCooldown = 30;
     public static double ManOverboardDistSquared = 1000000;
     public static int MaxRemoteSigns = -1;
     public static boolean CraftsUseNetherPortals = false;

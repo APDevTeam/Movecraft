@@ -1,104 +1,80 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.CruiseDirection;
-import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.events.CraftDetectEvent;
-import net.countercraft.movecraft.localisation.I18nSupport;
-import org.bukkit.ChatColor;
-import org.bukkit.Tag;
-import org.bukkit.World;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
-import org.bukkit.block.data.Directional;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public final class CruiseSign implements Listener {
+public class CruiseSign extends AbstractCruiseSign {
 
-    @EventHandler
-    public void onCraftDetect(@NotNull CraftDetectEvent event) {
-        World world = event.getCraft().getWorld();
-        for (MovecraftLocation location : event.getCraft().getHitBox()) {
-            var block = location.toBukkit(world).getBlock();
-            if (!Tag.SIGNS.isTagged(block.getType()))
-                continue;
+    public CruiseSign(final String ident) {
+        super("movecraft.cruisesign", true, ident,"ON", "OFF");
+    }
 
-            BlockState state = block.getState();
-            if (!(state instanceof Sign))
-                continue;
-            Sign sign = (Sign) state;
-            if (ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase("Cruise: ON")) {
-                sign.setLine(0, "Cruise: OFF");
-                sign.update();
+    @Override
+    protected void setCraftCruising(Player player, CruiseDirection direction, Craft craft) {
+        craft.setCruiseDirection(direction);
+        craft.setLastCruiseUpdate(System.currentTimeMillis());
+        craft.setCruising(true);
+    }
+
+    @Override
+    protected CruiseDirection getCruiseDirection(SignListener.SignWrapper sign) {
+        BlockFace face = sign.facing();
+        // NOt necessary, CruiseDirection#fromBlockFace already handles this!
+        //face = face.getOppositeFace();
+        return CruiseDirection.fromBlockFace(face);
+    }
+
+    @Override
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
+        if (super.isSignValid(clickType, sign, player)) {
+            switch(sign.facing()) {
+                case NORTH:
+                case EAST:
+                case SOUTH:
+                case WEST:
+                    return true;
+                default:
+                    return false;
             }
+        }
+        return false;
+    }
+
+    @Override
+    protected void onAfterStartingCruise(Craft craft, SignListener.SignWrapper signWrapper, Player player) {
+        super.onAfterStartingCruise(craft, signWrapper, player);
+        // Left over artifact from manually launched torpedoes
+        if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
+            CraftManager.getInstance().addReleaseTask(craft);
         }
     }
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onSignClick(@NotNull PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
-            return;
-
-        BlockState state = event.getClickedBlock().getState();
-        if (!(state instanceof Sign))
-            return;
-
-        Sign sign = (Sign) state;
-        String line = ChatColor.stripColor(sign.getLine(0));
-        if (line.equalsIgnoreCase("Cruise: OFF")) {
-            event.setCancelled(true);
-            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-            if (c == null || !c.getType().getBoolProperty(CraftType.CAN_CRUISE))
-                return;
-            if (!(sign.getBlockData() instanceof Directional))
-                return;
-
-            sign.setLine(0, "Cruise: ON");
-            sign.update(true);
-
-            c.setCruiseDirection(CruiseDirection.fromBlockFace(((Directional) sign.getBlockData()).getFacing()));
-            c.setLastCruiseUpdate(System.currentTimeMillis());
-            c.setCruising(true);
-            c.resetSigns(sign);
-            if (!c.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
-                CraftManager.getInstance().addReleaseTask(c);
-            }
-        }
-        else if (line.equalsIgnoreCase("Cruise: ON")) {
-            event.setCancelled(true);
-            Craft c = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-            if (c == null || !c.getType().getBoolProperty(CraftType.CAN_CRUISE))
-                return;
-
-            sign.setLine(0, "Cruise: OFF");
-            sign.update(true);
-            c.setCruising(false);
-            c.resetSigns(sign);
-        }
+    @Override
+    protected boolean shouldShareSameToggleState(SignListener.SignWrapper sign, SignListener.SignWrapper other) {
+        return super.shouldShareSameToggleState(sign, other) && sign.facing() == other.facing();
     }
 
-    @EventHandler(priority = EventPriority.NORMAL)
-    public void onSignChange(@NotNull SignChangeEvent event) {
-        Player player = event.getPlayer();
-        String line = ChatColor.stripColor(event.getLine(0));
-        if (line == null)
-            return;
-        if (!line.equalsIgnoreCase("Cruise: OFF") && !line.equalsIgnoreCase("Cruise: ON"))
-            return;
-        if (player.hasPermission("movecraft.cruisesign") || !Settings.RequireCreatePerm)
-            return;
+    @Override
+    protected void onCraftIsBusy(Player player, Craft craft) {
+        // Ignore
+    }
 
-        player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-        event.setCancelled(true);
+    @Override
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
+
+    }
+
+    @Override
+    protected boolean canPlayerUseSignOn(Player player, @Nullable Craft craft) {
+        if (super.canPlayerUseSignOn(player, craft)) {
+            return craft.getType().getBoolProperty(CraftType.CAN_CRUISE);
+        }
+        return false;
     }
 }

@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.features.status;
 
+import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -9,10 +10,12 @@ import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.features.status.events.CraftStatusUpdateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
+import net.countercraft.movecraft.sign.SignListener;
 import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
@@ -32,7 +35,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class StatusManager extends BukkitRunnable implements Listener {
-    private static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
+    public static final CraftDataTagKey<Long> LAST_STATUS_CHECK = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "last-status-check"), craft -> System.currentTimeMillis());
 
     @Override
     public void run() {
@@ -46,11 +49,11 @@ public class StatusManager extends BukkitRunnable implements Listener {
         }
     }
 
-    private static final class StatusUpdateTask implements Supplier<Effect> {
+    public static final class StatusUpdateTask implements Supplier<Effect> {
         private final Craft craft;
         private final Map<Material, Double> fuelTypes;
 
-        private StatusUpdateTask(@NotNull Craft craft) {
+        public StatusUpdateTask(@NotNull Craft craft) {
             this.craft = craft;
 
             Object object = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
@@ -123,6 +126,9 @@ public class StatusManager extends BukkitRunnable implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onCraftStatusUpdate(@NotNull CraftStatusUpdateEvent e) {
         Craft craft = e.getCraft();
+
+        SignListener.INSTANCE.onStatusUpdate(craft);
+
         if (craft instanceof SinkingCraft)
             return;
         if (craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) == 0.0)
@@ -167,15 +173,17 @@ public class StatusManager extends BukkitRunnable implements Listener {
             sinking = true;
 
         // If the craft is disabled, play a sound and disable it.
-        if (disabled && !craft.getDisabled()) {
-            craft.setDisabled(true);
-            craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
+        if (disabled != craft.getDisabled()) {
+            craft.setDisabled(disabled);
+            if (disabled) {
+                craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
+            }
         }
 
         // If the craft is sinking, let the player know and sink the craft.
         if (sinking) {
             craft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Player - Craft is sinking"));
-            craft.setCruising(false);
+            craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
             CraftManager.getInstance().sink(craft);
         }
     }

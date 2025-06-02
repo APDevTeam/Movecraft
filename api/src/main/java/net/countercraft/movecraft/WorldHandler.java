@@ -16,10 +16,13 @@ public abstract class WorldHandler {
     public abstract void setBlockFast(@NotNull Location location, @NotNull BlockData data);
     public abstract void setBlockFast(@NotNull Location location, @NotNull MovecraftRotation rotation, @NotNull BlockData data);
 
-    public static @NotNull String getPackageName(@NotNull String minecraftVersion) {
+    public static @NotNull String[] getPackageNames(@NotNull String minecraftVersion) {
         String[] parts = minecraftVersion.split("\\.");
         if (parts.length < 2)
             throw new IllegalArgumentException();
-        return "v1_" + parts[1];
+        return new String[] {
+                "v1_" + parts[1] + "_" + parts[2],
+                "v1_" + parts[1]
+        };
     }
 }

@@ -3,6 +3,8 @@ package net.countercraft.movecraft.commands;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
+import net.countercraft.movecraft.sign.AbstractMovecraftSign;
+import net.countercraft.movecraft.sign.CraftPilotSign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;

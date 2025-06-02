@@ -1,17 +1,13 @@
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.CruiseDirection;
-import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.MovecraftRotation;
-import net.countercraft.movecraft.TrackedLocation;
+import net.countercraft.movecraft.*;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
-import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
 import net.countercraft.movecraft.processing.MovecraftWorld;
@@ -24,17 +20,11 @@ import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -75,9 +65,10 @@ public abstract class BaseCraft implements Craft {
     private double burningFuel;
     private int origBlockCount;
     @NotNull
+    // TODO: rework this into a "CraftAudience" to also support crews later
     private Audience audience;
     @NotNull
-    private String name = "";
+    private Component name = Component.empty();
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
     private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new ConcurrentHashMap<>();
@@ -85,9 +76,16 @@ public abstract class BaseCraft implements Craft {
     @NotNull
     private final CraftDataTagContainer dataTagContainer;
 
-    private final UUID uuid = UUID.randomUUID();
+    private final UUID uuid;
+
+    private double cruiseTickMultiplier = 1;
 
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
+        this(type, world, UUID.randomUUID());
+    }
+
+    public BaseCraft(@NotNull CraftType type, @NotNull World world, final @NotNull UUID uuid) {
+        this.uuid = uuid;
         Hidden.uuidToCraft.put(uuid, this);
         this.type = type;
         this.w = world;
@@ -241,9 +239,14 @@ public abstract class BaseCraft implements Craft {
     }
 
     @Override
-    public void setCruising(boolean cruising) {
+    public void setCruising(boolean cruising, CraftStopCruiseEvent.Reason reason) {
         audience.sendActionBar(Component.text().content("Cruising " + (cruising ? "enabled" : "disabled")));
         this.cruising = cruising;
+        if (!this.cruising) {
+            this.setCruiseCooldownMultiplier(1);
+            CraftStopCruiseEvent event = new CraftStopCruiseEvent(this, reason);
+            Bukkit.getPluginManager().callEvent(event);
+        }
     }
 
     @Override
@@ -263,6 +266,9 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setCruiseDirection(CruiseDirection cruiseDirection) {
+        if (this.cruiseDirection != null && cruiseDirection != null && !cruiseDirection.equals(this.cruiseDirection)) {
+            this.setCruiseCooldownMultiplier(1);
+        }
         this.cruiseDirection = cruiseDirection;
     }
 
@@ -355,7 +361,52 @@ public abstract class BaseCraft implements Craft {
 
         // Dynamic Fly Block Speed
         int cruiseTickCooldown = (int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_TICK_COOLDOWN, w);
-        if (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
+        if (
+            !materials.isEmpty() 
+            && type.getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) != null 
+            && (type.getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) instanceof Map<?, ?> mapping)
+            && !mapping.isEmpty()
+        ) {
+            double modifier = 0.0D;
+            final double shipSize = this.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER) ? (double) this.getDataTag(Craft.NON_NEGLIGIBLE_BLOCKS) : (double) this.getDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS);
+            for (Map.Entry<?, ?> entry : mapping.entrySet()) {
+                if (!((entry.getKey() instanceof EnumSet<?>) && (entry.getValue() instanceof Double))) {
+                    continue;
+                }
+                EnumSet<?> mappingMats = (EnumSet<?>) entry.getKey();
+                Double value = (Double) entry.getValue();
+                // Value represents speed modifier if the ship is 100% made of that block
+                int blockCount = 0;
+                for (Object obj : mappingMats) {
+                    if (obj instanceof Material mat) {
+                        blockCount += materials.get(mat);
+                    }
+                }
+                // TODO: Maybe change it so that the value represents the modifier value per single block? That would be more intuitive but also enforce a minimum size for max speed
+                double effectiveModifier = value * (((double)blockCount) / shipSize);
+
+                modifier += effectiveModifier;
+            }
+            // Recalculate the tick cooldown to a speed in m/s
+            //tickcooldown = (int) Math.round((1.0 + data.get(CRUISE_SKIP_BLOCKS)) * 20.0 / type.getDoubleProperty(CRUISE_SPEED))
+            // => CruiseSpeed = Math.round((1 + CruiseSkipBlocks) * 20 / tickCooldown)
+            final int skipDistance = (cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) ? ((int) type.getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, w) + 1) : ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1);
+            double normalSpeedUnmodified = (cruiseTickCooldown + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+            double speedInMetersPerSecond = 20.0 * skipDistance / normalSpeedUnmodified;
+            speedInMetersPerSecond += modifier;
+
+            // Apply max limit
+            speedInMetersPerSecond = Math.min((double)this.type.getPerWorldProperty(CraftType.PER_WORLD_MODIFIER_MAX_SPEED, this.getWorld()), Math.max(1.0D, speedInMetersPerSecond));
+
+            // Recalculate speed to cooldown ticks again
+            int speed = Math.max(1, (int) Math.round(20.0 * skipDistance / speedInMetersPerSecond));
+
+            // Now, calculate the actual speed and apply it!
+            // Return at least one as a safeguard
+            //return Math.max((int) Math.round((20.0 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / speed) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
+            return (speed + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+        }
+        else if (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
             if (materials.isEmpty()) {
                 return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
             }
@@ -364,10 +415,13 @@ public abstract class BaseCraft implements Craft {
             for (Material m : flyBlockMaterials) {
                 count += materials.get(m);
             }
+            // Percentual amount of blocks of the craft
             double ratio = count / hitBox.size();
             double speed = (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) * 1.5)
                     * (ratio - 0.5)
+                    // Add the base speed to it (current cruise speed + 1)
                         + (20.0 / cruiseTickCooldown) + 1;
+            // Return at least one as a safeguard
             return Math.max((int) Math.round((20.0 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / speed) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
         }
 
@@ -493,12 +547,12 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     @NotNull
-    public String getName() {
+    public Component getName() {
         return name;
     }
 
     @Override
-    public void setName(@NotNull String name) {
+    public void setName(@NotNull Component name) {
         this.name = name;
     }
 
@@ -542,6 +596,9 @@ public abstract class BaseCraft implements Craft {
     @Override
     @NotNull
     public Audience getAudience() {
+        if (this.audience == null) {
+            return Audience.empty();
+        }
         return audience;
     }
 
@@ -580,4 +637,19 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public Map<NamespacedKey, Set<TrackedLocation>> getTrackedLocations() {return trackedLocations;}
+
+    @Override
+    public void setCruiseCooldownMultiplier(double value) {
+        this.cruiseTickMultiplier = value;
+    }
+
+    @Override
+    public double getCruiseCooldownMultiplier() {
+        return this.cruiseTickMultiplier;
+    }
+
+    @Override
+    public <T> boolean hasDataTag(final @NotNull CraftDataTagKey<T> tagKey) {
+        return this.dataTagContainer.has(tagKey);
+    }
 }

@@ -24,9 +24,9 @@ import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.events.TypesReloadedEvent;
 import net.countercraft.movecraft.exception.NonCancellableReleaseException;
+import net.countercraft.movecraft.features.status.StatusManager;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
-import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.processing.functions.CraftSupplier;
@@ -45,12 +45,7 @@ import org.yaml.snakeyaml.parser.ParserException;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -83,7 +78,7 @@ public class CraftManager implements Iterable<Craft>{
     /**
      * Map of players to their current craft.
      */
-    @NotNull private final ConcurrentMap<Player, PlayerCraft> playerCrafts = new ConcurrentHashMap<>();
+    @NotNull private final ConcurrentMap<UUID, PlayerCraft> playerCrafts = new ConcurrentHashMap<>();
     @NotNull private final ConcurrentMap<Craft, BukkitTask> releaseEvents = new ConcurrentHashMap<>();
     /**
      * Set of all craft types on the server.
@@ -116,6 +111,7 @@ public class CraftManager implements Iterable<Craft>{
         }
 
         Set<CraftType> craftTypes = new HashSet<>();
+        // TODO: Support subdirectories too
         File[] files = craftsFile.listFiles();
         if (files == null) {
             return craftTypes;
@@ -181,15 +177,34 @@ public class CraftManager implements Iterable<Craft>{
         ));
     }
 
+    public void detect(@NotNull MovecraftLocation startPoint,
+                       @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                       @NotNull World world, @Nullable Player player,
+                       @NotNull Audience audience,
+                       @NotNull Function<Craft, Effect> postDetection,
+                       @Nullable Function<@Nullable Craft, Effect> alwaysRunAfter) {
+        WorldManager.INSTANCE.submit(new DetectionTask(
+                startPoint, CachedMovecraftWorld.of(world),
+                type, supplier,
+                world, player,
+                audience,
+                postDetection,
+                alwaysRunAfter
+        ));
+    }
+
     public void add(@NotNull Craft c) {
         if (c instanceof PlayerCraft) {
-            if (playerCrafts.containsKey(((PlayerCraft) c).getPilot()))
+            if (playerCrafts.containsKey(((PlayerCraft) c).getPilotUUID()))
                 throw new IllegalStateException("Players may only have one PlayerCraft associated with them!");
 
-            playerCrafts.put(((PlayerCraft) c).getPilot(), (PlayerCraft) c);
+            playerCrafts.put(((PlayerCraft) c).getPilotUUID(), (PlayerCraft) c);
         }
 
         crafts.add(c);
+
+        // Immediately fire the Status update to make moveblocks apply and to have up-to-date values
+        WorldManager.INSTANCE.submit(new StatusManager.StatusUpdateTask(c));
     }
 
     public void sink(@NotNull Craft craft) {
@@ -200,7 +215,7 @@ public class CraftManager implements Iterable<Craft>{
 
         crafts.remove(craft);
         if (craft instanceof PlayerCraft)
-            playerCrafts.remove(((PlayerCraft) craft).getPilot());
+            playerCrafts.remove(((PlayerCraft) craft).getPilotUUID());
 
         crafts.add(new SinkingCraftImpl(craft));
     }
@@ -217,7 +232,7 @@ public class CraftManager implements Iterable<Craft>{
 
         crafts.remove(craft);
         if(craft instanceof PlayerCraft)
-            playerCrafts.remove(((PlayerCraft) craft).getPilot());
+            playerCrafts.remove(((PlayerCraft) craft).getPilotUUID());
 
         if(craft.getHitBox().isEmpty())
             Movecraft.getInstance().getLogger().warning(I18nSupport.getInternationalisedString(
@@ -229,7 +244,7 @@ public class CraftManager implements Iterable<Craft>{
             if (craft instanceof PilotedCraft)
                 Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString(
                         "Release - Player has released a craft console"),
-                        ((PilotedCraft) craft).getPilot().getName(),
+                        ((PilotedCraft) craft).getPilot() == null ? ((PilotedCraft) craft).getPilotUUID().toString() : ((PilotedCraft) craft).getPilot().getName(),
                         craft.getType().getStringProperty(CraftType.NAME),
                         craft.getHitBox().size(),
                         craft.getHitBox().getMinX(),
@@ -253,7 +268,7 @@ public class CraftManager implements Iterable<Craft>{
     public Player getPlayerFromCraft(@NotNull Craft c) {
         for (var entry : playerCrafts.entrySet()) {
             if (entry.getValue() == c)
-                return entry.getKey();
+                return Bukkit.getPlayer(entry.getKey());
         }
         return null;
     }
@@ -341,12 +356,12 @@ public class CraftManager implements Iterable<Craft>{
     public PlayerCraft getCraftByPlayer(@Nullable Player p) {
         if(p == null)
             return null;
-        return playerCrafts.get(p);
+        return playerCrafts.get(p.getUniqueId());
     }
 
     public PlayerCraft getCraftByPlayerName(String name) {
         for (var entry : playerCrafts.entrySet()) {
-            if (entry.getKey() != null && entry.getKey().getName().equals(name))
+            if (entry.getKey() != null && (Bukkit.getPlayer(entry.getKey()).getName().equals(name) || Bukkit.getOfflinePlayer(entry.getKey()).getName().equals(name)))
                 return entry.getValue();
         }
         return null;

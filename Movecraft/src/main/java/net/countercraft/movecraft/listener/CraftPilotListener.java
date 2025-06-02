@@ -5,8 +5,10 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.SubCraft;
+import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.util.ContactBlockHelper;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -49,6 +51,14 @@ public class CraftPilotListener implements Listener {
             }
             transferTrackedLocations(parent, subCraft, (trackedLocation) -> subCraft.getHitBox().inBounds(trackedLocation.getAbsoluteLocation()) && subCraft.getHitBox().contains(trackedLocation.getAbsoluteLocation()), true);
         }
+        // Traction and contact blocks!
+        ContactBlockHelper.onPilot(event);
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCraftDetect(@NotNull CraftDetectEvent event) {
+        // Traction and contact blocks!
+        ContactBlockHelper.onDetect(event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

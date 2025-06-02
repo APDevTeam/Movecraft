@@ -111,6 +111,7 @@ public class DetectionTask implements Supplier<Effect> {
     private final Player player;
     private final Audience audience;
     private final Function<Craft, Effect> postDetection;
+    private final Function<@Nullable Craft, Effect> alwaysRunAfter;
 
     private final LongAdder size = new LongAdder();
     private final Set<MovecraftLocation> visited = new AtomicLocationSet();
@@ -122,10 +123,19 @@ public class DetectionTask implements Supplier<Effect> {
 
 
     public DetectionTask(@NotNull MovecraftLocation startLocation, @NotNull MovecraftWorld movecraftWorld,
+                         @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                         @NotNull World world, @Nullable Player player,
+                         @NotNull Audience audience,
+                         @NotNull Function<Craft, Effect> postDetection) {
+        this(startLocation, movecraftWorld, type, supplier, world, player, audience, postDetection, null);
+    }
+
+    public DetectionTask(@NotNull MovecraftLocation startLocation, @NotNull MovecraftWorld movecraftWorld,
                             @NotNull CraftType type, @NotNull CraftSupplier supplier,
                             @NotNull World world, @Nullable Player player,
                             @NotNull Audience audience,
-                            @NotNull Function<Craft, Effect> postDetection) {
+                            @NotNull Function<Craft, Effect> postDetection,
+                            @Nullable Function<@Nullable Craft, Effect> alwaysRunAFter) {
         this.startLocation = startLocation;
         this.movecraftWorld = movecraftWorld;
         this.type = type;
@@ -135,6 +145,7 @@ public class DetectionTask implements Supplier<Effect> {
         this.player = player;
         this.audience = audience;
         this.postDetection = postDetection;
+        this.alwaysRunAfter = alwaysRunAFter;
     }
 
     @Deprecated
@@ -231,8 +242,12 @@ public class DetectionTask implements Supplier<Effect> {
     @Override
     public Effect get() {
         frontier();
-        if (!illegal.isEmpty())
+        if (!illegal.isEmpty()) {
+            if (this.alwaysRunAfter != null) {
+                this.alwaysRunAfter.apply(null);
+            }
             return null;
+        }
 
         var result = COMPLETION_VALIDATORS.stream().reduce(DetectionPredicate::and).orElse(
                 (a, b, c, d) -> Result.fail()
@@ -242,6 +257,8 @@ public class DetectionTask implements Supplier<Effect> {
         ).validate(visitedMaterials, type, movecraftWorld, player) : result;
         if (!result.isSucess()) {
             String message = result.getMessage();
+            if (this.alwaysRunAfter != null)
+                this.alwaysRunAfter.apply(null);
             return () -> audience.sendMessage(Component.text(message));
         }
 
@@ -258,6 +275,8 @@ public class DetectionTask implements Supplier<Effect> {
 
         if (!result.isSucess()) {
             String message = result.getMessage();
+            if (this.alwaysRunAfter != null)
+                this.alwaysRunAfter.apply(craft);
             return () -> audience.sendMessage(Component.text(message));
         }
 
@@ -294,6 +313,12 @@ public class DetectionTask implements Supplier<Effect> {
                 // Fire off pilot event
                 () -> Bukkit.getServer().getPluginManager().callEvent(
                         new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER))
+        ).andThen(
+                () -> {
+                    if (this.alwaysRunAfter != null) {
+                        this.alwaysRunAfter.apply(craft);
+                    }
+                }
         ).andThen(
                 // Apply post detection effect
                 postDetection.apply(craft)

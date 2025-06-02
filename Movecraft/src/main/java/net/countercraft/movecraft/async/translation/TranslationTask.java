@@ -6,19 +6,9 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.ChunkManager;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.SubCraft;
+import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.events.CraftCollisionEvent;
-import net.countercraft.movecraft.events.CraftCollisionExplosionEvent;
-import net.countercraft.movecraft.events.CraftPreTranslateEvent;
-import net.countercraft.movecraft.events.CraftReleaseEvent;
-import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
-import net.countercraft.movecraft.events.CraftTranslateEvent;
-import net.countercraft.movecraft.events.ItemHarvestEvent;
+import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
@@ -26,6 +16,7 @@ import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
@@ -43,11 +34,11 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -154,6 +145,10 @@ public class TranslationTask extends AsyncTask {
 
         if (!(dy < 0 && dx == 0 && dz == 0) && !checkFuel()) {
             fail(I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel"));
+            if (craft.getType().getBoolProperty(CraftType.SINK_WHEN_OUT_OF_FUEL)) {
+                craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
+                CraftManager.getInstance().sink(craft);
+            }
             return;
         }
 
@@ -195,11 +190,14 @@ public class TranslationTask extends AsyncTask {
                 blockObstructed = !testMaterial.isAir()
                         && !craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(testMaterial);
 
-            boolean ignoreBlock = oldLocation.toBukkit(craft.getWorld()).getBlock().getType().isAir()
-                    && blockObstructed;
+            Material blockMatTmp = oldLocation.toBukkit(craft.getWorld()).getBlock().getType();
+            boolean ignoreBlock = (
+                    blockMatTmp.isAir()
+                    || craft.getType().getMaterialSetProperty(CraftType.MOVE_BREAK_BLOCKS).contains(blockMatTmp)
+            ) && blockObstructed;
             // air never obstructs anything (changed 4/18/2017 to prevent drilling machines)
 
-            if (blockObstructed && !harvestBlocks.isEmpty() && harvestBlocks.contains(testMaterial)) {
+            if (!(craft instanceof SinkingCraft ) && blockObstructed && !harvestBlocks.isEmpty() && harvestBlocks.contains(testMaterial)) {
                 Material tmpType = oldLocation.toBukkit(craft.getWorld()).getBlock().getType();
                 if (harvesterBladeBlocks.size() > 0 && harvesterBladeBlocks.contains(tmpType)) {
                     blockObstructed = false;
@@ -226,7 +224,7 @@ public class TranslationTask extends AsyncTask {
             }
         }
 
-        if (craft.getType().getMaterialSetProperty(CraftType.FORBIDDEN_HOVER_OVER_BLOCKS).size() > 0) {
+        if (craft.getType().getMaterialSetProperty(CraftType.FORBIDDEN_HOVER_OVER_BLOCKS).size() > 0 && !newHitBox.isEmpty()) {
             MovecraftLocation test = new MovecraftLocation(newHitBox.getMidPoint().getX(), newHitBox.getMinY(),
                     newHitBox.getMidPoint().getZ());
             test = test.translate(0, -1, 0);
@@ -236,6 +234,7 @@ public class TranslationTask extends AsyncTask {
             }
             Material testType = test.toBukkit(world).getBlock().getType();
             if (craft.getType().getMaterialSetProperty(CraftType.FORBIDDEN_HOVER_OVER_BLOCKS).contains(testType)) {
+                // Why is there no return here? Shouldnt there be one?
                 fail(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over block"),
                         testType.name().toLowerCase().replace("_", " ")));
                 return;
@@ -366,6 +365,82 @@ public class TranslationTask extends AsyncTask {
                 oldHitBox.getYLength() / 2.0 + 2,
                 oldHitBox.getZLength() / 2.0 + 1
         )) {
+
+            // Do not move moving projectiles
+            if (entity instanceof Projectile projectile) {
+                if (!projectile.isOnGround()) {
+                    Vector velocity = entity.getVelocity();
+                    if (entity instanceof Fireball fireball) {
+                        velocity = fireball.getAcceleration();
+                    }
+                    if (Math.abs(velocity.lengthSquared()) >= 0.025) {
+                        continue;
+                    }
+                }
+            }
+
+            // TNT special check
+            // DO NOT move moving tnt
+            // Velocity in water: [0.0, 0.0, 0.05]
+            if (entity instanceof TNTPrimed tntPrimed) {
+                // If it is on the ground it is most likely in our cannon, so then we don't need to check, then it is allowed to move
+                if (!tntPrimed.isOnGround()) {
+                    // It is not on the ground
+                    // It's velocity is slightly faster then when travelling in water (0.0025)
+                    // Velocity when pushed by a single tnt: [0, 0,0, 0.16] => 0.0256
+                    if (tntPrimed.getVelocity().lengthSquared() > 0.0512) {
+                        continue;
+                    }
+                }
+            }
+
+            final boolean isEntityAlwaysMoved = (
+                    entity instanceof Player
+                    || entity.getType() == EntityType.TNT
+                    || entity.getType() == EntityType.TNT_MINECART
+                    || entity instanceof Minecart
+                    || entity instanceof Hanging
+                    || entity instanceof Display
+            );
+
+            final int craftSize = craft.getHitBox().size();
+
+            // Do not drag along other pilots pretty please
+            if (isEntityAlwaysMoved) {
+                boolean skip = false;
+                // Player => Check for other craft
+                for (Craft craftTmp : MathUtils.craftsNearLocFast(CraftManager.getInstance().getCraftsInWorld(entity.getWorld()), entity.getLocation())) {
+                    if (craftTmp == craft) {
+                        continue;
+                    }
+                    // Playerspecific check
+                    if (entity instanceof Player && craftTmp instanceof PilotedCraft pilotedCraft && pilotedCraft.getPilot() == entity) {
+                        // Only skip, if the found craft is smaller
+                        if (craft instanceof  PilotedCraft pilotedCraft1 && pilotedCraft1.getPilot() == entity) {
+                            // Squadron or subskiff moving, can be ignored
+                        } else {
+                            int sizeTmp = craftTmp.getHitBox().size();
+                            if (sizeTmp < craftSize) {
+                                skip = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (craftTmp.getHitBox().contains(entity.getLocation().getBlockX(), entity.getLocation().getBlockY(), entity.getLocation().getBlockZ())) {
+                        // Because of squadrons implementing SubCraft...
+                        if (craftTmp instanceof SubCraftImpl) {
+                            continue;
+                        }
+                        skip = true;
+                        break;
+                    }
+                }
+                // DO NOT MOVE THIS ENTITY
+                if (skip) {
+                    continue;
+                }
+            }
+
             if ((entity.getType() == EntityType.PLAYER && !(craft instanceof SinkingCraft))) {
                 CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
                 Bukkit.getServer().getPluginManager().callEvent(e);
@@ -378,8 +453,10 @@ public class TranslationTask extends AsyncTask {
                 continue;
             }
 
-            if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
-                    && entity.getType() != EntityType.TNT) {
+            if (
+                    craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
+                    && !isEntityAlwaysMoved
+            ) {
                 continue;
             }
 

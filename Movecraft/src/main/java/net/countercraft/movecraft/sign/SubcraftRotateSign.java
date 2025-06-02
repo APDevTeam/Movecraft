@@ -10,93 +10,34 @@ import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.Pair;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
-public final class SubcraftRotateSign implements Listener {
-    private static final String HEADER = "Subcraft Rotate";
-    private final Set<MovecraftLocation> rotating = new HashSet<>();
+public class SubcraftRotateSign extends AbstractSubcraftSign {
 
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-    public void onSignClick(@NotNull PlayerInteractEvent event) {
-        MovecraftRotation rotation;
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK)
-            rotation = MovecraftRotation.CLOCKWISE;
-        else if (event.getAction() == Action.LEFT_CLICK_BLOCK)
-            rotation = MovecraftRotation.ANTICLOCKWISE;
-        else
-            return;
+    public SubcraftRotateSign(Function<String, @Nullable CraftType> craftTypeRetrievalFunction, Supplier<Plugin> plugin) {
+        super(craftTypeRetrievalFunction, plugin);
+    }
 
-        BlockState state = event.getClickedBlock().getState();
-        if (!(state instanceof Sign))
-            return;
-        Sign sign = (Sign) state;
-        if (!ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(HEADER))
-            return;
-
-        event.setCancelled(true);
-        Location loc = event.getClickedBlock().getLocation();
-        MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        if (rotating.contains(startPoint)) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Rotation - Already Rotating"));
-            event.setCancelled(true);
+    @Override
+    protected void runDetectTask(Action clickType, CraftType subcraftType, Craft parentcraft, World world, Player player, MovecraftLocation startPoint) {
+        final MovecraftRotation rotation = MovecraftRotation.fromAction(clickType);
+        if (rotation == MovecraftRotation.NONE) {
             return;
         }
 
-        // rotate subcraft
-        String craftTypeStr = ChatColor.stripColor(sign.getLine(1));
-        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(craftTypeStr);
-        if (craftType == null)
-            return;
-        if (ChatColor.stripColor(sign.getLine(2)).equals("")
-                && ChatColor.stripColor(sign.getLine(3)).equals("")) {
-            sign.setLine(2, "_\\ /_");
-            sign.setLine(3, "/ \\");
-            sign.update(false, false);
-        }
-
-        if (!event.getPlayer().hasPermission("movecraft." + craftTypeStr + ".pilot") || !event.getPlayer().hasPermission("movecraft." + craftTypeStr + ".rotate")) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            return;
-        }
-
-        Craft playerCraft = CraftManager.getInstance().getCraftByPlayer(event.getPlayer());
-        if (playerCraft != null) {
-            if (!playerCraft.isNotProcessing()) {
-                event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
-                return;
-            }
-            playerCraft.setProcessing(true); // prevent the parent craft from moving or updating until the subcraft is done
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    playerCraft.setProcessing(false);
-                }
-            }.runTaskLater(Movecraft.getInstance(), (10));
-        }
-
-        rotating.add(startPoint);
-
-        Player player = event.getPlayer();
-        World world = event.getClickedBlock().getWorld();
         CraftManager.getInstance().detect(
                 startPoint,
-                craftType, (type, w, p, parents) -> {
+                subcraftType, (type, w, p, parents) -> {
                     if (parents.size() > 1)
                         return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
                                 "Detection - Failed - Already commanding a craft")), null);
@@ -107,34 +48,73 @@ public final class SubcraftRotateSign implements Listener {
                     return new Pair<>(Result.succeed(), new SubCraftImpl(type, w, parent));
                 },
                 world, player, player,
-                craft -> () -> {
-                    Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.SUB_CRAFT));
-                    if (craft instanceof SubCraft) { // Subtract craft from the parent
-                        Craft parent = ((SubCraft) craft).getParent();
-                        var newHitbox = parent.getHitBox().difference(craft.getHitBox());;
+                subcraft -> () -> {
+                    Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(subcraft, CraftPilotEvent.Reason.SUB_CRAFT));
+                    if (subcraft instanceof SubCraft) { // Subtract craft from the parent
+                        Craft parent = ((SubCraft) subcraft).getParent();
+                        var newHitbox = parent.getHitBox().difference(subcraft.getHitBox());;
                         parent.setHitBox(newHitbox);
                     }
+
+                    subcraft.rotate(rotation, startPoint, true);
 
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            craft.rotate(rotation, startPoint, true);
-                            if (craft instanceof SubCraft) {
-                                Craft parent = ((SubCraft) craft).getParent();
-                                var newHitbox = parent.getHitBox().union(craft.getHitBox());
+                            if (subcraft instanceof SubCraft) {
+                                Craft parent = ((SubCraft) subcraft).getParent();
+                                var newHitbox = parent.getHitBox().union(subcraft.getHitBox());
                                 parent.setHitBox(newHitbox);
                             }
-                            CraftManager.getInstance().release(craft, CraftReleaseEvent.Reason.SUB_CRAFT, false);
+                            CraftManager.getInstance().release(subcraft, CraftReleaseEvent.Reason.SUB_CRAFT, false);
                         }
                     }.runTaskLater(Movecraft.getInstance(), 3);
                 }
         );
-        event.setCancelled(true);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                rotating.remove(startPoint);
-            }
-        }.runTaskLater(Movecraft.getInstance(), 4);
+    }
+
+    @Override
+    protected boolean isActionAllowed(String action) {
+        return action.equalsIgnoreCase("ROTATE");
+    }
+
+    @Override
+    protected void onActionAlreadyInProgress(Player player) {
+        player.sendMessage(I18nSupport.getInternationalisedString("Rotation - Already Rotating"));
+    }
+
+    static final Component DEFAULT_LINE_3 = Component.text("_\\ / _");
+    static final Component DEFAULT_LINE_4 = Component.text("/ \\");
+
+    @Override
+    protected Component getDefaultTextFor(int line) {
+        switch (line) {
+            case 2:
+                return DEFAULT_LINE_3;
+            case 3:
+                return DEFAULT_LINE_4;
+            default:
+                return null;
+        }
+    }
+
+    @Override
+    protected boolean canPlayerUseSignForCraftType(Action clickType, SignListener.SignWrapper sign, Player player, CraftType subcraftType) {
+        final String craftTypeStr = subcraftType.getStringProperty(CraftType.NAME).toLowerCase();
+        if (!player.hasPermission("movecraft." + craftTypeStr + ".rotate")) {
+            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected void onCraftIsBusy(Player player, Craft craft) {
+        player.sendMessage(I18nSupport.getInternationalisedString("Detection - Parent Craft is busy"));
+    }
+
+    @Override
+    protected void onCraftNotFound(Player player, SignListener.SignWrapper sign) {
+        // Ignored
     }
 }
