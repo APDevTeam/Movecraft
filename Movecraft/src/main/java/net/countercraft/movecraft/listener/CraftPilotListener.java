@@ -51,7 +51,6 @@ public class CraftPilotListener implements Listener {
             }
             transferTrackedLocations(parent, subCraft, (trackedLocation) -> subCraft.getHitBox().inBounds(trackedLocation.getAbsoluteLocation()) && subCraft.getHitBox().contains(trackedLocation.getAbsoluteLocation()), true);
         }
-
         // Traction and contact blocks!
         ContactBlockHelper.onPilot(event);
     }
