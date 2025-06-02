@@ -11,6 +11,7 @@ dependencies {
     runtimeOnly(project(":movecraft-v1_20", "reobf"))
     runtimeOnly(project(":movecraft-v1_21", "reobf"))
     runtimeOnly(project(":movecraft-v1_21_1", "reobf"))
+	runtimeOnly(project(":movecraft-v1_21_4", "reobf"))
     implementation(project(":movecraft-api"))
     compileOnly("org.yaml:snakeyaml:2.0")
 }
@@ -25,6 +26,7 @@ tasks.shadowJar {
         include(project(":movecraft-v1_20"))
         include(project(":movecraft-v1_21"))
         include(project(":movecraft-v1_21_1"))
+		include(project(":movecraft-v1_21_4"))
     }
 }
 
