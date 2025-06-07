@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.craft.datatag;
 
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.util.SimpleRegistry;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,17 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
-/**
- * TODO: Change to extend @link SimpleRegistry in the future
-  */
-public class CraftDataTagRegistry {
+public class CraftDataTagRegistry extends SimpleRegistry<NamespacedKey, CraftDataTagKey<?>> {
     public static final @NotNull CraftDataTagRegistry INSTANCE = new CraftDataTagRegistry();
-
-    private final @NotNull ConcurrentMap<@NotNull NamespacedKey, @NotNull CraftDataTagKey<?>> _registeredTags;
-
-    public CraftDataTagRegistry(){
-        _registeredTags = new ConcurrentHashMap<>();
-    }
 
     /**
      * Registers a data tag to be attached to craft instances. The data tag will initialize to the value supplied by the
@@ -35,16 +27,12 @@ public class CraftDataTagRegistry {
      */
     public <T> @NotNull CraftDataTagKey<T> registerTagKey(final @NotNull NamespacedKey key, final @NotNull Function<Craft, T> initializer) throws IllegalArgumentException {
         CraftDataTagKey<T> result = new CraftDataTagKey<>(key, initializer);
-        var previous = _registeredTags.putIfAbsent(key, result);
-        if(previous != null){
-            throw new IllegalArgumentException(String.format("Key %s is already registered.", key));
-        }
-
-        return result;
+        return (CraftDataTagKey<T>) super.register(key, result, false);
     }
 
-    public boolean isRegistered(final @NotNull NamespacedKey key){
-        return _registeredTags.containsKey(key);
+    @Override
+    public @NotNull CraftDataTagKey<?> register(@NotNull NamespacedKey key, @NotNull CraftDataTagKey<?> value, boolean override) throws IllegalArgumentException {
+        return super.register(key, value, false);
     }
 
     /**
@@ -52,6 +40,6 @@ public class CraftDataTagRegistry {
      * @return An immutable iterable over the registry keys
      */
     public @NotNull Iterable<@NotNull NamespacedKey> getAllKeys(){
-        return _registeredTags.keySet().stream().toList();
+        return _register.keySet().stream().toList();
     }
 }
