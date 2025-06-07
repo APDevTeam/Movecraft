@@ -15,4 +15,8 @@ public interface Property<Type> {
 
     @NotNull
     NamespacedKey getNamespacedKey();
+
+    public default ImmutableProperty immutable() {
+        return new ImmutableProperty(this);
+    }
 }
