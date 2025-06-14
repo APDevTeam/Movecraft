@@ -1,8 +1,8 @@
 plugins {
     `maven-publish`
     id("buildlogic.java-conventions")
-    id("io.github.goooler.shadow") version "8.1.7"
-    id("io.papermc.hangar-publish-plugin") version "0.1.2"
+    id("com.gradleup.shadow") version "8.3.6"
+    id("io.papermc.hangar-publish-plugin") version "0.1.3"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
