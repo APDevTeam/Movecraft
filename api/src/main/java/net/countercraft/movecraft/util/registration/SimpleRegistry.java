@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.util;
+package net.countercraft.movecraft.util.registration;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
