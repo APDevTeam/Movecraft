@@ -17,7 +17,17 @@
 
 package net.countercraft.movecraft.craft.type;
 
-import net.countercraft.movecraft.craft.type.property.*;
+import net.countercraft.movecraft.craft.type.property.BooleanProperty;
+import net.countercraft.movecraft.craft.type.property.DoubleProperty;
+import net.countercraft.movecraft.craft.type.property.FloatProperty;
+import net.countercraft.movecraft.craft.type.property.ObjectProperty;
+import net.countercraft.movecraft.craft.type.property.IntegerProperty;
+import net.countercraft.movecraft.craft.type.property.MaterialSetProperty;
+import net.countercraft.movecraft.craft.type.property.ObjectPropertyImpl;
+import net.countercraft.movecraft.craft.type.property.PerWorldProperty;
+import net.countercraft.movecraft.craft.type.property.Property;
+import net.countercraft.movecraft.craft.type.property.RequiredBlockProperty;
+import net.countercraft.movecraft.craft.type.property.StringProperty;
 import net.countercraft.movecraft.craft.type.transform.BooleanTransform;
 import net.countercraft.movecraft.craft.type.transform.DoubleTransform;
 import net.countercraft.movecraft.craft.type.transform.FloatTransform;
@@ -215,7 +225,7 @@ final public class CraftType {
 
 
 
-    static final Map<NamespacedKey, Property<?>> properties = new HashMap<>();
+    private static final List<Property<?>> properties = new ArrayList<>();
 
     /**
      * Register a property with Movecraft
@@ -223,7 +233,7 @@ final public class CraftType {
      * @param property property to register
      */
     public static void registerProperty(Property<?> property) {
-        properties.put(property.getNamespacedKey(), property);
+        properties.add(property);
     }
 
 
@@ -321,7 +331,7 @@ final public class CraftType {
         return materialSetPropertyMap.get(key);
     }
 
-    Map<NamespacedKey, Pair<Map<String, Object>, BiFunction<CraftType, String, Object>>> perWorldPropertyMap;
+    private Map<NamespacedKey, Pair<Map<String, Object>, BiFunction<CraftType, String, Object>>> perWorldPropertyMap;
     private Object getPerWorldProperty(NamespacedKey key, String worldName) {
         if(!perWorldPropertyMap.containsKey(key))
             throw new IllegalStateException("Per world property " + key + " not found.");
@@ -849,15 +859,7 @@ final public class CraftType {
         perWorldPropertyMap = new HashMap<>();
         requiredBlockPropertyMap = new HashMap<>();
 
-        for(var propertyValue : properties.values()) {
-
-            final Property<?> property;
-            if (propertyValue instanceof ImmutableProperty<?>) {
-                property = ((ImmutableProperty<?>) propertyValue).getProperty();
-            } else {
-                property = propertyValue;
-            }
-
+        for(var property : properties) {
             if(property instanceof StringProperty)
                 stringPropertyMap.put(property.getNamespacedKey(),
                         ((StringProperty) property).load(data, this));
