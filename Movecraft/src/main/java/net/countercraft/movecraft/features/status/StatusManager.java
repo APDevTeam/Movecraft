@@ -143,9 +143,17 @@ public class StatusManager extends BukkitRunnable implements Listener {
             if(!entry.check(flyBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
                 sinking = true;
         }
-        for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
-            if (!entry.check(moveBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
+        // If the craft has MOveblocks defined, then validate them, if there are any aboard
+        if (craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS).size() > 0) {
+            if (moveBlocks.isEmpty()) {
                 disabled = true;
+            }
+            else {
+                for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
+                    if (!entry.check(moveBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
+                        disabled = true;
+                }
+            }
         }
 
         // And check the OverallSinkPercent
