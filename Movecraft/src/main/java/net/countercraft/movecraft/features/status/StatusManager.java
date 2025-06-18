@@ -70,7 +70,9 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
         @Override
         public @NotNull Effect get() {
-            Counter<Material> materials = new Counter<>();
+            Counter<Material> materials = craft.getDataTag(Craft.MATERIALS);
+            materials.clear();
+
             int nonNegligibleBlocks = 0;
             int nonNegligibleSolidBlocks = 0;
             double fuel = 0;
@@ -96,8 +98,10 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 }
             }
 
-            Counter<RequiredBlockEntry> flyblocks = new Counter<>();
-            Counter<RequiredBlockEntry> moveblocks = new Counter<>();
+            Counter<RequiredBlockEntry> flyblocks = craft.getDataTag(Craft.FLYBLOCKS);
+            flyblocks.clear();
+            Counter<RequiredBlockEntry> moveblocks = craft.getDataTag(Craft.MOVEBLOCKS);
+            moveblocks.clear();
 
             // Pre-fill the moveblocks counter to avoid ignoring moveblocks
             for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
@@ -118,10 +122,9 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 }
             }
 
+            // Primitive type tags => Re-apply those
+            // RE-applying is not necessary for object tags as we manipulate the object itself
             craft.setDataTag(Craft.FUEL, fuel);
-            craft.setDataTag(Craft.MATERIALS, materials);
-            craft.setDataTag(Craft.FLYBLOCKS, flyblocks);
-            craft.setDataTag(Craft.MOVEBLOCKS, moveblocks);
             craft.setDataTag(Craft.NON_NEGLIGIBLE_BLOCKS, nonNegligibleBlocks);
             craft.setDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS, nonNegligibleSolidBlocks);
             craft.setDataTag(LAST_STATUS_CHECK, System.currentTimeMillis());
