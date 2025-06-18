@@ -17,11 +17,11 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractToggleSign extends AbstractCraftSign {
 
-    private final String suffixOn;
-    private final String suffixOff;
-    private final String ident;
-    private final Component headerOn;
-    private final Component headerOff;
+    protected final String suffixOn;
+    protected final String suffixOff;
+    protected final String ident;
+    protected final Component headerOn;
+    protected final Component headerOff;
 
     public AbstractToggleSign(boolean ignoreCraftIsBusy, final String ident, final String suffixOn, final String suffixOff) {
         this(null, ignoreCraftIsBusy, ident, suffixOn, suffixOff);
@@ -76,7 +76,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
     }
 
     protected abstract void onAfterToggle(Craft craft, SignListener.SignWrapper signWrapper, Player player, boolean toggledToOn);
-    protected abstract void onBeforeToggle(Craft craft, SignListener.SignWrapper signWrapper, Player player, boolean willBeOn);
+    protected abstract boolean onBeforeToggle(Craft craft, SignListener.SignWrapper signWrapper, Player player, boolean willBeOn);
 
     // Actual processing, determines wether the sign will switch to on or off
     // If it will be on, the CruiseDirection is retrieved and then setCraftCruising() is called
@@ -89,7 +89,10 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         boolean isOn = this.isOnOrOff(sign);
         boolean willBeOn = !isOn;
 
-        this.onBeforeToggle(craft, sign, player, willBeOn);
+        // If we dont toggle, return false
+        if (!this.onBeforeToggle(craft, sign, player, willBeOn)) {
+            return false;
+        }
 
         // Update sign
         sign.line(0, buildHeader(willBeOn));
