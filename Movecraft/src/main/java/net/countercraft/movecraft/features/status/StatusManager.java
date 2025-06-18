@@ -186,9 +186,15 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
         // If the craft is disabled, play a sound and disable it.
         if (disabled != craft.getDisabled()) {
-            craft.setDisabled(disabled);
             if (disabled) {
-                craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
+                craft.setDisabled(disabled);
+                if (disabled) {
+                    craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
+                }
+            }
+            else if (craft.getType().getBoolProperty(CraftType.CAN_BE_UN_DISABLED)) {
+                craft.setDisabled(disabled);
+                // TODO: Play sound
             }
         }
 

@@ -219,6 +219,7 @@ final public class CraftType {
 
     public static final NamespacedKey ALLOW_BLOCK_BREAKING_WHEN_DISABLED = buildKey("allow_block_breaking_when_disabled");
     public static final NamespacedKey REQUIRE_DISABLED_TO_BREAK_BLOCKS = buildKey("require_disabled_to_break_blocks");
+    public static final NamespacedKey CAN_BE_UN_DISABLED = buildKey("can_be_un_disabled");
     //endregion
 
     @Contract("_ -> new")
@@ -650,6 +651,7 @@ final public class CraftType {
 
         registerProperty(new BooleanProperty("allowBlockBreakingWhenDisabled", ALLOW_BLOCK_BREAKING_WHEN_DISABLED, type -> true));
         registerProperty(new BooleanProperty("requireDisabledToBreakBlocks", REQUIRE_DISABLED_TO_BREAK_BLOCKS, type -> true));
+        registerProperty(new BooleanProperty("canBeUnDisabled", CAN_BE_UN_DISABLED, type -> true));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN
