@@ -56,6 +56,8 @@ import java.util.List;
 
 import java.util.List;
 
+import static net.countercraft.movecraft.craft.type.CraftType.REQUIRE_DISABLED_TO_BREAK_BLOCKS;
+
 public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(@NotNull BlockBreakEvent e) {
@@ -68,7 +70,8 @@ public class BlockListener implements Listener {
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(location);
         for (Craft craft : MathUtils.craftsNearLocFast(CraftManager.getInstance().getCrafts(), location)) {
             // TODO: check against flag in crafttype
-            if ((craft.getType().getBoolProperty(CraftType.ALLOW_BLOCK_BREAKING_WHEN_DISABLED) && craft.getDisabled()) || !craft.getHitBox().contains(loc))
+            boolean craftAllowsBlockBreaking = !craft.getType().getBoolProperty(REQUIRE_DISABLED_TO_BREAK_BLOCKS) || (craft.getType().getBoolProperty(CraftType.ALLOW_BLOCK_BREAKING_WHEN_DISABLED) && craft.getDisabled());
+            if (craftAllowsBlockBreaking || !craft.getHitBox().contains(loc))
                 continue;
 
             e.setCancelled(true);
