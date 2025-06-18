@@ -1,14 +1,10 @@
 package net.countercraft.movecraft.craft.datatag;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.util.SimpleRegistry;
+import net.countercraft.movecraft.util.registration.SimpleRegistry;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Enumeration;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 public class CraftDataTagRegistry extends SimpleRegistry<NamespacedKey, CraftDataTagKey<?>> {

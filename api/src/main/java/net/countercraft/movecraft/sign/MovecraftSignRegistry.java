@@ -1,8 +1,7 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.util.SimpleRegistry;
+import net.countercraft.movecraft.util.registration.SimpleRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
