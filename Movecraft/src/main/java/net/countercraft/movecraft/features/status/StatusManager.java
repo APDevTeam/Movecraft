@@ -98,6 +98,12 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
             Counter<RequiredBlockEntry> flyblocks = new Counter<>();
             Counter<RequiredBlockEntry> moveblocks = new Counter<>();
+
+            // Pre-fill the moveblocks counter to avoid ignoring moveblocks
+            for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
+                moveblocks.add(entry, 0);
+            }
+
             for(Material material : materials.getKeySet()) {
                 for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
                     if(entry.contains(material)) {
@@ -151,14 +157,9 @@ public class StatusManager extends BukkitRunnable implements Listener {
         }
         // If the craft has MOveblocks defined, then validate them, if there are any aboard
         if (craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS).size() > 0) {
-            if (moveBlocks.isEmpty()) {
-                disabled = true;
-            }
-            else {
-                for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
-                    if (!entry.check(moveBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
-                        disabled = true;
-                }
+            for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
+                if (!entry.check(moveBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
+                    disabled = true;
             }
         }
 
