@@ -216,6 +216,8 @@ final public class CraftType {
     public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_SOUND = buildKey("alternative_sinking_disintegration_sound");
     public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE = buildKey("alternative_sinking_disintegration_sound_chance");
     public static final NamespacedKey ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE = buildKey("alternative_sinking_max_remaining_size_percentage");
+
+    public static final NamespacedKey ALLOW_BLOCK_BREAKING_WHEN_DISABLED = buildKey("allow_block_breaking_when_disabled");
     //endregion
 
     @Contract("_ -> new")
@@ -644,6 +646,8 @@ final public class CraftType {
         registerProperty(new IntegerProperty("alternativeSinkingMaxDisintegrations", ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS, type -> 100));
         registerProperty(new StringProperty("alternativeSinkingDisintegrationSound", ALTERNATIVE_SINKING_DISINTEGRATION_SOUND, type -> ""));
         registerProperty(new DoubleProperty("alternativeSinkingMaxRemainingPercentage", ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE, type -> 0.25D));
+
+        registerProperty(new BooleanProperty("allowBlockBreakingWhenDisabled", ALLOW_BLOCK_BREAKING_WHEN_DISABLED, type -> true));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN

@@ -67,7 +67,8 @@ public class BlockListener implements Listener {
         Location location = e.getBlock().getLocation();
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(location);
         for (Craft craft : MathUtils.craftsNearLocFast(CraftManager.getInstance().getCrafts(), location)) {
-            if (craft.getDisabled() || !craft.getHitBox().contains(loc))
+            // TODO: check against flag in crafttype
+            if ((craft.getType().getBoolProperty(CraftType.ALLOW_BLOCK_BREAKING_WHEN_DISABLED) && craft.getDisabled()) || !craft.getHitBox().contains(loc))
                 continue;
 
             e.setCancelled(true);
