@@ -3,13 +3,11 @@ package net.countercraft.movecraft.craft.type;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class represents a single flyblock or moveblock entry.
@@ -21,7 +19,8 @@ import java.util.Set;
  * A numeric limit represents a configured static limit (regardless of size), ex: "N10" for 10 blocks.<br>
  * A percentage limit represents a limit which scales with craft size, ex: 10 for 10%.
  */
-public class RequiredBlockEntry {
+@SerializableAs("RequiredBlockEntry")
+public class RequiredBlockEntry implements ConfigurationSerializable {
     private final EnumSet<Material> materials;
     private String name;
     private final double max;
@@ -112,6 +111,71 @@ public class RequiredBlockEntry {
         else {
             return !(blockPercent > max);
         }
+    }
+
+    static Pair<Boolean, ? extends Number> parseLimit(@NotNull Object input) {
+        if (input instanceof String) {
+            String str = (String) input;
+            if (str.contains(TypeData.NUMERIC_PREFIX)) {
+                String[] parts = str.split(TypeData.NUMERIC_PREFIX);
+                int val = Integer.parseInt(parts[1]);
+                return new Pair<>(true, val);
+            }
+            else
+                return new Pair<>(false, Double.valueOf(str));
+        }
+        else if (input instanceof Integer) {
+            return new Pair<>(false, (Integer) input);
+        }
+        else
+            return new Pair<>(false, (double) input);
+    }
+
+    static EnumSet<Material> parseMaterials(String key, Object materials) {
+        EnumSet<Material> result = EnumSet.noneOf(Material.class);
+        if(materials instanceof ArrayList) {
+            // List, load each as a tag/material
+            for(Object o : (ArrayList<?>) materials) {
+                if (!(o instanceof String)) {
+                    if(o == null)
+                        throw new IllegalArgumentException("Entry in " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+                    throw new IllegalArgumentException("Entry " + o + " must be a material for key " + key);
+                }
+                String string = (String) o;
+                result.addAll(Tags.parseMaterials(string));
+            }
+        }
+        else if(materials instanceof String) {
+            // Single entry, load as a tag/material
+            String string = (String) materials;
+            result.addAll(Tags.parseMaterials(string));
+        }
+        else {
+            // Invalid entry, throw an error
+            if(materials == null)
+                throw new IllegalArgumentException("Entry in " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
+            throw new IllegalArgumentException("Entry in " + materials + " must be a material for key " + key);
+        }
+        return result;
+    }
+
+    public static @NotNull RequiredBlockEntry deserialize(@NotNull Map<String, Object> args) {
+        // TODO: Implement proper parsing logic!
+        String displayName = (String) args.getOrDefault("displayName", "");
+        Pair<Boolean, ? extends Number> min = parseLimit(args.getOrDefault("min", 0));
+        Pair<Boolean, ? extends Number> max = parseLimit(args.getOrDefault("max", 1));
+        EnumSet<Material> materials = parseMaterials(displayName, args.getOrDefault("materials", null));
+        return null;
+    }
+
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        return Map.of(
+                "displayName", this.displayName,
+                "min", this.numericMin ? TypeData.NUMERIC_PREFIX : "" + this.min,
+                "max", this.numericMax ? TypeData.NUMERIC_PREFIX : "" + this.max,
+                "materials", this.materials
+        );
     }
 
     public enum DetectionResult {
