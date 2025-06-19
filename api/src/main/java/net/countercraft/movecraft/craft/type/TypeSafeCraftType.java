@@ -46,6 +46,11 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         // Helps to differentiate things
 
         Map<String, Map<String, Object>> namespaces = new HashMap<>();
+        // Step 1: Set all default values
+        for (Map.Entry<NamespacedKey, PropertyKey> entry : PROPERTY_REGISTRY.entries()) {
+            namespaces.computeIfAbsent(entry.getKey().getNamespace(), k -> new HashMap<>()).putIfAbsent(entry.getKey().getKey(), entry.getValue().getDefault(result));
+        }
+        // Step 2: Load the values from the file
         for (Map.Entry<String, Object> entry : yamlMapping.entrySet()) {
             String namespace = "movecraft";
             if (entry.getValue() instanceof Map) {
@@ -59,6 +64,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
                 namespaces.putIfAbsent(namespace, yamlMapping);
             }
         }
+        // Step 3: Read from the parsed namespaces and apply it
         for (Map.Entry<String, Map<String, Object>> entry : namespaces.entrySet()) {
             readNamespace(entry.getKey(), entry.getValue(), result);
         }
@@ -71,11 +77,16 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
             NamespacedKey key = NamespacedKey.fromString(entry.getKey());
             PropertyKey<T> propertyKey = PROPERTY_REGISTRY.get(key);
             if (propertyKey == null) {
+                // TODO: Log => unknown property!
                 continue;
             }
 
             try {
-                type.set(propertyKey, propertyKey.read(entry.getValue(), type));
+                T value = propertyKey.read(entry.getValue(), type);
+                if (value == null) {
+                    continue;
+                }
+                type.set(propertyKey, value);
             } catch(ClassCastException cce) {
                 // TODO: Log error
             }
