@@ -26,6 +26,7 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.events.RunnableRegistrationEvent;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
@@ -35,6 +36,7 @@ import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -53,12 +55,38 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 @Deprecated
 public class AsyncManager extends BukkitRunnable {
+
+    private Map<Integer, List<Runnable>> tickFunctions;
+    private int maxInterval;
+    private int currentTick = 1;
+
     private final Map<AsyncTask, Craft> ownershipMap = new HashMap<>();
     private final BlockingQueue<AsyncTask> finishedAlgorithms = new LinkedBlockingQueue<>();
     private final Set<Craft> clearanceSet = new HashSet<>();
     private final Map<Craft, Integer> cooldownCache = new WeakHashMap<>();
 
-    public AsyncManager() {}
+    public AsyncManager() {
+
+    }
+
+    private Map<Integer, List<Runnable>> getTickFunctions() {
+        if (this.tickFunctions != null) {
+            return this.tickFunctions;
+        }
+        this.tickFunctions = new HashMap<>();
+
+        RunnableRegistrationEvent registrationEvent = new RunnableRegistrationEvent(this.tickFunctions);
+        Bukkit.getPluginManager().callEvent(registrationEvent);
+        int maxIntervalTmp = 0;
+        for (Integer i : this.tickFunctions.keySet()) {
+            if (i > maxIntervalTmp) {
+                maxIntervalTmp = i;
+            }
+        }
+        this.maxInterval = maxIntervalTmp;
+
+        return this.tickFunctions;
+    }
 
     public void submitTask(AsyncTask task, Craft c) {
         if (c.isNotProcessing()) {
@@ -165,7 +193,7 @@ public class AsyncManager extends BukkitRunnable {
         return true;
     }
 
-    private void processCruise() {
+    public static void processCruise() {
         for (Craft craft : CraftManager.getInstance()) {
             if (craft == null || !craft.isNotProcessing() || !craft.getCruising())
                 continue;
@@ -199,12 +227,12 @@ public class AsyncManager extends BukkitRunnable {
                     bankRight = true;
             }
             int tickCoolDown;
-            if (cooldownCache.containsKey(craft)) {
-                tickCoolDown = cooldownCache.get(craft);
+            if (Movecraft.getInstance().getAsyncManager().cooldownCache.containsKey(craft)) {
+                tickCoolDown = Movecraft.getInstance().getAsyncManager().cooldownCache.get(craft);
             }
             else {
                 tickCoolDown = craft.getTickCooldown();
-                cooldownCache.put(craft,tickCoolDown);
+                Movecraft.getInstance().getAsyncManager().cooldownCache.put(craft,tickCoolDown);
             }
 
             // Account for banking and diving in speed calculations by changing the tickCoolDown
@@ -234,7 +262,7 @@ public class AsyncManager extends BukkitRunnable {
             if (Math.abs(ticksElapsed) < tickCoolDown)
                 continue;
 
-            cooldownCache.remove(craft);
+            Movecraft.getInstance().getAsyncManager().cooldownCache.remove(craft);
             int dx = 0;
             int dz = 0;
             int dy = 0;
@@ -310,7 +338,7 @@ public class AsyncManager extends BukkitRunnable {
     static final BlockFace[] CHECK_DIRECTIONS = new BlockFace[] {BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN};
 
     //Controls sinking crafts
-    private void processSinking() {
+    public static void processSinking() {
         //copy the crafts before iteration to prevent concurrent modifications
         List<Craft> crafts = Lists.newArrayList(CraftManager.getInstance());
         for (Craft craft : crafts) {
@@ -446,7 +474,7 @@ public class AsyncManager extends BukkitRunnable {
 
     static final Random RANDOM = new Random();
 
-    private void removeBottomLayer(Craft craft) {
+    private static void removeBottomLayer(Craft craft) {
         if (craft.getHitBox().isEmpty()) {
             return;
         }
@@ -490,12 +518,25 @@ public class AsyncManager extends BukkitRunnable {
     public void run() {
         clearAll();
 
-        processCruise();
-        try {
-            processSinking();
-        } catch(IndexOutOfBoundsException ioobe) {
-            ioobe.printStackTrace();
+        Map<Integer, List<Runnable>> functions = this.getTickFunctions();
+
+        for (Map.Entry<Integer, List<Runnable>> entry : functions.entrySet()) {
+            if (this.currentTick % entry.getKey() == 0) {
+                for (Runnable function : entry.getValue()) {
+                    try {
+                        function.run();
+                    } catch(Exception exception) {
+                        // TODO: Log error!
+                    }
+                }
+            }
         }
+        // TODO: This is probably not correct!
+        this.currentTick++;
+        if (this.currentTick > this.maxInterval) {
+            this.currentTick = 1;
+        }
+
         processAlgorithmQueue();
 
         // now cleanup craft that are bugged and have not moved in the past 60 seconds,
