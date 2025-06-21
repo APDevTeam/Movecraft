@@ -2,42 +2,62 @@ package net.countercraft.movecraft.craft.type;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.property.*;
+import net.countercraft.movecraft.util.registration.TypedContainer;
+import net.countercraft.movecraft.util.registration.TypedKey;
 import org.bukkit.NamespacedKey;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CraftProperties {
+// Represents the runtime crafttype of a craft. Will copy each value of the crafttype when needed
+// TODO: If possible, adjust this so it only copies the values when it needs to!
+public class CraftProperties extends TypeSafeCraftType{
 
-    private final WeakReference<CraftType> craftTypeWeakReference;
+    private final TypeSafeCraftType craftTypeReference;
     private final WeakReference<Craft> craftWeakReference;
 
-    private final Map<Property<?>, PropertyInstance<?>> propertyMap = new HashMap<>();
+    public CraftProperties(final TypeSafeCraftType craftType, final Craft craft) {
+        super();
 
-    public CraftProperties(final CraftType craftType, final Craft craft) {
-        this.craftTypeWeakReference = new WeakReference<>(craftType);
+        copyOverValues(craftType);
+
+        this.craftTypeReference = craftType;
         this.craftWeakReference = new WeakReference<>(craft);
     }
 
-    @Nullable
-    public Property<?> getPropByID(final NamespacedKey key) {
-        return this.craftTypeWeakReference.get().properties.getOrDefault(key, null);
+    @Override
+    protected <T> void set(@NotNull TypedKey<T> key, @NotNull T value) {
+        if (key instanceof PropertyKey.ImmutableKey) {
+            // TODO: Log warning
+            return;
+        }
+        super.set(key, value);
     }
 
-    protected <T> PropertyInstance<T> getOrCreatePropertyInstance(final Property<T> property) {
-        PropertyInstance<T> propertyInstance = (PropertyInstance<T>) this.propertyMap.computeIfAbsent(property, p -> PropertyInstance.of(p, this.craftTypeWeakReference.get()));
-        return propertyInstance;
+    @Override
+    public <T> T get(@NotNull PropertyKey<T> key) {
+        if (key instanceof PropertyKey.ImmutableKey) {
+            return this.craftTypeReference.get(key);
+        }
+        return super.get(key);
     }
 
-    public <T> boolean set(final Property<T> property, final T value) {
-        return getOrCreatePropertyInstance(property).set(this.craftWeakReference.get().getWorld().getName(), value);
+    private final void copyOverValues(TypeSafeCraftType type) {
+        // IMMUTABLE properties dont need to be copied over!
+        type.entrySet().forEach(e -> {
+            PropertyKey k = e.getKey();
+            Object v = e.getValue();
+            if (!(k instanceof PropertyKey.ImmutableKey)) {
+                super.set(k, k.createCopy(v));
+            }
+        });
     }
 
-    @Nullable
-    public <T> T getValue(final Property<T> property) throws ClassCastException {
-        return this.getOrCreatePropertyInstance(property).getValue(this.craftWeakReference.get().getWorld().getName());
+    @Override
+    public CraftProperties createCraftProperties(final Craft craft) {
+        return this;
     }
-
 }

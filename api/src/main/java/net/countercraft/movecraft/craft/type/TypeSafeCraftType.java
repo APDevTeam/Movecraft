@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.craft.type;
 
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.util.registration.SimpleRegistry;
 import net.countercraft.movecraft.util.registration.TypedContainer;
 import net.countercraft.movecraft.util.registration.TypedKey;
@@ -10,6 +11,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
 
@@ -35,7 +37,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         }
     }
 
-    private TypeSafeCraftType() {
+    protected TypeSafeCraftType() {
         super();
     }
 
@@ -46,6 +48,10 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         // Helps to differentiate things
 
         Map<String, Map<String, Object>> namespaces = new HashMap<>();
+
+        Set<Map.Entry<NamespacedKey, PropertyKey>> entries = PROPERTY_REGISTRY.entries();
+        // TODO: Sort the entries by registration index
+
         // Step 1: Set all default values
         for (Map.Entry<NamespacedKey, PropertyKey> entry : PROPERTY_REGISTRY.entries()) {
             namespaces.computeIfAbsent(entry.getKey().getNamespace(), k -> new HashMap<>()).putIfAbsent(entry.getKey().getKey(), entry.getValue().getDefault(result));
@@ -98,9 +104,16 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         super.set(tagKey, value);
     }
 
-    public CraftProperties createCraftProperties() {
-        // TODO: Implement
-        return null;
+    public <T> T get(@NotNull PropertyKey<T> key) {
+        final TypeSafeCraftType self = this;
+        return super.get(key, (k) -> (T) k.getDefault(self));
     }
 
+    public CraftProperties createCraftProperties(final Craft craft) {
+        return new CraftProperties(this, craft);
+    }
+
+    Set<Map.Entry<PropertyKey<?>, Object>> entrySet() {
+        return this.entries();
+    }
 }
