@@ -5,28 +5,43 @@ import net.countercraft.movecraft.util.registration.TypedKey;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.util.NumberConversions;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.lang.model.type.PrimitiveType;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+// R: the returned type for the property supplier
+// T: The parsed type
+
+// TODO: Rework to return the same type as it parses as => its cleaner that way! Also make generic type required to implement Cloneable for non primitives!
 public class PropertyKey<T> extends TypedKey<T> {
 
+    public static interface ImmutableKey {
+
+    }
+
     protected final Function<TypeSafeCraftType, T> defaultProviderFunction;
+
+    protected final int registrationIndex = TypeSafeCraftType.PROPERTY_REGISTRY.size();
 
     protected final BiFunction<Object, TypeSafeCraftType, T> deserializeFunction;
     protected final Function<T, Object> serializeFunction;
 
-    private PropertyKey(NamespacedKey key, Function<TypeSafeCraftType, T> defaultProvider, BiFunction<Object, TypeSafeCraftType, T> deserializeFunction, Function<T, Object> serializeFunction) {
+    protected final Function<T, T> cloneFunction;
+
+    private PropertyKey(NamespacedKey key, Function<TypeSafeCraftType, T> defaultProvider, BiFunction<Object, TypeSafeCraftType, T> deserializeFunction, Function<T, Object> serializeFunction, Function<T, T> cloneFunction) {
         super(key);
         this.defaultProviderFunction = defaultProvider;
         this.deserializeFunction = deserializeFunction;
         this.serializeFunction = serializeFunction;
+        this.cloneFunction = cloneFunction;
     }
 
-    public PropertyInstance<T> createInstance(TypeSafeCraftType type) {
-        return null;
+    public int getRegistrationIndex() {
+        return this.registrationIndex;
     }
 
     @Nullable
@@ -48,95 +63,128 @@ public class PropertyKey<T> extends TypedKey<T> {
         return this.defaultProviderFunction.apply(type);
     }
 
+    @NotNull T createCopy(T original) {
+        return this.cloneFunction.apply(original);
+    }
+
     public PropertyKey<T> immutable() {
-        // TODO: Change to accept the instance as only argument so we can wrap it!
-        return new ImmutablePropertyKey<>(this.key, this.defaultProviderFunction, this.deserializeFunction, this.serializeFunction);
+        return new ImmutablePropertyKey<T>(this);
     }
 
-    public PropertyKey<T> perWorld() {
-        // TODO: Implement
-        return null;
+    public PropertyKey<PerWorldData<T>> perWorld() {
+        return new PerWorldPropertyKey<T>(this.key(), this.defaultProviderFunction, this.deserializeFunction, this.serializeFunction, this.cloneFunction);
     }
 
-    public static <T> PropertyKey<T> key(NamespacedKey key, Function<TypeSafeCraftType, T> defaultProvider, BiFunction<Object, TypeSafeCraftType, T> deserializeFunction, Function<T, Object> serializeFunction) {
-        return new PropertyKey<T>(key, defaultProvider, deserializeFunction, serializeFunction);
+    public IPropertySupplier<T> createInstance(TypeSafeCraftType type) {
+        return new IPropertySupplier.Standard(type.get(this));
     }
 
-    public static PropertyKey<Integer> intProperty(NamespacedKey key, Function<TypeSafeCraftType, Integer> defaultProvider) {
+
+    public static PropertyKey<String> stringPropertyKey(NamespacedKey key) {
+        return PropertyKey.stringPropertyKey(key, null);
+    }
+
+    public static PropertyKey<Integer> intPropertyKey(NamespacedKey key) {
+        return PropertyKey.intPropertyKey(key, null);
+    }
+
+    public static PropertyKey<Boolean> boolPropertyKey(NamespacedKey key) {
+        return PropertyKey.boolPropertyKey(key, null);
+    }
+
+    public static PropertyKey<Double> doublePropertyKey(NamespacedKey key) {
+        return PropertyKey.doublePropertyKey(key, null);
+    }
+
+    public static PropertyKey<Float> floatPropertyKey(NamespacedKey key) {
+        return PropertyKey.floatPropertyKey(key, null);
+    }
+
+    public static PropertyKey<RequiredBlockEntry> requiredBlockEntryKey(NamespacedKey key) {
+        return requiredBlockEntryKey(key, null);
+    }
+
+    public static PropertyKey<Set<RequiredBlockEntry>> requiredBlockEntrySetKey(NamespacedKey key) {
+        return requiredBlockEntrySetKey(key, null);
+    }
+
+    public static PropertyKey<EnumSet<Material>> materialSetKey(NamespacedKey key) {
+        return materialSetKey(key, null);
+    }
+
+    public static PropertyKey<Integer> intPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, Integer> defaultProvider) {
         return new PropertyKey<Integer>(key, defaultProvider, (obj, type) -> {
             if (obj == null)
                 return defaultProvider.apply(type);
             return NumberConversions.toInt(obj);
-        }, (i) -> i);
+        }, (i) -> i, Integer::valueOf);
     }
 
-    public static PropertyKey<Boolean> boolProperty(NamespacedKey key, Function<TypeSafeCraftType, Boolean> defaultProvider) {
+    public static PropertyKey<Boolean> boolPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, Boolean> defaultProvider) {
         return new PropertyKey<Boolean>(key, defaultProvider, (obj, type) -> {
-            boolean def = defaultProvider.apply(type);
-            if (obj == null)
-                return def;
             if (obj != null && (obj instanceof Boolean)) {
                 return((Boolean) obj).booleanValue();
             }
-            return def;
-        }, (b) -> b);
+            return defaultProvider.apply(type);
+        }, (b) -> b, Boolean::valueOf);
     }
 
-    public static PropertyKey<Double> doubleProperty(NamespacedKey key, Function<TypeSafeCraftType, Double> defaultProvider) {
+    public static PropertyKey<Double> doublePropertyKey(NamespacedKey key, Function<TypeSafeCraftType, Double> defaultProvider) {
         return new PropertyKey<Double>(key, defaultProvider, (obj, type) -> {
             if (obj == null)
                 return defaultProvider.apply(type);
             return NumberConversions.toDouble(obj);
-        }, (d) -> d);
+        }, (d) -> d, Double::valueOf);
     }
 
-    public static PropertyKey<Float> floatProperty(NamespacedKey key, Function<TypeSafeCraftType, Float> defaultProvider) {
+    public static PropertyKey<Float> floatPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, Float> defaultProvider) {
         return new PropertyKey<Float>(key, defaultProvider, (obj, type) -> {
             if (obj == null)
                 return defaultProvider.apply(type);
             return NumberConversions.toFloat(obj);
-        }, (f) -> f);
+        }, (f) -> f, Float::valueOf);
     }
 
     public static PropertyKey<String> stringPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, String> defaultProvider) {
         return new PropertyKey<String>(key, defaultProvider, (obj, type) -> {
-            String def = defaultProvider.apply(type);
-            if (obj == null)
-                return def;
             if (obj != null && (obj instanceof String)) {
                 return (String) obj;
             }
-            return def;
-        }, (s) -> s);
+            return defaultProvider.apply(type);
+        }, (s) -> s, String::valueOf);
     }
 
-    public static PropertyKey<RequiredBlockEntry> requiredBlockEntry(NamespacedKey key, Function<TypeSafeCraftType, RequiredBlockEntry> defaultProvider) {
+    public static PropertyKey<RequiredBlockEntry> requiredBlockEntryKey(NamespacedKey key, Function<TypeSafeCraftType, RequiredBlockEntry> defaultProvider) {
         return new PropertyKey<RequiredBlockEntry>(key, defaultProvider, (obj, type) -> {
-            RequiredBlockEntry def = defaultProvider.apply(type);
-            if (obj == null)
-                return def;
             if (obj != null && (obj instanceof RequiredBlockEntry)) {
                 // RequiredBlockEntry is serializable!
                 return (RequiredBlockEntry)obj;
             }
-            return def;
-        }, (r) -> r);
+            return defaultProvider.apply(type);
+        }, (r) -> r, RequiredBlockEntry::new);
     }
 
-    public static PropertyKey<Set<RequiredBlockEntry>> requiredBlockEntrySet(NamespacedKey key, Function<TypeSafeCraftType, Set<RequiredBlockEntry>> defaultProvider) {
+    public static PropertyKey<Set<RequiredBlockEntry>> requiredBlockEntrySetKey(NamespacedKey key, Function<TypeSafeCraftType, Set<RequiredBlockEntry>> defaultProvider) {
         return new PropertyKey<Set<RequiredBlockEntry>>(key, defaultProvider, (obj, type) -> {
-            Set<RequiredBlockEntry> def = defaultProvider.apply(type);
-            if (obj == null)
-                return def;
             if (obj != null && (obj instanceof List)) {
                 // RequiredBlockEntry is serializable!
                 return new HashSet<>((Set<RequiredBlockEntry>)obj);
             }
-            return def;
-        }, (s) -> s);
+            return defaultProvider.apply(type);
+        }, (s) -> s, copySet(RequiredBlockEntry::new));
     }
 
-    public static PropertyKey<EnumSet<Material>> materialSet(NamespacedKey key, Function<TypeSafeCraftType, EnumSet<Material>> defaultProvider) {
+    // TODO: This is ugly!
+    private static <T> Function<Set<T>, Set<T>> copySet(Function<T, T> elementCloner) {
+        return (set) -> {
+            Set<T> copy = Set.copyOf(set);
+            copy.clear();
+            set.forEach((e) -> copy.add(elementCloner.apply(e)));
+            return copy;
+        };
+    }
+
+    public static PropertyKey<EnumSet<Material>> materialSetKey(NamespacedKey key, Function<TypeSafeCraftType, EnumSet<Material>> defaultProvider) {
         return new PropertyKey<EnumSet<Material>>(key, defaultProvider, (obj, type) -> {
             EnumSet<Material> returnList = EnumSet.noneOf(Material.class);
             if(!(obj instanceof ArrayList))
@@ -154,69 +202,59 @@ public class PropertyKey<T> extends TypedKey<T> {
                 returnList.addAll(materials);
             }
             return returnList;
-        }, (s) -> s);
+        }, (s) -> s, EnumSet::copyOf);
     }
 
 //    public PropertyKey<T> perWorld(NamespacedKey key, Function<TypeSafeCraftType, T> defaultProvider, BiFunction<Object, TypeSafeCraftType, T> deserializeFunction, Function<T, Map<String, Object>> serializeFunction) {
 //        return new PerWorldPropertyKey<>(key, defaultProvider, deserializeFunction, serializeFunction);
 //    }
 
-    private class ImmutablePropertyKey<T> extends PropertyKey<T> {
+    class ImmutablePropertyKey<T> extends PropertyKey<T> implements ImmutableKey {
 
-        public ImmutablePropertyKey(NamespacedKey key, Function<TypeSafeCraftType, T> defaultProvider, BiFunction<Object, TypeSafeCraftType, T> deserializeFunction, Function<T, Object> serializeFunction) {
-            super(key, defaultProvider, deserializeFunction, serializeFunction);
+        private final PropertyKey<T> backing;
+
+        public ImmutablePropertyKey(PropertyKey<T> backing) {
+            super(backing.key(), null, null, null, null);
+            this.backing = backing;
         }
 
         @Override
-        public PropertyInstance<T> createInstance(TypeSafeCraftType type) {
-            // TODO: Implement
-            return null;
+        public T getDefault(TypeSafeCraftType type) {
+            return this.backing.getDefault(type);
+        }
+
+        @Override
+        public @Nullable T read(Object yamlType, TypeSafeCraftType type) {
+            return this.backing.read(yamlType, type);
         }
     }
 
-    // TODO: Properly implement! WE dont need a function to serialize or deserialize the entire per world object, just the one for the generic type!
     private class PerWorldPropertyKey<T> extends PropertyKey<PerWorldData<T>> {
 
-        public PerWorldPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, PerWorldData<T>> defaultProvider, BiFunction<Object, TypeSafeCraftType, PerWorldData<T>> deserializeFunction, Function<PerWorldData<T>, Object> serializeFunction) {
-            super(key, defaultProvider, deserializeFunction, serializeFunction);
+        public PerWorldPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, T> defaultProvider, BiFunction<Object, TypeSafeCraftType, T> deserializeFunction, Function<T, Object> serializeFunction, Function<T, T> cloneFunction) {
+            super(key, PerWorldData.<T>createDefaultSupplier(defaultProvider), PerWorldData.<T>createDeserializer(deserializeFunction), PerWorldData.createSerializer(serializeFunction), PerWorldData.<T>createCloneFunction(cloneFunction));
         }
 
         @Override
-        public PerWorldData<T> read(Object yamlType, TypeSafeCraftType type) {
-            if (yamlType instanceof Map) {
-                // Parse map and pass it
-                Map<String, Object> mapping;
-                try {
-                    mapping = (Map<String, Object>) yamlType;
-                } catch(ClassCastException cce) {
-                    // TODO: Log error
-                    return null;
-                }
-                Object defaultObj = mapping.getOrDefault("_default", null);
-                if (defaultObj == null) {
-                    // TODO: Log error
-                    return null;
-                }
-                T defaultCasted = (T) defaultObj;
-                if (mapping.size() > 1) {
-                    Map<String, T> overrides = new HashMap<>(mapping.size() - 1);
-                    for (Map.Entry<String, Object> entry : mapping.entrySet()) {
-                        if (entry.getKey() == "_default") {
-                            continue;
-                        }
-                        try {
-                            overrides.put(entry.getKey(), (T) entry.getValue());
-                        } catch(ClassCastException cce) {
-                            // TODO: Log error
-                        }
-                    }
-                    return new PerWorldData<>(defaultCasted, overrides);
-                } else {
-                    return new PerWorldData<>(defaultCasted);
-                }
-            } else {
-                return new PerWorldData<>((T)yamlType);
-            }
+        public @Nullable PerWorldData<T> read(Object yamlType, TypeSafeCraftType type) {
+            return super.read(yamlType, type);
+        }
+    }
+
+    private class ImmutablePerWorldPropertyKey<T> extends PerWorldPropertyKey<T> implements ImmutableKey {
+
+        public ImmutablePerWorldPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, T> defaultProvider, BiFunction<Object, TypeSafeCraftType, T> deserializeFunction, Function<T, Object> serializeFunction, Function<T, T> cloneFunction) {
+            super(key, defaultProvider, deserializeFunction, serializeFunction, cloneFunction);
+        }
+
+        @Override
+        public @Nullable PerWorldData<T> read(Object yamlType, TypeSafeCraftType type) {
+            return super.read(yamlType, type).immutable();
+        }
+
+        @Override
+        public PerWorldData<T> getDefault(TypeSafeCraftType type) {
+            return super.getDefault(type).immutable();
         }
     }
 
