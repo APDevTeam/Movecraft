@@ -75,11 +75,6 @@ public class PropertyKey<T> extends TypedKey<T> {
         return new PerWorldPropertyKey<T>(this.key(), this.defaultProviderFunction, this.deserializeFunction, this.serializeFunction, this.cloneFunction);
     }
 
-    public IPropertySupplier<T> createInstance(TypeSafeCraftType type) {
-        return new IPropertySupplier.Standard(type.get(this));
-    }
-
-
     public static PropertyKey<String> stringPropertyKey(NamespacedKey key) {
         return PropertyKey.stringPropertyKey(key, null);
     }
