@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -21,7 +22,7 @@ public class TypedContainer<K extends TypedKey<?>> {
     }
 
     protected <T> @Nullable T get(@NotNull TypedKey<T> key, Function<K, T> defaultSupplier) {
-        Object stored = backing.computeIfAbsent((K) key, defaultSupplier);
+        Object stored = this.backing.computeIfAbsent((K) key, defaultSupplier);
         try {
             //noinspection unchecked
             return (T) stored;
@@ -31,11 +32,15 @@ public class TypedContainer<K extends TypedKey<?>> {
     }
 
     protected <T> void set(@NotNull TypedKey<T> tagKey, @NotNull T value) {
-        backing.put((K) tagKey, value);
+        this.backing.put((K) tagKey, value);
     }
 
-    protected <T> boolean has(@NotNull K tagKey) {
-        return backing.containsKey(tagKey);
+    public boolean has(@NotNull K tagKey) {
+        return this.backing.containsKey(tagKey);
+    }
+
+    protected Set<Map.Entry<K, Object>> entries() {
+        return this.backing.entrySet();
     }
 
 }

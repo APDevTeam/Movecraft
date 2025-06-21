@@ -50,4 +50,8 @@ public class SimpleRegistry<K, T> {
         return new HashSet<>(this._register.entrySet());
     }
 
+    public int size() {
+        return _register.size();
+    }
+
 }
