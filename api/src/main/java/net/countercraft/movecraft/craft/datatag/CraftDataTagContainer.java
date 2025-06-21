@@ -29,14 +29,12 @@ public class CraftDataTagContainer extends TypedContainer<CraftDataTagKey<?>> {
     }
 
     @Override
-    public <T> @Nullable T get(@NotNull TypedKey<T> key, Function<CraftDataTagKey<?>, T> defaultSupplier) {
+    protected <T> @Nullable T get(@NotNull TypedKey<T> key, Function<CraftDataTagKey<?>, T> defaultSupplier) {
         if (!CraftDataTagRegistry.INSTANCE.isRegistered(key.key())) {
             throw new IllegalArgumentException(String.format("The provided key %s was not registered.", key));
         }
         return super.get(key, defaultSupplier);
     }
-
-
 
     /**
      * Gets the data value associated with the provided tagKey from a craft.
