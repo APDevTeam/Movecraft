@@ -51,6 +51,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+// Use TypeSafeCraftType and CraftProperties instead!
+@Deprecated(forRemoval = true)
 final public class CraftType {
     //region Property Keys
     public static final NamespacedKey NAME = buildKey("name");
