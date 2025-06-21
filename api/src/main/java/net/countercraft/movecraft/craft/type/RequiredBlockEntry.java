@@ -44,6 +44,16 @@ public class RequiredBlockEntry implements ConfigurationSerializable {
         this.displayName = displayName;
     }
 
+    public RequiredBlockEntry(RequiredBlockEntry requiredBlockEntry) {
+        this.materials = EnumSet.copyOf(requiredBlockEntry.materials);
+        this.min = requiredBlockEntry.min;
+        this.numericMin = requiredBlockEntry.numericMin;
+        this.max = requiredBlockEntry.max;
+        this.numericMax = requiredBlockEntry.numericMax;
+        this.name = String.valueOf(requiredBlockEntry.name);
+        this.displayName = String.valueOf(requiredBlockEntry.displayName);
+    }
+
     /**
      * Check if this <code>RequiredBlockEntry</code> contains a material.
      *
