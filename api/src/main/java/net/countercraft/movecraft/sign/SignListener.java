@@ -426,6 +426,9 @@ public class SignListener implements Listener {
         if (block == null) {
             return;
         }
+        if (!Tag.ALL_SIGNS.isTagged(block.getType())) {
+            return;
+        }
         BlockState state = block.getState();
         if (state instanceof Sign sign) {
             SignWrapper wrapper = this.getSignWrapper(sign, event);
@@ -521,12 +524,14 @@ public class SignListener implements Listener {
         craft.getHitBox().forEach(
                 (mloc) -> {
                     Block block = mloc.toBukkit(world).getBlock();
-                    BlockState state = block.getState();
-                    if (state instanceof Sign sign) {
-                        for (SignWrapper wrapper : this.getSignWrappers(sign)) {
-                            AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(wrapper.line(0));
-                            if (acs != null) {
-                                functionToRun.accept(acs, wrapper);
+                    if (Tag.ALL_SIGNS.isTagged(block.getType())) {
+                        BlockState state = block.getState();
+                        if (state instanceof Sign sign) {
+                            for (SignWrapper wrapper : this.getSignWrappers(sign)) {
+                                AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(wrapper.line(0));
+                                if (acs != null) {
+                                    functionToRun.accept(acs, wrapper);
+                                }
                             }
                         }
                     }
