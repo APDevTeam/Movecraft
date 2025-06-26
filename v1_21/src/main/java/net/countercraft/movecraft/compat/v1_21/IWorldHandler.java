@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 @SuppressWarnings("unused")
@@ -96,9 +97,10 @@ public class IWorldHandler extends WorldHandler {
         //TODO: go by chunks
         //TODO: Don't move unnecessary blocks
         //get the blocks and rotate them
+        final Rotation minecraftRotation = ROTATION[rotation.ordinal()];
         HashMap<BlockPos, BlockState> blockData = new HashMap<>();
         for (BlockPos position : rotatedPositions.keySet()) {
-            blockData.put(position, nativeWorld.getBlockState(position).rotate(ROTATION[rotation.ordinal()]));
+            blockData.put(position, nativeWorld.getBlockState(position).rotate(minecraftRotation));
         }
         //create the new block
         for (Map.Entry<BlockPos, BlockState> entry : blockData.entrySet()) {
@@ -110,8 +112,9 @@ public class IWorldHandler extends WorldHandler {
         //*    Step four: replace all the tiles     *
         //*******************************************
         //TODO: go by chunks
+        final Function<BlockState, BlockState> blockStateFunction = (bs) -> bs.rotate(minecraftRotation);
         for (TileHolder tileHolder : tiles)
-            moveBlockEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getTile());
+            moveBlockEntity(nativeWorld, blockStateFunction, rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getTile());
         for (TickHolder tickHolder : ticks) {
             final long currentTime = nativeWorld.serverLevelData.getGameTime();
             nativeWorld.getBlockTicks().schedule(new ScheduledTick<>(
@@ -191,7 +194,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: go by chunks
         for (TileHolder tileHolder : tiles)
-            moveBlockEntity(nativeWorld, tileHolder.getTilePosition().offset(translateVector), tileHolder.getTile());
+            moveBlockEntity(nativeWorld, null, tileHolder.getTilePosition().offset(translateVector), tileHolder.getTile());
         for (TickHolder tickHolder : ticks) {
             final long currentTime = nativeWorld.getGameTime();
             nativeWorld.getBlockTicks().schedule(new ScheduledTick<>((Block) tickHolder.getTick().type(), tickHolder.getTickPosition().offset(translateVector), tickHolder.getTick().triggerTick() - currentTime, tickHolder.getTick().priority(), tickHolder.getTick().subTickOrder()));
@@ -250,7 +253,13 @@ public class IWorldHandler extends WorldHandler {
             return;
         }
         section.setBlockState(position.getX() & 15, position.getY() & 15, position.getZ() & 15, data);
-        world.sendBlockUpdated(position, data, data, 3);
+
+        int flag = 1;
+        if (chunk.blockEntities.get(position) != null || data.isAir()) {
+            flag = 3;
+        }
+
+        world.sendBlockUpdated(position, data, data, flag);
         world.getLightEngine().checkBlock(position); // boolean corresponds to if chunk section empty
         chunk.markUnsaved();
     }
@@ -275,10 +284,11 @@ public class IWorldHandler extends WorldHandler {
         setBlockFast(world, BlockPos, blockData);
     }
 
-    private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
+    private void moveBlockEntity(@NotNull Level nativeWorld, @Nullable Function<BlockState, BlockState> blockStatConverter, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
         LevelChunk chunk = nativeWorld.getChunkAt(newPosition);
         try {
             var positionField = BlockEntity.class.getDeclaredField("o"); // o is obfuscated worldPosition
+            positionField.setAccessible(true);
             UnsafeUtils.setField(positionField, tile, newPosition);
         }
         catch (NoSuchFieldException e) {
@@ -290,6 +300,13 @@ public class IWorldHandler extends WorldHandler {
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
         }
+
+        if (blockStatConverter != null) {
+            tile.setBlockState(blockStatConverter.apply(tile.getBlockState()));
+        }
+        final BlockState state = tile.getBlockState();
+        setBlockFast(nativeWorld, newPosition, state);
+
         chunk.setBlockEntity(tile);
         chunk.blockEntities.put(newPosition, tile);
     }
