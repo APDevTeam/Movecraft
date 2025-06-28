@@ -18,7 +18,6 @@ public abstract class AsyncChunk<T extends Chunk> {
     static {
         Constructor<?> temp = null;
         try {
-            Class.forName("net.countercraft.movecraft.support.v1_20.IAsyncChunk");
             final Class<?> clazz = Class.forName("net.countercraft.movecraft.support." + WorldHandler.getPackageName(Bukkit.getServer().getMinecraftVersion()) + ".IAsyncChunk");
             if (AsyncChunk.class.isAssignableFrom(clazz)) {
                 temp = clazz.getConstructor(Chunk.class);
