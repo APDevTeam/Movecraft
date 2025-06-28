@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.compat.v1_21;
+package net.countercraft.movecraft.compat.v1_21_6;
 
 import ca.spottedleaf.moonrise.common.util.WorldUtil;
 import net.countercraft.movecraft.MovecraftLocation;
