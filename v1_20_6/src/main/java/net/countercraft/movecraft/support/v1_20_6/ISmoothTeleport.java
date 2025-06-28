@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.support.v1_20;
+package net.countercraft.movecraft.support.v1_20_6;
 
 import io.papermc.paper.entity.TeleportFlag;
 import net.countercraft.movecraft.SmoothTeleport;

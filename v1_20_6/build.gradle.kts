@@ -14,5 +14,5 @@ dependencies {
     paperweight.paperDevBundle("1.20.6-R0.1-SNAPSHOT")
 }
 
-description = "Movecraft-v1_20"
+description = "Movecraft-v1_20_6"
 paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.MOJANG_PRODUCTION

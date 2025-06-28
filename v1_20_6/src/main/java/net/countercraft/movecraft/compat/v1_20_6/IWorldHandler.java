@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.compat.v1_20;
+package net.countercraft.movecraft.compat.v1_20_6;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
