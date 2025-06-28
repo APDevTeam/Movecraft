@@ -9,6 +9,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 dependencies {
     runtimeOnly(project(":movecraft-v1_20_6", "reobf"))
+    runtimeOnly(project(":movecraft-v1_21_5", "reobf"))
     runtimeOnly(project(":movecraft-v1_21_6", "reobf"))
     implementation(project(":movecraft-api"))
     compileOnly("org.yaml:snakeyaml:2.0")
@@ -22,6 +23,7 @@ tasks.shadowJar {
     dependencies {
         include(project(":movecraft-api"))
         include(project(":movecraft-v1_20_6"))
+        include(project(":movecraft-v1_21_5"))
         include(project(":movecraft-v1_21_6"))
     }
 }
@@ -66,7 +68,7 @@ hangarPublish {
         platforms {
             register(io.papermc.hangarpublishplugin.model.Platforms.PAPER) {
                 jar.set(tasks.shadowJar.flatMap { it.archiveFile })
-                platformVersions.set(listOf("1.20.6", "1.21.5"))
+                platformVersions.set(listOf("1.20.6", "1.21.5", "1.21.6"))
             }
         }
     }
