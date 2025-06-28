@@ -4,12 +4,14 @@
 
 rootProject.name = "movecraft-parent"
 include(":movecraft-v1_20_6")
+include(":movecraft-v1_21_4")
 include(":movecraft-v1_21_5")
 include(":movecraft-v1_21_6")
 include(":movecraft-api")
 include(":movecraft-datapack")
 include(":movecraft")
 project(":movecraft-v1_20_6").projectDir = file("v1_20_6")
+project(":movecraft-v1_21_4").projectDir = file("v1_21_4")
 project(":movecraft-v1_21_5").projectDir = file("v1_21_5")
 project(":movecraft-v1_21_6").projectDir = file("v1_21_6")
 project(":movecraft-api").projectDir = file("api")
