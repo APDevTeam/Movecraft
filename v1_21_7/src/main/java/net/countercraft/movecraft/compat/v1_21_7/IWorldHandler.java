@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.compat.v1_21_6;
+package net.countercraft.movecraft.compat.v1_21_7;
 
 import ca.spottedleaf.moonrise.common.util.WorldUtil;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -52,7 +52,7 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {
         String version = Bukkit.getServer().getMinecraftVersion();
-        if (!version.equals("1.21.6"))
+        if (!version.equals("1.21.7"))
             throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft: " + version);
     }
 
