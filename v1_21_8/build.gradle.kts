@@ -7,8 +7,8 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 dependencies {
     api(project(":movecraft-api"))
-    paperweight.paperDevBundle("1.21.7-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.21.8-R0.1-SNAPSHOT")
 }
 
-description = "Movecraft-v1_21_7"
+description = "Movecraft-v1_21_8"
 paperweight.reobfArtifactConfiguration = io.papermc.paperweight.userdev.ReobfArtifactConfiguration.MOJANG_PRODUCTION
