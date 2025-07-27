@@ -59,7 +59,15 @@ public abstract class AsyncTask extends BukkitRunnable {
         return craft;
     }
 
+    // TODO: Move into it's own async task
+    // TODO: Check against craft datatag
     protected boolean checkFuel() {
+        if (!FuelBurnRunnable.doesBurnFuel(this.getCraft())) {
+            return true;
+        }
+        return this.getCraft().getDataTag(FuelBurnRunnable.IS_FUELED);
+
+
         // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
         double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
         if (fuelBurnRate == 0.0 || craft instanceof SinkingCraft)
@@ -79,6 +87,7 @@ public abstract class AsyncTask extends BukkitRunnable {
         }
         Block fuelHolder = null;
 
+        // TODO: Refactor this, wth is this supposed to be?!
         var v = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
         if (!(v instanceof Map<?, ?>))
             throw new IllegalStateException("FUEL_TYPES must be of type Map");
