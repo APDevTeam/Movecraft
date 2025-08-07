@@ -71,7 +71,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
         return true;
     }
 
-    protected void runDetectTask(MovecraftLocation startPoint, Player player, SignListener.SignWrapper signWrapper, Craft parentCraft, World world) {
+    protected void runDetectTask(MovecraftLocation startPoint, Player player, final SignListener.SignWrapper signWrapper, Craft parentCraft, World world) {
         if (PILOTING.add(startPoint)) {
             CraftManager.getInstance().detect(
                     startPoint,
@@ -102,6 +102,10 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
                     },
                     world, player, player,
                     craft -> () -> {
+                        final boolean isCruiseOnPilot = craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT);
+                        if (!isCruiseOnPilot) {
+                            NameSign.tryApplyName(craft, signWrapper);
+                        }
                         Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
                         if (craft instanceof SubCraft) { // Subtract craft from the parent
                             Craft parent = ((SubCraft) craft).getParent();
@@ -110,7 +114,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
                             parent.setOrigBlockCount(parent.getOrigBlockCount() - craft.getHitBox().size());
                         }
 
-                        if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                        if (isCruiseOnPilot) {
                             // Setup cruise direction
                             BlockFace facing = signWrapper.facing();
                             craft.setCruiseDirection(CruiseDirection.fromBlockFace(facing));
