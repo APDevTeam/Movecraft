@@ -65,6 +65,10 @@ public class NameSign extends AbstractCraftSign {
     @Override
     public void onCraftDetect(CraftDetectEvent event, SignListener.SignWrapper sign) {
         Craft craft = event.getCraft();
+        tryApplyName(craft, sign);
+    }
+
+    public static void tryApplyName(final Craft craft, final SignListener.SignWrapper sign) {
         if (craft != null && craft instanceof PilotedCraft pc) {
             if (pc.getPilot() == null) {
                 return;
