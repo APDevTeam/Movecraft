@@ -93,6 +93,7 @@ final public class CraftType {
     public static final NamespacedKey CAN_CRUISE = buildKey("can_cruise");
     public static final NamespacedKey CAN_TELEPORT = buildKey("can_teleport");
     public static final NamespacedKey CAN_SWITCH_WORLD = buildKey("can_switch_world");
+    // TODO: Add a "must have name" property
     public static final NamespacedKey CAN_BE_NAMED = buildKey("can_be_named");
     public static final NamespacedKey CRUISE_ON_PILOT = buildKey("cruise_on_pilot");
     public static final NamespacedKey CRUISE_ON_PILOT_VERT_MOVE = buildKey("cruise_on_pilot_vert_move");
