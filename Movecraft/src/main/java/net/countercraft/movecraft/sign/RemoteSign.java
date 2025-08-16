@@ -7,6 +7,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Tag;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -42,6 +43,9 @@ public class RemoteSign extends AbstractCraftSign {
         final String targetIdent = sign.getRaw(1);
         for (MovecraftLocation tloc : craft.getHitBox()) {
             BlockState tstate = craft.getWorld().getBlockAt(tloc.getX(), tloc.getY(), tloc.getZ()).getState();
+            if (!Tag.ALL_SIGNS.isTagged(tstate.getType())) {
+                continue;
+            }
             if (!(tstate instanceof Sign)) {
                 continue;
             }
