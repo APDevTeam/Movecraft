@@ -276,7 +276,7 @@ public class SignListener implements Listener {
 
         for (MovecraftLocation location : craft.getHitBox()) {
             Block block = location.toBukkit(craft.getWorld()).getBlock();
-            if(!Tag.SIGNS.isTagged(block.getType())){
+            if(!Tag.ALL_SIGNS.isTagged(block.getType())){
                 continue;
             }
             BlockState state = block.getState();
@@ -361,12 +361,11 @@ public class SignListener implements Listener {
         Block block = event.getBlock();
         BlockState state = block.getState();
         if (state instanceof Sign sign) {
-            SignWrapper signWrapper = this.getSignWrapper(sign, event.getPlayer());
-            SignWrapper wrapper = this.getSignWrapper(sign, event);
+            SignWrapper wrapper = this.createFromSide(sign, event.getSide());
 
             boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
 
-            AbstractMovecraftSign.EventType eventType = signWrapper.isEmpty() ? AbstractMovecraftSign.EventType.SIGN_CREATION : AbstractMovecraftSign.EventType.SIGN_EDIT;
+            AbstractMovecraftSign.EventType eventType = wrapper.isEmpty() ? AbstractMovecraftSign.EventType.SIGN_CREATION : AbstractMovecraftSign.EventType.SIGN_EDIT;
             if (eventType == AbstractMovecraftSign.EventType.SIGN_EDIT && onCraft) {
                 eventType = AbstractMovecraftSign.EventType.SIGN_EDIT_ON_CRAFT;
             }
@@ -538,5 +537,4 @@ public class SignListener implements Listener {
                 }
         );
     }
-
 }
