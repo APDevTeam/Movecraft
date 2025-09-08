@@ -3,19 +3,13 @@ package net.countercraft.movecraft.async.translation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftChunk;
 import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
-import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
-import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
@@ -23,11 +17,7 @@ import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import net.kyori.adventure.key.Key;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -41,19 +31,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
 
+// TODO: Refactor this into it's own task for Sinking
+// TODO: Different fuel usage for harvest blocks
+// TODO: Ability to toggle harvesters on and off
 public class TranslationTask extends AsyncTask {
     private World world;
     private int dx, dy, dz;
@@ -344,6 +331,8 @@ public class TranslationTask extends AsyncTask {
         captureYield(harvestedBlocks);
     }
 
+    // TODO: Rename, this just moves the entities
+    // TODO: Add type whitelist or tag to crafttypes
     private void preventsTorpedoRocketsPilots() {
         if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES) ||
                 (craft instanceof SinkingCraft
@@ -671,6 +660,7 @@ public class TranslationTask extends AsyncTask {
         return result;
     }
 
+    // Used by harvest blocks
     private void captureYield(@NotNull List<MovecraftLocation> harvestedBlocks) {
         if (harvestedBlocks.isEmpty()) {
             return;
@@ -806,6 +796,7 @@ public class TranslationTask extends AsyncTask {
 
     }
 
+    // Used by harvest blocks
     private ItemStack putInToChests(ItemStack stack, ArrayList<Inventory> inventories) {
         if (stack == null)
             return null;

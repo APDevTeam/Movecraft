@@ -48,7 +48,7 @@ public class FuelBurnRunnable implements Runnable {
         }
     }
 
-    protected void burnFuel(final Craft craft) {
+    static void burnFuel(final Craft craft) {
         boolean isBurningFuel = false;
         double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
 
@@ -78,13 +78,14 @@ public class FuelBurnRunnable implements Runnable {
         }
         // Find a new fuel item to burn, save to tag, remove item from furnace, throw event
         else {
-
+            // Prefer items in furnaces, consume one item from one furnace, remember it
+            // If there was no item in the furnaces, draw it from fuel tanks
         }
 
         craft.setDataTag(IS_FUELED, isBurningFuel);
     }
 
-    protected void setEnginesActive(final Craft craft, final boolean active) {
+    static void setEnginesActive(final Craft craft, final boolean active) {
         for (TrackedLocation trackedLocation : craft.getDataTag(FURNACES)) {
             MovecraftLocation location = trackedLocation.getAbsoluteLocation();
             BlockData furnace;
