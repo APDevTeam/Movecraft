@@ -7,6 +7,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.events.CraftSetAudienceEvent;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.CachedMovecraftWorld;
@@ -65,7 +66,6 @@ public abstract class BaseCraft implements Craft {
     private double burningFuel;
     private int origBlockCount;
     @NotNull
-    // TODO: rework this into a "CraftAudience" to also support crews later
     private Audience audience;
     @NotNull
     private Component name = Component.empty();
@@ -96,7 +96,7 @@ public abstract class BaseCraft implements Craft {
         cruising = false;
         disabled = false;
         origPilotTime = System.currentTimeMillis();
-        audience = Audience.empty();
+        setAudience(Audience.empty());
         dataTagContainer = new CraftDataTagContainer();
     }
 
@@ -240,7 +240,7 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setCruising(boolean cruising, CraftStopCruiseEvent.Reason reason) {
-        audience.sendActionBar(Component.text().content("Cruising " + (cruising ? "enabled" : "disabled")));
+        getAudience().sendActionBar(Component.text().content("Cruising " + (cruising ? "enabled" : "disabled")));
         this.cruising = cruising;
         if (!this.cruising) {
             this.setCruiseCooldownMultiplier(1);
@@ -604,7 +604,11 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setAudience(@NotNull Audience audience) {
-        this.audience = audience;
+        CraftSetAudienceEvent event = new CraftSetAudienceEvent(this, audience);
+        // Apply audience if the event isnt cancelled or if the current audience is null and the new one isnt
+        if (!event.isCancelled() || (this.audience == null && event.getNewAudience() != null)) {
+            this.audience = event.getNewAudience();
+        }
     }
 
     @Override
