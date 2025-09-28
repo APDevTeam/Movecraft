@@ -1,4 +1,4 @@
-package net.countercraft.movecraft.compat.v1_21_1;
+package net.countercraft.movecraft.compat.v1_21_8;
 
 import ca.spottedleaf.moonrise.common.util.WorldUtil;
 import net.countercraft.movecraft.MovecraftLocation;
@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 @SuppressWarnings("unused")
@@ -53,7 +52,7 @@ public class IWorldHandler extends WorldHandler {
 
     public IWorldHandler() {
         String version = Bukkit.getServer().getMinecraftVersion();
-        if (!version.equals("1.21.1"))
+        if (!version.equals("1.21.8"))
             throw new IllegalStateException("Movecraft is not compatible with this version of Minecraft: " + version);
     }
 
@@ -97,10 +96,9 @@ public class IWorldHandler extends WorldHandler {
         //TODO: go by chunks
         //TODO: Don't move unnecessary blocks
         //get the blocks and rotate them
-        final Rotation minecraftRotation = ROTATION[rotation.ordinal()];
         HashMap<BlockPos, BlockState> blockData = new HashMap<>();
         for (BlockPos position : rotatedPositions.keySet()) {
-            blockData.put(position, nativeWorld.getBlockState(position).rotate(minecraftRotation));
+            blockData.put(position, nativeWorld.getBlockState(position).rotate(ROTATION[rotation.ordinal()]));
         }
         //create the new block
         for (Map.Entry<BlockPos, BlockState> entry : blockData.entrySet()) {
@@ -112,9 +110,8 @@ public class IWorldHandler extends WorldHandler {
         //*    Step four: replace all the tiles     *
         //*******************************************
         //TODO: go by chunks
-        final Function<BlockState, BlockState> blockStateFunction = (bs) -> bs.rotate(minecraftRotation);
         for (TileHolder tileHolder : tiles)
-            moveBlockEntity(nativeWorld, blockStateFunction, rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getTile());
+            moveBlockEntity(nativeWorld, rotatedPositions.get(tileHolder.getTilePosition()), tileHolder.getTile());
         for (TickHolder tickHolder : ticks) {
             final long currentTime = nativeWorld.serverLevelData.getGameTime();
             nativeWorld.getBlockTicks().schedule(new ScheduledTick<>(
@@ -194,7 +191,7 @@ public class IWorldHandler extends WorldHandler {
         //*******************************************
         //TODO: go by chunks
         for (TileHolder tileHolder : tiles)
-            moveBlockEntity(nativeWorld, null, tileHolder.getTilePosition().offset(translateVector), tileHolder.getTile());
+            moveBlockEntity(nativeWorld, tileHolder.getTilePosition().offset(translateVector), tileHolder.getTile());
         for (TickHolder tickHolder : ticks) {
             final long currentTime = nativeWorld.getGameTime();
             nativeWorld.getBlockTicks().schedule(new ScheduledTick<>((Block) tickHolder.getTick().type(), tickHolder.getTickPosition().offset(translateVector), tickHolder.getTick().triggerTick() - currentTime, tickHolder.getTick().priority(), tickHolder.getTick().subTickOrder()));
@@ -241,11 +238,11 @@ public class IWorldHandler extends WorldHandler {
 
     private void setBlockFast(@NotNull Level world, @NotNull BlockPos position, @NotNull BlockState data) {
         LevelChunk chunk = world.getChunkAt(position);
-        int chunkSection = Math.clamp((position.getY() >> 4) - chunk.getMinSection(), 0, chunk.getSections().length - 1);
+        int chunkSection = (position.getY() >> 4) - WorldUtil.getMinSection(world);
         LevelChunkSection section = chunk.getSections()[chunkSection];
         if (section == null) {
             // Put a GLASS block to initialize the section. It will be replaced next with the real block.
-            chunk.setBlockState(position, Blocks.GLASS.defaultBlockState(), false);
+            chunk.setBlockState(position, Blocks.GLASS.defaultBlockState(), 0);
             section = chunk.getSections()[chunkSection];
         }
         if (section.getBlockState(position.getX() & 15, position.getY() & 15, position.getZ() & 15).equals(data)) {
@@ -253,15 +250,9 @@ public class IWorldHandler extends WorldHandler {
             return;
         }
         section.setBlockState(position.getX() & 15, position.getY() & 15, position.getZ() & 15, data);
-
-        int flag = 1;
-        if (chunk.blockEntities.get(position) != null || data.isAir()) {
-            flag = 3;
-        }
-
-        world.sendBlockUpdated(position, data, data, flag);
+        world.sendBlockUpdated(position, data, data, 3);
         world.getLightEngine().checkBlock(position); // boolean corresponds to if chunk section empty
-        chunk.setUnsaved(true);
+        chunk.markUnsaved();
     }
 
     @Override
@@ -284,11 +275,10 @@ public class IWorldHandler extends WorldHandler {
         setBlockFast(world, BlockPos, blockData);
     }
 
-    private void moveBlockEntity(@NotNull Level nativeWorld, @Nullable Function<BlockState, BlockState> blockStatConverter, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
+    private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
         LevelChunk chunk = nativeWorld.getChunkAt(newPosition);
         try {
             var positionField = BlockEntity.class.getDeclaredField("o"); // o is obfuscated worldPosition
-            positionField.setAccessible(true);
             UnsafeUtils.setField(positionField, tile, newPosition);
         }
         catch (NoSuchFieldException e) {
@@ -300,13 +290,6 @@ public class IWorldHandler extends WorldHandler {
             nativeWorld.capturedTileEntities.put(newPosition, tile);
             return;
         }
-
-        if (blockStatConverter != null) {
-            tile.setBlockState(blockStatConverter.apply(tile.getBlockState()));
-        }
-        final BlockState state = tile.getBlockState();
-        setBlockFast(nativeWorld, newPosition, state);
-
         chunk.setBlockEntity(tile);
         chunk.blockEntities.put(newPosition, tile);
     }

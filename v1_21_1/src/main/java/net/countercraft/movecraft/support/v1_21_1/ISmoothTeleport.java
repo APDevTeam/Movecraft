@@ -10,11 +10,11 @@ public class ISmoothTeleport extends SmoothTeleport {
     public void teleport(@NotNull Player player, @NotNull Location location) {
         player.teleport(
                 location,
-                TeleportFlag.Relative.X,
-                TeleportFlag.Relative.Y,
-                TeleportFlag.Relative.Z,
-                TeleportFlag.Relative.PITCH,
-                TeleportFlag.Relative.YAW,
+                TeleportFlag.Relative.X,//x
+                TeleportFlag.Relative.Y,//y
+                TeleportFlag.Relative.Z,//z
+                TeleportFlag.Relative.PITCH,//pitch
+                TeleportFlag.Relative.YAW,//yaw
                 TeleportFlag.EntityState.RETAIN_OPEN_INVENTORY,
                 TeleportFlag.EntityState.RETAIN_VEHICLE,
                 TeleportFlag.EntityState.RETAIN_PASSENGERS

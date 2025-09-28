@@ -18,21 +18,9 @@ public abstract class AsyncChunk<T extends Chunk> {
     static {
         Constructor<?> temp = null;
         try {
-            Class.forName("net.countercraft.movecraft.support.v1_20.IAsyncChunk");
-            String lastPackageName = "";
-            for (String packageName : WorldHandler.getPackageNames(Bukkit.getServer().getMinecraftVersion())) {
-                lastPackageName = packageName;
-                try {
-                    final Class<?> clazz = Class.forName("net.countercraft.movecraft.support." + packageName + ".IAsyncChunk");
-                    if (AsyncChunk.class.isAssignableFrom(clazz)) {
-                        temp = clazz.getConstructor(Chunk.class);
-                    }
-                } catch(ClassNotFoundException classNotFoundException) {
-                    // Ignore
-                }
-                if (temp != null ) {
-                    break;
-                }
+            final Class<?> clazz = Class.forName("net.countercraft.movecraft.support." + WorldHandler.getPackageName(Bukkit.getServer().getMinecraftVersion()) + ".IAsyncChunk");
+            if (AsyncChunk.class.isAssignableFrom(clazz)) {
+                temp = clazz.getConstructor(Chunk.class);
             }
             if (temp == null) {
                 throw new ClassNotFoundException(lastPackageName);
