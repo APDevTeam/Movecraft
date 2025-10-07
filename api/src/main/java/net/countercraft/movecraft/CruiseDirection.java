@@ -39,7 +39,7 @@ public class CruiseDirection extends Vector {
     }
 
     public CruiseDirection getOpposite2D() {
-        return new CruiseDirection(this.multiply(-1));
+        return new CruiseDirection(-this.getX(), this.getY(), -this.getZ());
     }
 
     public CruiseDirection getRotated2D(@NotNull MovecraftRotation rotation) {
