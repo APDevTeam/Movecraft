@@ -1,17 +1,29 @@
 package net.countercraft.movecraft;
 
 import org.bukkit.block.BlockFace;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-public enum CruiseDirection {
-    NORTH,
-    SOUTH,
-    EAST,
-    WEST,
-    UP,
-    DOWN,
-    NONE;
+public class CruiseDirection extends Vector {
+
+    public static CruiseDirection NORTH = new CruiseDirection(0,0,-1);
+    public static CruiseDirection SOUTH = new CruiseDirection(0,0,1);
+    public static CruiseDirection EAST = new CruiseDirection(1,0,0);
+    public static CruiseDirection WEST = new CruiseDirection(-1,0,0);
+    public static CruiseDirection UP = new CruiseDirection(0,1,0);
+    public static CruiseDirection DOWN = new CruiseDirection(0,-1,0);
+    public static CruiseDirection NONE = new CruiseDirection(0,0,0);
+
+    public CruiseDirection(final Vector direction) {
+        this(direction.getX(), direction.getY(), direction.getZ());
+    }
+
+    public CruiseDirection(double x, double y, double z) {
+        super(x, y, z);
+        if (!this.isZero())
+            this.normalize();
+    }
 
     @Contract(pure = true)
     public static CruiseDirection fromBlockFace(@NotNull BlockFace direction) {
@@ -27,24 +39,12 @@ public enum CruiseDirection {
     }
 
     public CruiseDirection getOpposite2D() {
-        return switch (this) {
-            case NORTH -> SOUTH;
-            case SOUTH -> NORTH;
-            case EAST -> WEST;
-            case WEST -> EAST;
-            default -> this;
-        };
+        return new CruiseDirection(this.multiply(-1));
     }
 
     public CruiseDirection getRotated2D(@NotNull MovecraftRotation rotation) {
         return switch(rotation) {
-            case CLOCKWISE -> switch (this) {
-                case NORTH -> EAST;
-                case SOUTH -> WEST;
-                case EAST -> SOUTH;
-                case WEST -> NORTH;
-                default -> this;
-            };
+            case CLOCKWISE -> new CruiseDirection(-this.getZ(), this.getY(), this.getX());
             case ANTICLOCKWISE -> getRotated2D(MovecraftRotation.CLOCKWISE).getOpposite2D();
             case NONE -> this;
         };
