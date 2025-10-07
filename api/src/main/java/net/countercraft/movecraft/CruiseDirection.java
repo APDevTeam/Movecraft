@@ -5,6 +5,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+/** This class is mutable! */
 public class CruiseDirection extends Vector {
 
     public static CruiseDirection NORTH = new CruiseDirection(0,0,-1);
@@ -25,6 +26,11 @@ public class CruiseDirection extends Vector {
             this.normalize();
     }
 
+    @Override
+    public @NotNull CruiseDirection clone() {
+        return new CruiseDirection(this.getX(), this.getY(), this.getZ());
+    }
+
     @Contract(pure = true)
     public static CruiseDirection fromBlockFace(@NotNull BlockFace direction) {
         return switch (direction.getOppositeFace()) {
@@ -42,6 +48,7 @@ public class CruiseDirection extends Vector {
         return new CruiseDirection(-this.getX(), this.getY(), -this.getZ());
     }
 
+    // Maybe switch to rotate2D(double)
     public CruiseDirection getRotated2D(@NotNull MovecraftRotation rotation) {
         return switch(rotation) {
             case CLOCKWISE -> new CruiseDirection(-this.getZ(), this.getY(), this.getX());
@@ -49,5 +56,26 @@ public class CruiseDirection extends Vector {
             case NONE -> this;
         };
     }
+
+    public boolean isVertical() {
+        return this.getX() == 0.0 && this.getZ() == 0.0;
+    }
+
+    /** Angle in radians, rotates anticlockwise. */
+    public void rotate2D(double angle) {
+        this.rotateAroundY(angle);
+    }
+
+    /** Rise or dive (if angle is negative), angle in radians. Will default to UP (or DOWN) if risen too much. */
+    public void rise2D(double angle) {
+        Vector perpendicular = new Vector(this.getX(), 0, this.getZ()).rotateAroundY(90.0d);
+        if (angle > 0) {
+            angle = Math.min(angle, this.angle(UP));
+        } else {
+            angle = Math.max(angle, -this.angle(DOWN));
+        }
+        this.rotateAroundNonUnitAxis(perpendicular, angle);
+    }
+
 }
 

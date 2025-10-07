@@ -56,6 +56,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Deprecated
 public class AsyncManager extends BukkitRunnable {
 
+    private static final double ARCSIN_ONE_HALF = 0.523598776;
+
     private Map<Integer, List<Runnable>> tickFunctions;
     private int maxInterval;
     private int currentTick = 1;
@@ -226,6 +228,9 @@ public class AsyncManager extends BukkitRunnable {
                 if (pilot.getInventory().getHeldItemSlot() == 5)
                     bankRight = true;
             }
+
+            int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w);
+
             int tickCoolDown;
             if (Movecraft.getInstance().getAsyncManager().cooldownCache.containsKey(craft)) {
                 tickCoolDown = Movecraft.getInstance().getAsyncManager().cooldownCache.get(craft);
@@ -234,12 +239,8 @@ public class AsyncManager extends BukkitRunnable {
                 tickCoolDown = craft.getTickCooldown();
                 Movecraft.getInstance().getAsyncManager().cooldownCache.put(craft,tickCoolDown);
             }
-
             // Account for banking and diving in speed calculations by changing the tickCoolDown
-            int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(
-                    CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w);
-            if (craft.getCruiseDirection() != CruiseDirection.UP
-                    && craft.getCruiseDirection() != CruiseDirection.DOWN) {
+            if (!craft.getCruiseDirection().isVertical()) {
                 if (bankLeft || bankRight) {
                     if (!(dive || rise)) {
                         tickCoolDown *= (Math.sqrt(Math.pow(1 + cruiseSkipBlocks, 2)
@@ -255,6 +256,10 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
 
+            int vertCruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, craft.getWorld());
+            CruiseDirection direction = craft.getCruiseDirection().clone();
+            int jumpDistance = 1 + (direction.isVertical() ? vertCruiseSkipBlocks : cruiseSkipBlocks);
+
             if (craft.getCruiseCooldownMultiplier() != 1 && craft.getCruiseCooldownMultiplier() != 0) {
                 tickCoolDown *= craft.getCruiseCooldownMultiplier();
             }
@@ -263,72 +268,34 @@ public class AsyncManager extends BukkitRunnable {
                 continue;
 
             Movecraft.getInstance().getAsyncManager().cooldownCache.remove(craft);
-            int dx = 0;
-            int dz = 0;
-            int dy = 0;
 
-            int vertCruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, craft.getWorld());
+            if (bankRight)
+                direction.rotateAroundY(ARCSIN_ONE_HALF);
+            if (bankLeft)
+                direction.rotateAroundY(-ARCSIN_ONE_HALF);
+            if (rise)
+                direction.rise2D(ARCSIN_ONE_HALF);
+            if (dive)
+                direction.rise2D(-ARCSIN_ONE_HALF);
 
-            // ascend
-            if (craft.getCruiseDirection() == CruiseDirection.UP)
-                dy = 1 + vertCruiseSkipBlocks;
-            // descend
-            if (craft.getCruiseDirection() == CruiseDirection.DOWN) {
-                dy = -1 - vertCruiseSkipBlocks;
-                if (craft.getHitBox().getMinY() <= w.getSeaLevel())
-                    dy = -1;
-            }
-            else if (dive || rise) {
-                dy = -((cruiseSkipBlocks + 1) >> 1);
-                if (craft.getHitBox().getMinY() <= w.getSeaLevel())
-                    dy = -1;
+            Vector cruiseVector = direction.multiply(jumpDistance);
 
-                if (rise) {
-                    dy *= -1;
-                }
-            }
-            // TODO: This could be a switch case
-            // ship faces west
-            if (craft.getCruiseDirection() == CruiseDirection.WEST) {
-                dx = -1 - cruiseSkipBlocks;
-                if (bankRight)
-                    dz = (-1 - cruiseSkipBlocks) >> 1;
-                if (bankLeft)
-                    dz = (1 + cruiseSkipBlocks) >> 1;
-            }
-            // ship faces east
-            if (craft.getCruiseDirection() == CruiseDirection.EAST) {
-                dx = 1 + cruiseSkipBlocks;
-                if (bankLeft)
-                    dz = (-1 - cruiseSkipBlocks) >> 1;
-                if (bankRight)
-                    dz = (1 + cruiseSkipBlocks) >> 1;
-            }
-            // ship faces north
-            if (craft.getCruiseDirection() == CruiseDirection.SOUTH) {
-                dz = 1 + cruiseSkipBlocks;
-                if (bankRight)
-                    dx = (-1 - cruiseSkipBlocks) >> 1;
-                if (bankLeft)
-                    dx = (1 + cruiseSkipBlocks) >> 1;
-            }
-            // ship faces south
-            if (craft.getCruiseDirection() == CruiseDirection.NORTH) {
-                dz = -1 - cruiseSkipBlocks;
-                if (bankLeft)
-                    dx = (-1 - cruiseSkipBlocks) >> 1;
-                if (bankRight)
-                    dx = (1 + cruiseSkipBlocks) >> 1;
-            }
-            if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
-                dy = craft.getType().getIntProperty(CraftType.CRUISE_ON_PILOT_VERT_MOVE);
-            }
             if (craft.getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS)) {
                 final int gearshift = craft.getCurrentGear();
-                dx *= gearshift;
-                dy *= gearshift;
-                dz *= gearshift;
+                cruiseVector.multiply(gearshift);
             }
+            if (craft.getHitBox().getMinY() <= w.getSeaLevel() && cruiseVector.getY() < 1.0d) {
+                cruiseVector.setY(-1);
+            }
+            if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                cruiseVector.setY(craft.getType().getIntProperty(CraftType.CRUISE_ON_PILOT_VERT_MOVE));
+            }
+
+            // TODO: Implement bresenhams algo
+            int dx = (int) Math.round(cruiseVector.getX());
+            int dy = (int) Math.round(cruiseVector.getY());
+            int dz = (int) Math.round(cruiseVector.getZ());
+
             craft.translate(dx, dy, dz);
             craft.setLastTranslation(new MovecraftLocation(dx, dy, dz));
             craft.setLastCruiseUpdate(System.currentTimeMillis());
