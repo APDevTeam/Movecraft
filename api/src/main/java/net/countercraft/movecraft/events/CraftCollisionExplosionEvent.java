@@ -15,13 +15,15 @@ public class CraftCollisionExplosionEvent extends CraftEvent implements Cancella
     private static final HandlerList HANDLERS = new HandlerList();
     @NotNull private final World world;
     @NotNull private final Location location;
+    @NotNull private final Location collider;
     private boolean cancelled;
     private Collection<UpdateCommand> updatesToRun = new ArrayList<>();
 
-    public CraftCollisionExplosionEvent(@NotNull Craft craft, @NotNull Location location, @NotNull World world) {
+    public CraftCollisionExplosionEvent(@NotNull Craft craft, @NotNull Location location, @NotNull Location collider, @NotNull World world) {
         super(craft);
         this.world = world;
         this.location = location;
+        this.collider = collider;
         cancelled = false;
     }
 
@@ -39,6 +41,9 @@ public class CraftCollisionExplosionEvent extends CraftEvent implements Cancella
     public Location getLocation() {
         return location;
     }
+
+    @NotNull
+    public Location getColliderLocation() {return collider;}
 
     @NotNull
     public World getWorld() {

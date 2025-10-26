@@ -293,7 +293,7 @@ public class TranslationTask extends AsyncTask {
                 Location newLocation = location.toBukkit(world);
                 if (!oldLocation.getBlock().getType().isAir()) {
                     CraftCollisionExplosionEvent e = new CraftCollisionExplosionEvent(craft,
-                            newLocation, craft.getWorld());
+                            newLocation, oldLocation, craft.getWorld());
                     e.getUpdatesToRun().add(new ExplosionUpdateCommand(newLocation, explosionForce, incendiary));
                     Bukkit.getServer().getPluginManager().callEvent(e);
                     if (!e.isCancelled()) {
