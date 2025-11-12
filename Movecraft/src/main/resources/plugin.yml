@@ -1,4 +1,4 @@
-name: Movecraft-TTE
+name: Movecraft
 version: ${projectVersion}
 api-version: 1.16
 description: Custom fork of movecraft for the ToTheEnd server. Use outside TTE only allowed if discussed with me personally prior!
