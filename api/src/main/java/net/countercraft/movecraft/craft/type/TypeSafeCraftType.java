@@ -25,6 +25,13 @@ import java.util.function.Predicate;
 
 public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
 
+    // Initialization
+    static {
+        PropertyKeys.registerAll();
+        Transformers.registerAll();
+        Validators.registerAll();
+    }
+
     static final SimpleRegistry<NamespacedKey, PropertyKey> PROPERTY_REGISTRY = new SimpleRegistry();
     static final Set<TypeSafeTransform> TRANSFORM_REGISTRY = new HashSet<>();
     static final Set<Pair<Predicate<TypeSafeCraftType>, String>> VALIDATOR_REGISTRY = new HashSet<>();

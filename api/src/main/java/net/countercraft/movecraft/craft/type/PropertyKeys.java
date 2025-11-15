@@ -43,4 +43,8 @@ public class PropertyKeys {
         return new NamespacedKey("movecraft", path);
     }
 
+    static void registerAll() {
+
+    }
+
 }
