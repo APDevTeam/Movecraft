@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.events.TypesReloadedEvent;
@@ -45,12 +46,16 @@ import org.yaml.snakeyaml.parser.ParserException;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static net.countercraft.movecraft.util.ChatUtils.ERROR_PREFIX;
 
@@ -85,12 +90,28 @@ public class CraftManager implements Iterable<Craft>{
      */
     @NotNull private Set<CraftType> craftTypes;
 
+    private final ConcurrentMap<String, TypeSafeCraftType> craftTypeMap = new ConcurrentHashMap<>();
+
 
     private CraftManager(boolean loadCraftTypes) {
         if(loadCraftTypes)
             craftTypes = loadCraftTypes();
         else
             craftTypes = new HashSet<>();
+    }
+
+    private void loadCraftTypeSettings() throws IOException {
+        this.craftTypeMap.clear();
+        File craftFileFolder = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
+        Set<Path> files = Files.find(craftFileFolder.toPath(), Integer.MAX_VALUE, (path, attribute) -> attribute.isRegularFile() && path.endsWith(".crafttype")).collect(Collectors.toSet());
+        for (Path path : files) {
+            File file = path.toFile();
+            final String name = file.getName().substring(0, file.getName().lastIndexOf('.')).toUpperCase();
+            TypeSafeCraftType typeSafeCraftType = TypeSafeCraftType.load(file, name, this::getCraftTypeByName);
+            if (this.craftTypeMap.put(name, typeSafeCraftType) != null) {
+                Movecraft.getInstance().getLogger().warning("Overriding crafttype setting with name <" + name + ">! This means there are duplicates!");
+            }
+        }
     }
 
     @NotNull
@@ -324,6 +345,10 @@ public class CraftManager implements Iterable<Craft>{
         return null;
     }
     //endregion
+
+    public TypeSafeCraftType getCraftTypeByName(String ident) {
+        return craftTypeMap.getOrDefault(ident.toUpperCase(), null);
+    }
 
     //region Craft set management
     @NotNull
