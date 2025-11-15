@@ -13,16 +13,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 // Represents the runtime crafttype of a craft. Will copy each value of the crafttype when needed
-// TODO: If possible, adjust this so it only copies the values when it needs to!
 public class CraftProperties extends TypeSafeCraftType{
 
     private final TypeSafeCraftType craftTypeReference;
     private final WeakReference<Craft> craftWeakReference;
 
     public CraftProperties(final TypeSafeCraftType craftType, final Craft craft) {
-        super();
-
-        copyOverValues(craftType);
+        super(craftType.parentName, craftType.typeRetriever);
 
         this.craftTypeReference = craftType;
         this.craftWeakReference = new WeakReference<>(craft);
@@ -43,17 +40,6 @@ public class CraftProperties extends TypeSafeCraftType{
             return this.craftTypeReference.get(key);
         }
         return super.get(key);
-    }
-
-    private final void copyOverValues(TypeSafeCraftType type) {
-        // IMMUTABLE properties dont need to be copied over!
-        type.entrySet().forEach(e -> {
-            PropertyKey k = e.getKey();
-            Object v = e.getValue();
-            if (!(k instanceof PropertyKey.ImmutableKey)) {
-                super.set(k, k.createCopy(v));
-            }
-        });
     }
 
     @Override
