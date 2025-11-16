@@ -2,11 +2,12 @@ package net.countercraft.movecraft.util;
 
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.tag.Tag;
+import io.papermc.paper.registry.tag.TagKey;
 import net.kyori.adventure.key.Keyed;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
-import org.bukkit.Tag;
 
 import java.util.*;
 
@@ -34,91 +35,92 @@ public class SerializationUtil {
         }
     }
 
-//    // Use TagKey and similar according to https://copilot.microsoft.com/shares/V2YcA9LmddP53ZsBdnAZG
-//    // Primarily, parse tag key with "#" marker, remove marker, create TagKey object and use that
-//    // Careful: Registry.getTag() throws an exception if the tag does not exist!
-//    private static <T extends org.bukkit.Keyed> void parseTagInternal(Set<NamespacedKey> result, TagKey namespacedKey, Registry<T> registry) {
-//        Queue<TagKey> tagQueue = new LinkedList<>();
-//        final Set<TagKey> visited = new HashSet<>();
-//        tagQueue.add(namespacedKey);
-//        visited.add(namespacedKey);
-//        while (!tagQueue.isEmpty()) {
-//            final TagKey polledKey = tagQueue.poll();
-//            if (!registry.hasTag(polledKey)) {
-//                // TODO: Log warnign that the tag does not exist for this registry!
-//                continue;
-//            }
-//            Tag<T> tag = registry.getTag(polledKey);
-//            for (T key : tag.resolve(RegistryAccess.registryAccess().getRegistry(tag.registryKey()))) {
-//                if (registry.get(key.getKey()) == null) {
-//                    // TODO: Is this necessary?
-//                    TagKey tagKeyTmp = TagKey.create(tag.registryKey(), key.key());
-//                    if (visited.add(tagKeyTmp)) {
-//                        tagQueue.add(tagKeyTmp);
-//                    }
-//                } else {
-//                    result.add(key.getKey());
-//                }
-//            }
-//        }
-//    }
-//
-//    public static <T extends org.bukkit.Keyed> Set<NamespacedKey> deserializeNamespacedKeySet(Object rawDataObject, Set<NamespacedKey> defaultValue, RegistryKey<T>... registryKeys) {
-//        Set<NamespacedKey> resultTmp = new HashSet<>();
-//        if (rawDataObject != null) {
-//            if (rawDataObject instanceof List list) {
-//                for (Object obj : list) {
-//                    parseInternal(resultTmp, obj);
-//                }
-//            } else {
-//                parseInternal(resultTmp, rawDataObject);
-//            }
-//        }
-//
-//        Set<NamespacedKey> result = new HashSet<>();
-//        for (RegistryKey<T> registryKey : registryKeys) {
-//            final Registry<T> registry = RegistryAccess.registryAccess().getRegistry(registryKey);
-//            for (NamespacedKey namespacedKey : resultTmp) {
-//                if (namespacedKey.namespace().startsWith("#")) {
-//                    parseTagInternal(result, TagKey.create(registryKey, namespacedKey.toString().substring(1)), registry);
-//                } else {
-//                    T value = registry.get(namespacedKey);
-//                    if (value != null) {
-//                        result.add(namespacedKey);
-//                    } else {
-//                       throw new IllegalArgumentException("Unable to lookup value for key <" + namespacedKey.toString() + "> in registry <" + registryKey.toString() + ">!");
-//                    }
-//                }
-//            }
-//        }
-//
-//        if (result.isEmpty()) {
-//            return defaultValue;
-//        }
-//        return result;
-//    }
-//
-//    public static <T extends org.bukkit.Keyed> Set<T> deserializeRegisteredObjectSet(Object rawDataObject, Set<T> defaultValue, final RegistryKey<T> registryKey) {
-//        Set<NamespacedKey> resultTmp = deserializeNamespacedKeySet(rawDataObject, Set.of(), registryKey);
-//        if (resultTmp.isEmpty()) {
-//            return defaultValue;
-//        }
-//        Set<T> result = new HashSet<>(resultTmp.size());
-//        final Registry<T> registry = RegistryAccess.registryAccess().getRegistry(registryKey);
-//        for (NamespacedKey namespacedKey : resultTmp) {
-//            if (namespacedKey.namespace().startsWith("#")) {
-//                throw new RuntimeException("Caught tag in parsed NamespacedKey list!");
-//            }
-//            T value = registry.get(namespacedKey);
-//            if (value != null) {
-//                result.add(value);
-//            }
-//        }
-//        if (result.isEmpty()) {
-//            return defaultValue;
-//        }
-//        return result;
-//    }
+    // Use TagKey and similar according to https://copilot.microsoft.com/shares/V2YcA9LmddP53ZsBdnAZG
+    // Primarily, parse tag key with "#" marker, remove marker, create TagKey object and use that
+    // Careful: Registry.getTag() throws an exception if the tag does not exist!
+    private static <T extends org.bukkit.Keyed> void parseTagInternal(Set<NamespacedKey> result, TagKey namespacedKey, Registry<T> registry) {
+        Queue<TagKey> tagQueue = new LinkedList<>();
+        final Set<TagKey> visited = new HashSet<>();
+        tagQueue.add(namespacedKey);
+        visited.add(namespacedKey);
+        while (!tagQueue.isEmpty()) {
+            final TagKey polledKey = tagQueue.poll();
+            if (!registry.hasTag(polledKey)) {
+                // TODO: Log warnign that the tag does not exist for this registry!
+                continue;
+            }
+            Tag<T> tag = registry.getTag(polledKey);
+            for (T key : tag.resolve(RegistryAccess.registryAccess().getRegistry(tag.registryKey()))) {
+                if (registry.get(key.getKey()) == null) {
+                    // TODO: Is this necessary?
+                    TagKey tagKeyTmp = TagKey.create(tag.registryKey(), key.key());
+                    if (visited.add(tagKeyTmp)) {
+                        tagQueue.add(tagKeyTmp);
+                    }
+                } else {
+                    result.add(key.getKey());
+                }
+            }
+        }
+    }
+
+    public static <T extends org.bukkit.Keyed> Set<NamespacedKey> deserializeNamespacedKeySet(Object rawDataObject, Set<NamespacedKey> defaultValue, RegistryKey<T>... registryKeys) {
+        Set<NamespacedKey> resultTmp = new HashSet<>();
+        if (rawDataObject != null) {
+            if (rawDataObject instanceof List list) {
+                for (Object obj : list) {
+                    parseInternal(resultTmp, obj);
+                }
+            } else {
+                parseInternal(resultTmp, rawDataObject);
+            }
+        }
+
+        Set<NamespacedKey> result = new HashSet<>();
+        for (RegistryKey<T> registryKey : registryKeys) {
+            final Registry<T> registry = RegistryAccess.registryAccess().getRegistry(registryKey);
+            for (NamespacedKey namespacedKey : resultTmp) {
+                if (namespacedKey.namespace().startsWith("#")) {
+                    NamespacedKey keyTmp = NamespacedKey.fromString(namespacedKey.toString().substring(1));
+                    parseTagInternal(result, TagKey.create(registryKey, keyTmp), registry);
+                } else {
+                    T value = registry.get(namespacedKey);
+                    if (value != null) {
+                        result.add(namespacedKey);
+                    } else {
+                       throw new IllegalArgumentException("Unable to lookup value for key <" + namespacedKey.toString() + "> in registry <" + registryKey.toString() + ">!");
+                    }
+                }
+            }
+        }
+
+        if (result.isEmpty()) {
+            return defaultValue;
+        }
+        return result;
+    }
+
+    public static <T extends org.bukkit.Keyed> Set<T> deserializeRegisteredObjectSet(Object rawDataObject, Set<T> defaultValue, final RegistryKey<T> registryKey) {
+        Set<NamespacedKey> resultTmp = deserializeNamespacedKeySet(rawDataObject, Set.of(), registryKey);
+        if (resultTmp.isEmpty()) {
+            return defaultValue;
+        }
+        Set<T> result = new HashSet<>(resultTmp.size());
+        final Registry<T> registry = RegistryAccess.registryAccess().getRegistry(registryKey);
+        for (NamespacedKey namespacedKey : resultTmp) {
+            if (namespacedKey.namespace().startsWith("#")) {
+                throw new RuntimeException("Caught tag in parsed NamespacedKey list!");
+            }
+            T value = registry.get(namespacedKey);
+            if (value != null) {
+                result.add(value);
+            }
+        }
+        if (result.isEmpty()) {
+            return defaultValue;
+        }
+        return result;
+    }
 
     @Deprecated(forRemoval = true)
     /*
