@@ -1,8 +1,12 @@
 package net.countercraft.movecraft.craft.type;
 
+import io.papermc.paper.registry.RegistryKey;
+import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import net.countercraft.movecraft.util.Pair;
+import net.countercraft.movecraft.util.SerializationUtil;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +25,7 @@ import java.util.*;
  */
 @SerializableAs("RequiredBlockEntry")
 public class RequiredBlockEntry implements ConfigurationSerializable {
-    private final EnumSet<Material> materials;
+    private final BlockSetProperty materials;
     private String name;
     private final double max;
     private final boolean numericMax;
@@ -35,7 +39,17 @@ public class RequiredBlockEntry implements ConfigurationSerializable {
     }
 
     public RequiredBlockEntry(EnumSet<Material> materials, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, @NotNull String name, final String displayName) {
-        this.materials = materials;
+        this.materials = new BlockSetProperty(materials);
+        this.min = min.getRight().doubleValue();
+        this.numericMin = min.getLeft();
+        this.max = max.getRight().doubleValue();
+        this.numericMax = max.getLeft();
+        this.name = name;
+        this.displayName = displayName;
+    }
+
+    public RequiredBlockEntry(BlockSetProperty blocks, @NotNull Pair<Boolean, ? extends Number> min, @NotNull Pair<Boolean, ? extends Number> max, @NotNull String name, final String displayName) {
+        this.materials = blocks;
         this.min = min.getRight().doubleValue();
         this.numericMin = min.getLeft();
         this.max = max.getRight().doubleValue();
@@ -45,7 +59,7 @@ public class RequiredBlockEntry implements ConfigurationSerializable {
     }
 
     public RequiredBlockEntry(RequiredBlockEntry requiredBlockEntry) {
-        this.materials = EnumSet.copyOf(requiredBlockEntry.materials);
+        this.materials = new BlockSetProperty(requiredBlockEntry.materials);
         this.min = requiredBlockEntry.min;
         this.numericMin = requiredBlockEntry.numericMin;
         this.max = requiredBlockEntry.max;
@@ -61,7 +75,11 @@ public class RequiredBlockEntry implements ConfigurationSerializable {
      * @return <code>true</code> if this contains the material, <code>false</code> if it does not
      */
     public boolean contains(Material m) {
-        return materials.contains(m);
+        return materials.contains(m.getKey());
+    }
+
+    public boolean contains(NamespacedKey key) {
+        return materials.contains(key);
     }
 
     /**
@@ -70,6 +88,10 @@ public class RequiredBlockEntry implements ConfigurationSerializable {
      * @return A copy of the materials this contains
      */
     public Set<Material> getMaterials() {
+        return Collections.unmodifiableSet(materials.get());
+    }
+
+    public Set<NamespacedKey> getBlocks() {
         return Collections.unmodifiableSet(materials);
     }
 
@@ -80,8 +102,8 @@ public class RequiredBlockEntry implements ConfigurationSerializable {
      */
     public String materialsToString() {
         Set<String> names = new HashSet<>();
-        for(Material m : materials) {
-            names.add(m.name().toLowerCase().replace("_", " "));
+        for(NamespacedKey key : materials) {
+            names.add(key.value().toLowerCase().replace("_", " "));
         }
         return String.join(", ", names);
     }
@@ -170,12 +192,12 @@ public class RequiredBlockEntry implements ConfigurationSerializable {
     }
 
     public static @NotNull RequiredBlockEntry deserialize(@NotNull Map<String, Object> args) {
-        // TODO: Implement proper parsing logic!
         String displayName = (String) args.getOrDefault("displayName", "");
         Pair<Boolean, ? extends Number> min = parseLimit(args.getOrDefault("min", 0));
         Pair<Boolean, ? extends Number> max = parseLimit(args.getOrDefault("max", 1));
-        EnumSet<Material> materials = parseMaterials(displayName, args.getOrDefault("materials", null));
-        return null;
+        //EnumSet<Material> materials = parseMaterials(displayName, args.getOrDefault("materials", null));
+        Set<NamespacedKey> keys = SerializationUtil.deserializeNamespacedKeySet(args.getOrDefault("blocks", null), new HashSet<>(), RegistryKey.BLOCK);
+        return new RequiredBlockEntry(new BlockSetProperty(keys), min, max, displayName, displayName);
     }
 
     @Override
@@ -184,7 +206,7 @@ public class RequiredBlockEntry implements ConfigurationSerializable {
                 "displayName", this.displayName,
                 "min", this.numericMin ? TypeData.NUMERIC_PREFIX : "" + this.min,
                 "max", this.numericMax ? TypeData.NUMERIC_PREFIX : "" + this.max,
-                "materials", this.materials
+                "blocks", this.materials
         );
     }
 
