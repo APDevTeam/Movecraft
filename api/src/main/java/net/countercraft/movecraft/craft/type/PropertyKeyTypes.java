@@ -11,7 +11,7 @@ import org.bukkit.util.NumberConversions;
 import java.util.*;
 import java.util.function.Function;
 
-public class ProperteyKeyTypes {
+public class PropertyKeyTypes {
 
     public static PropertyKey<String> stringPropertyKey(NamespacedKey key) {
         return stringPropertyKey(key, "");

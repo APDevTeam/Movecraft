@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.craft.type.property;
 
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.craft.type.ProperteyKeyTypes;
+import net.countercraft.movecraft.craft.type.PropertyKeyTypes;
 import net.countercraft.movecraft.craft.type.PropertyKey;
 import net.countercraft.movecraft.craft.type.TypeData;
 import org.bukkit.NamespacedKey;
@@ -83,7 +83,7 @@ public class BooleanProperty implements Property<Boolean> {
 
     @Override
     public PropertyKey<Boolean> asTypeSafeKey() {
-        return ProperteyKeyTypes.boolPropertyKey(this.namespacedKey, (typesafe) -> {
+        return PropertyKeyTypes.boolPropertyKey(this.namespacedKey, (typesafe) -> {
             return this.defaultProvider.apply(new CraftType(typesafe));
         });
     }

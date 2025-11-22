@@ -1,11 +1,10 @@
 package net.countercraft.movecraft.craft.type.property;
 
 import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.craft.type.ProperteyKeyTypes;
+import net.countercraft.movecraft.craft.type.PropertyKeyTypes;
 import net.countercraft.movecraft.craft.type.PropertyKey;
 import net.countercraft.movecraft.craft.type.TypeData;
 import org.bukkit.NamespacedKey;
-import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -84,7 +83,7 @@ public class FloatProperty implements Property<Float> {
 
     @Override
     public PropertyKey<Float> asTypeSafeKey() {
-        return ProperteyKeyTypes.floatPropertyKey(this.namespacedKey, (typesafe) -> {
+        return PropertyKeyTypes.floatPropertyKey(this.namespacedKey, (typesafe) -> {
             return this.defaultProvider.apply(new CraftType(typesafe));
         });
     }

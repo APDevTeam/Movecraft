@@ -5,7 +5,6 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -82,7 +81,7 @@ public class RequiredBlockProperty implements Property<Set<RequiredBlockEntry>> 
 
     @Override
     public PropertyKey<Set<RequiredBlockEntry>> asTypeSafeKey() {
-        return ProperteyKeyTypes.requiredBlockEntrySetKey(this.namespacedKey, (typesafe) -> {
+        return PropertyKeyTypes.requiredBlockEntrySetKey(this.namespacedKey, (typesafe) -> {
             return this.defaultProvider.apply(new CraftType(typesafe));
         });
     }
