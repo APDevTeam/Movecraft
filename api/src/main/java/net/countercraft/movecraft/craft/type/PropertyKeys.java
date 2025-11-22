@@ -1,10 +1,8 @@
 package net.countercraft.movecraft.craft.type;
 
 import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
