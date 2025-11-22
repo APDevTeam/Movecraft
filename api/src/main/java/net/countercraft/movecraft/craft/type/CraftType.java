@@ -34,6 +34,7 @@ import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,6 +50,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 // Use TypeSafeCraftType and CraftProperties instead!
@@ -228,7 +230,7 @@ final public class CraftType {
         properties.put(property.getNamespacedKey(), property);
     }
 
-
+    private final TypeSafeCraftType backing;
 
     private Map<NamespacedKey, String> stringPropertyMap;
     /**
@@ -238,9 +240,16 @@ final public class CraftType {
      * @return value of the string property
      */
     public String getStringProperty(NamespacedKey key) {
-        if(!stringPropertyMap.containsKey(key))
-            throw new IllegalStateException("String property " + key + " not found.");
-        return stringPropertyMap.get(key);
+        if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
+            try {
+                String result = this.backing.get((PropertyKey<String>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                return result;
+            } catch(Exception exception) {
+                throw new IllegalStateException("Property <" + key + "> is not a string property!");
+            }
+        } else {
+            throw new IllegalStateException("String property <" + key + "> is not registered!");
+        }
     }
 
     private Map<NamespacedKey, Integer> intPropertyMap;
@@ -251,9 +260,16 @@ final public class CraftType {
      * @return value of the integer property
      */
     public int getIntProperty(NamespacedKey key) {
-        if(!intPropertyMap.containsKey(key))
-            throw new IllegalStateException("Int property " + key + " not found.");
-        return intPropertyMap.get(key);
+        if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
+            try {
+                Integer result = this.backing.get((PropertyKey<Integer>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                return result;
+            } catch(Exception exception) {
+                throw new IllegalStateException("Property <" + key + "> is not a int property!");
+            }
+        } else {
+            throw new IllegalStateException("Int property <" + key + "> is not registered!");
+        }
     }
 
     private Map<NamespacedKey, Boolean> boolPropertyMap;
@@ -264,9 +280,16 @@ final public class CraftType {
      * @return value of the boolean property
      */
     public boolean getBoolProperty(NamespacedKey key) {
-        if(!boolPropertyMap.containsKey(key))
-            throw new IllegalStateException("Bool property " + key + " not found.");
-        return boolPropertyMap.get(key);
+        if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
+            try {
+                Boolean result = this.backing.get((PropertyKey<Boolean>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                return result;
+            } catch(Exception exception) {
+                throw new IllegalStateException("Property <" + key + "> is not a boolean property!");
+            }
+        } else {
+            throw new IllegalStateException("Boolean property <" + key + "> is not registered!");
+        }
     }
 
     private Map<NamespacedKey, Float> floatPropertyMap;
@@ -277,9 +300,16 @@ final public class CraftType {
      * @return value of the float property
      */
     public float getFloatProperty(NamespacedKey key) {
-        if(!floatPropertyMap.containsKey(key))
-            throw new IllegalStateException("Float property " + key + " not found.");
-        return floatPropertyMap.get(key);
+        if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
+            try {
+                Float result = this.backing.get((PropertyKey<Float>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                return result;
+            } catch(Exception exception) {
+                throw new IllegalStateException("Property <" + key + "> is not a float property!");
+            }
+        } else {
+            throw new IllegalStateException("Float property <" + key + "> is not registered!");
+        }
     }
 
     private Map<NamespacedKey, Double> doublePropertyMap;
@@ -290,9 +320,16 @@ final public class CraftType {
      * @return value of the double property
      */
     public double getDoubleProperty(NamespacedKey key) {
-        if(!doublePropertyMap.containsKey(key))
-            throw new IllegalStateException("Double property " + key + " not found.");
-        return doublePropertyMap.get(key);
+        if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
+            try {
+                Double result = this.backing.get((PropertyKey<Double>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                return result;
+            } catch(Exception exception) {
+                throw new IllegalStateException("Property <" + key + "> is not a double property!");
+            }
+        } else {
+            throw new IllegalStateException("Double property <" + key + "> is not registered!");
+        }
     }
 
     private Map<NamespacedKey, Object> objectPropertyMap;
@@ -305,9 +342,16 @@ final public class CraftType {
      */
     @Nullable
     public Object getObjectProperty(NamespacedKey key) {
-        if(!objectPropertyMap.containsKey(key))
-            throw new IllegalStateException("Object property " + key + " not found.");
-        return objectPropertyMap.get(key);
+        if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
+            try {
+                Object result = this.backing.get((PropertyKey<? extends Object>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                return result;
+            } catch(Exception exception) {
+                throw new IllegalStateException("Property <" + key + "> is not a object property!");
+            }
+        } else {
+            throw new IllegalStateException("Object property <" + key + "> is not registered!");
+        }
     }
 
     private Map<NamespacedKey, EnumSet<Material>> materialSetPropertyMap;
@@ -318,23 +362,48 @@ final public class CraftType {
      * @return value of the material set property
      */
     public EnumSet<Material> getMaterialSetProperty(NamespacedKey key) {
-        if(!materialSetPropertyMap.containsKey(key))
-            throw new IllegalStateException("Materials property " + key + " not found.");
-        return materialSetPropertyMap.get(key);
+        if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
+            try {
+                Object result = this.backing.get((PropertyKey<? extends Object>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                if (result != null) {
+                    if (result instanceof BlockSetProperty blockSetProperty) {
+                        return blockSetProperty.get();
+                    } else
+                    if (result instanceof EnumSet matSet) {
+                        if (matSet.isEmpty()) {
+                            return matSet;
+                        } else {
+                            Object first = matSet.toArray()[0];
+                            if (first instanceof Material) {
+                                return (EnumSet<Material>) result;
+                            }
+                        }
+                    }
+                }
+                throw new RuntimeException();
+            } catch(Exception exception) {
+                throw new IllegalStateException("Property <" + key + "> is not a materialset property!");
+            }
+        } else {
+            throw new IllegalStateException("MaterialSet property <" + key + "> is not registered!");
+        }
     }
 
     Map<NamespacedKey, Pair<Map<String, Object>, BiFunction<CraftType, String, Object>>> perWorldPropertyMap;
     private Object getPerWorldProperty(NamespacedKey key, String worldName) {
-        if(!perWorldPropertyMap.containsKey(key))
-            throw new IllegalStateException("Per world property " + key + " not found.");
-        var pair =  perWorldPropertyMap.get(key);
-        var map = pair.getLeft();
-        var defaultProvider = pair.getRight();
-
-        if(!map.containsKey(worldName))
-            return defaultProvider.apply(this, worldName);
-
-        return map.get(worldName);
+        if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
+            try {
+                Object returnData = this.backing.get(TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                if (returnData instanceof PerWorldData<? extends Object> pwd) {
+                    returnData = pwd.get(worldName);
+                }
+                return returnData;
+            } catch(Exception exception) {
+                throw new IllegalStateException("Property <" + key + "> is not a per world property!");
+            }
+        } else {
+            throw new IllegalStateException("Per-world property <" + key + "> is not registered!");
+        }
     }
     /**
      * Get a per world property of this CraftType
@@ -365,9 +434,16 @@ final public class CraftType {
      * @return value of the required block property
      */
     public Set<RequiredBlockEntry> getRequiredBlockProperty(NamespacedKey key) {
-        if(!requiredBlockPropertyMap.containsKey(key))
-            throw new IllegalStateException("Required block property " + key + " not found.");
-        return requiredBlockPropertyMap.get(key);
+        if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
+            try {
+                Set<RequiredBlockEntry> result = this.backing.get((PropertyKey<Set<RequiredBlockEntry>>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                return result;
+            } catch(Exception exception) {
+                throw new IllegalStateException("Property <" + key + "> is not a requiredBlockEntry property!");
+            }
+        } else {
+            throw new IllegalStateException("RequiredBlockEntry property <" + key + "> is not registered!");
+        }
     }
 
 
@@ -835,9 +911,12 @@ final public class CraftType {
         );
     }
 
-
+    public CraftType(final TypeSafeCraftType backing) {
+        this.backing = backing;
+    }
 
     public CraftType(File f) {
+        this.backing = null;
         TypeData data = TypeData.loadConfiguration(f);
 
         // Load craft type properties
