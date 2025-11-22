@@ -55,21 +55,21 @@ import java.util.stream.Collectors;
 @Deprecated(forRemoval = true)
 final public class CraftType {
     //region Property Keys
-    public static final NamespacedKey NAME = buildKey("name");
-    public static final NamespacedKey MAX_SIZE = buildKey("max_size");
-    public static final NamespacedKey MIN_SIZE = buildKey("min_size");
-    public static final NamespacedKey ALLOWED_BLOCKS = buildKey("allowed_blocks");
-    private static final NamespacedKey SPEED = buildKey("speed");
+    public static final NamespacedKey NAME = PropertyKeys.NAME.key();
+    public static final NamespacedKey MAX_SIZE = PropertyKeys.MAX_SIZE.key();
+    public static final NamespacedKey MIN_SIZE = PropertyKeys.MIN_SIZE.key();
+    public static final NamespacedKey ALLOWED_BLOCKS = PropertyKeys.ALLOWED_BLOCKS.key();
+    private static final NamespacedKey SPEED = PropertyKeys.SPEED.key();
         // Private key used to calculate TICK_COOLDOWN
     private static final NamespacedKey TICK_COOLDOWN = buildKey("tick_cooldown");
         // Private key used as default for PER_WORLD_TICK_COOLDOWN
-    public static final NamespacedKey FLY_BLOCKS = buildKey("fly_blocks");
-    public static final NamespacedKey DETECTION_BLOCKS = buildKey("detection_blocks");
+    public static final NamespacedKey FLY_BLOCKS = PropertyKeys.FLY_BLOCKS.key();
+    public static final NamespacedKey DETECTION_BLOCKS = PropertyKeys.DETECTION_BLOCKS.key();
     public static final NamespacedKey FORBIDDEN_SIGN_STRINGS = buildKey("forbidden_sign_strings");
     private static final NamespacedKey PER_WORLD_SPEED = buildKey("per_world_speed");
         // Private key used to calculate PER_WORLD_TICK_COOLDOWN
     public static final NamespacedKey PER_WORLD_TICK_COOLDOWN = buildKey("per_world_tick_cooldown");
-    public static final NamespacedKey FORBIDDEN_BLOCKS = buildKey("forbidden_blocks");
+    public static final NamespacedKey FORBIDDEN_BLOCKS = PropertyKeys.FORBIDDEN_BLOCKS.key();
     public static final NamespacedKey BLOCKED_BY_WATER = buildKey("blocked_by_water");
     private static final NamespacedKey CAN_FLY = buildKey("can_fly");
         // Private key used to calculate BLOCKED_BY_WATER

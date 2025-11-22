@@ -1,5 +1,6 @@
 package net.countercraft.movecraft.craft.type;
 
+import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
@@ -10,10 +11,14 @@ import java.util.Set;
 public class PropertyKeys {
 
     // region required base settings
-    public static final PropertyKey<String> NAME = register(ProperteyKeyTypes.stringPropertyKey(key("name")).immutable());
+    @Deprecated(forRemoval = true)
+    /**
+     * Use TypeSafeCraftType#getName() instead
+     */
+    public static final PropertyKey<String> NAME = register(ProperteyKeyTypes.stringPropertyKey(key("name"), t -> t.getName()).immutable());
     public static final PropertyKey<Integer> MAX_SIZE = register(ProperteyKeyTypes.intPropertyKey(key("max_size")).immutable());
     public static final PropertyKey<Integer> MIN_SIZE = register(ProperteyKeyTypes.intPropertyKey(key("min_size")).immutable());
-    public static final PropertyKey<EnumSet<Material>> ALLOWED_BLOCKS = register(ProperteyKeyTypes.materialSetKey(key("allowed_blocks")).immutable());
+    public static final PropertyKey<BlockSetProperty> ALLOWED_BLOCKS = register(ProperteyKeyTypes.blockSetPropertyKey(key("allowed_blocks")).immutable());
     public static final PropertyKey<PerWorldData<Double>> SPEED = register(ProperteyKeyTypes.doublePropertyKey(key("speed")).perWorld().immutable());
     // endregion required base settings
 
@@ -24,13 +29,13 @@ public class PropertyKeys {
     // endregion block constraints
 
     // region block sets
-    public static final PropertyKey<EnumSet<Material>> DIRECTIONAL_DEPENDENT_MATERIALS = register(ProperteyKeyTypes.materialSetKey(key("directional_dependent_materials"), t -> EnumSet.noneOf(Material.class)).immutable());
-    public static final PropertyKey<EnumSet<Material>> FORBIDDEN_BLOCKS = register(ProperteyKeyTypes.materialSetKey(key("forbidden_blocks"), t -> EnumSet.noneOf(Material.class)).immutable());
-    public static final PropertyKey<EnumSet<Material>> HARVEST_BLOCKS = register(ProperteyKeyTypes.materialSetKey(key("harvest_blocks"), t -> EnumSet.noneOf(Material.class)).immutable());
-    public static final PropertyKey<EnumSet<Material>> HARVESTER_BLADE_BLOCKS = register(ProperteyKeyTypes.materialSetKey(key("harvester_blade_blocks"), t -> EnumSet.noneOf(Material.class)).immutable());
-    public static final PropertyKey<EnumSet<Material>> PASSTHROUGH_BLOCKS = register(ProperteyKeyTypes.materialSetKey(key("passthrough_blocks"), t -> EnumSet.noneOf(Material.class)).immutable());
-    public static final PropertyKey<EnumSet<Material>> FORBIDDEN_HOVER_OVER_BLOCKS = register(ProperteyKeyTypes.materialSetKey(key("forbidden_hover_over_blocks"), t -> EnumSet.noneOf(Material.class)).immutable());
-    public static final PropertyKey<EnumSet<Material>> DYNAMIC_FLY_BLOCKS = register(ProperteyKeyTypes.materialSetKey(key("dynamic_fly_blocks"), t -> EnumSet.noneOf(Material.class)).immutable());
+    public static final PropertyKey<BlockSetProperty> DIRECTIONAL_DEPENDENT_MATERIALS = register(ProperteyKeyTypes.blockSetPropertyKey(key("directional_dependent_materials")).immutable());
+    public static final PropertyKey<BlockSetProperty> FORBIDDEN_BLOCKS = register(ProperteyKeyTypes.blockSetPropertyKey(key("forbidden_blocks")).immutable());
+    public static final PropertyKey<BlockSetProperty> HARVEST_BLOCKS = register(ProperteyKeyTypes.blockSetPropertyKey(key("harvest_blocks")).immutable());
+    public static final PropertyKey<BlockSetProperty> HARVESTER_BLADE_BLOCKS = register(ProperteyKeyTypes.blockSetPropertyKey(key("harvester_blade_blocks")).immutable());
+    public static final PropertyKey<BlockSetProperty> PASSTHROUGH_BLOCKS = register(ProperteyKeyTypes.blockSetPropertyKey(key("passthrough_blocks")).immutable());
+    public static final PropertyKey<BlockSetProperty> FORBIDDEN_HOVER_OVER_BLOCKS = register(ProperteyKeyTypes.blockSetPropertyKey(key("forbidden_hover_over_blocks")).immutable());
+    public static final PropertyKey<BlockSetProperty> DYNAMIC_FLY_BLOCKS = register(ProperteyKeyTypes.blockSetPropertyKey(key("dynamic_fly_blocks")).immutable());
     // endregion block sets
 
 
