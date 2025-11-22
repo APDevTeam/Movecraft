@@ -17,20 +17,13 @@
 
 package net.countercraft.movecraft.craft.type;
 
+import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.property.*;
-import net.countercraft.movecraft.craft.type.transform.BooleanTransform;
-import net.countercraft.movecraft.craft.type.transform.DoubleTransform;
-import net.countercraft.movecraft.craft.type.transform.FloatTransform;
-import net.countercraft.movecraft.craft.type.transform.IntegerTransform;
-import net.countercraft.movecraft.craft.type.transform.MaterialSetTransform;
-import net.countercraft.movecraft.craft.type.transform.ObjectTransform;
-import net.countercraft.movecraft.craft.type.transform.PerWorldTransform;
-import net.countercraft.movecraft.craft.type.transform.RequiredBlockTransform;
-import net.countercraft.movecraft.craft.type.transform.StringTransform;
-import net.countercraft.movecraft.craft.type.transform.Transform;
+import net.countercraft.movecraft.craft.type.transform.*;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
+import net.countercraft.movecraft.util.registration.TypedKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.*;
@@ -55,7 +48,7 @@ import java.util.stream.Collectors;
 
 // Use TypeSafeCraftType and CraftProperties instead!
 @Deprecated(forRemoval = true)
-final public class CraftType {
+final public class CraftType extends TypeSafeCraftType {
     //region Property Keys
     public static final NamespacedKey NAME = PropertyKeys.NAME.key();
     public static final NamespacedKey MAX_SIZE = PropertyKeys.MAX_SIZE.key();
@@ -469,8 +462,15 @@ final public class CraftType {
      * @param validator validator to parse the craft type
      * @param errorMessage message to throw on failure
      */
-    public static void registerTypeValidator(Predicate<CraftType> validator, String errorMessage) {
-        validators.add(new Pair<>(validator, errorMessage));
+    public static void registerTypeValidator(final Predicate<CraftType> validator, String errorMessage) {
+        Predicate<TypeSafeCraftType> typeSafeCraftTypePredicate = (typeSafe) -> {
+            if (typeSafe instanceof CraftType craftType) {
+                return validator.test(craftType);
+            } else {
+                return validator.test(new CraftType(typeSafe));
+            }
+        };
+        TypeSafeCraftType.VALIDATOR_REGISTRY.add(new Pair<>(typeSafeCraftTypePredicate, errorMessage));
     }
 
 
@@ -912,6 +912,7 @@ final public class CraftType {
     }
 
     public CraftType(final TypeSafeCraftType backing) {
+        super(backing.getName(), backing.typeRetriever);
         this.backing = backing;
     }
 
@@ -1017,5 +1018,45 @@ final public class CraftType {
         public TypeNotFoundException(String s) {
             super(s);
         }
+    }
+
+    @Override
+    protected <T> void set(@NotNull TypedKey<T> tagKey, @NotNull T value) {
+        this.backing.set(tagKey, value);
+    }
+
+    @Override
+    protected <T> T getWithoutParent(@NotNull PropertyKey<T> key) {
+        return this.backing.getWithoutParent(key);
+    }
+
+    @Override
+    public <T> T get(@NotNull PropertyKey<T> key) {
+        return this.backing.get(key);
+    }
+
+    @Override
+    public <T> T get(@NotNull PropertyKey<T> key, TypeSafeCraftType type) {
+        return this.backing.get(key, type);
+    }
+
+    @Override
+    public CraftProperties createCraftProperties(final Craft craft) {
+        return this.backing.createCraftProperties(craft);
+    }
+
+    @Override
+    Set<Map.Entry<PropertyKey<?>, Object>> entrySet() {
+        return this.backing.entrySet();
+    }
+
+    @Override
+    public <T> boolean hasInSelfOrAnyParent(PropertyKey<T> key) {
+        return this.backing.hasInSelfOrAnyParent(key);
+    }
+
+    @Override
+    public String getName() {
+        return this.backing.getName();
     }
 }
