@@ -1,8 +1,11 @@
 package net.countercraft.movecraft.craft.type.property;
 
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.ProperteyKeyTypes;
+import net.countercraft.movecraft.craft.type.PropertyKey;
 import net.countercraft.movecraft.craft.type.TypeData;
 import org.bukkit.NamespacedKey;
+import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,4 +81,12 @@ public class IntegerProperty implements Property<Integer> {
     public NamespacedKey getNamespacedKey() {
         return namespacedKey;
     }
+
+    @Override
+    public PropertyKey<Integer> asTypeSafeKey() {
+        return ProperteyKeyTypes.intPropertyKey(this.namespacedKey, (typesafe) -> {
+            return this.defaultProvider.apply(new CraftType(typesafe));
+        });
+    }
+
 }

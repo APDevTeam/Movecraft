@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.craft.type.property;
 
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKey;
 import net.countercraft.movecraft.craft.type.TypeData;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,7 @@ public interface Property<Type> {
     @NotNull
     NamespacedKey getNamespacedKey();
 
-    public default ImmutableProperty immutable() {
-        return new ImmutableProperty(this);
+    public default PropertyKey<Type> asTypeSafeKey() {
+        return null;
     }
 }
