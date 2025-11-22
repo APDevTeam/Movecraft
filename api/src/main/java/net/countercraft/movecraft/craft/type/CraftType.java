@@ -220,7 +220,9 @@ final public class CraftType extends TypeSafeCraftType {
      * @param property property to register
      */
     public static void registerProperty(Property<?> property) {
-        properties.put(property.getNamespacedKey(), property);
+        //properties.put(property.getNamespacedKey(), property);
+        PropertyKey<?> propertyKey = property.asTypeSafeKey();
+        TypeSafeCraftType.PROPERTY_REGISTRY.register(propertyKey.key(), propertyKey, false);
     }
 
     private final TypeSafeCraftType backing;
