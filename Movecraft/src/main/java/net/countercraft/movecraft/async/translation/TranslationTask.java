@@ -404,16 +404,19 @@ public class TranslationTask extends AsyncTask {
             return false;
         }
 
-        int incline = inclineCraft(oldHitBox);
-        if (incline > 0) {
-            boolean tooSteep = craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE) > -1
-                    && incline > craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE);
-            if (tooSteep && craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F) {
-                fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
-                return true;
+
+        if (craft.getType().getBoolProperty(CraftType.USE_INCLINE)){        
+            int incline = inclineCraft(oldHitBox);
+            if (incline > 0) {
+                boolean tooSteep = craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE) > -1
+                        && incline > craft.getType().getIntProperty(CraftType.GRAVITY_INCLINE_DISTANCE);
+                if (tooSteep && craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F) {
+                    fail(I18nSupport.getInternationalisedString("Translation - Failed Incline too steep"));
+                    return true;
+                }
+                dy = tooSteep ? 0 : incline;
+                return false;
             }
-            dy = tooSteep ? 0 : incline;
-            return false;
         }
 
         if (isOnGround(oldHitBox)) {
