@@ -933,12 +933,7 @@ final public class CraftType extends TypeSafeCraftType {
 
         for(var propertyValue : properties.values()) {
 
-            final Property<?> property;
-            if (propertyValue instanceof ImmutableProperty<?>) {
-                property = ((ImmutableProperty<?>) propertyValue).getProperty();
-            } else {
-                property = propertyValue;
-            }
+            final Property<?> property = propertyValue;
 
             if(property instanceof StringProperty)
                 stringPropertyMap.put(property.getNamespacedKey(),
