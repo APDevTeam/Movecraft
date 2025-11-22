@@ -76,6 +76,10 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         }
     }
 
+    public String getName() {
+        return this.name;
+    }
+
     protected TypeSafeCraftType(final String name, Function<String, TypeSafeCraftType> typeRetriever) {
         super();
         this.name = name;
@@ -121,7 +125,6 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
             runTransformer(transform, result);
         }
         // Step 5: Validate!
-        boolean valid = true;
         for (Pair<Predicate<TypeSafeCraftType>, String> validator : VALIDATOR_REGISTRY) {
             if (!validator.getLeft().test(result)) {
                 throw new IllegalArgumentException(validator.getRight());
