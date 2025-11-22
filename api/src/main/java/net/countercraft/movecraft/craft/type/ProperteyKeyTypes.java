@@ -1,5 +1,7 @@
 package net.countercraft.movecraft.craft.type;
 
+import io.papermc.paper.registry.RegistryKey;
+import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import net.countercraft.movecraft.util.SerializationUtil;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
@@ -83,6 +85,14 @@ public class ProperteyKeyTypes {
         return materialSetKey(key, t -> defaultValue);
     }
 
+    public static PropertyKey<BlockSetProperty> blockSetPropertyKey(NamespacedKey key) {
+        return blockSetPropertyKey(key, new BlockSetProperty());
+    }
+
+    public static PropertyKey<BlockSetProperty> blockSetPropertyKey(NamespacedKey key, BlockSetProperty defaultValue) {
+        return blockSetPropertyKey(key, t -> defaultValue);
+    }
+
     public static PropertyKey<Integer> intPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, Integer> defaultProvider) {
         return new PropertyKey<Integer>(key, defaultProvider, (obj, type) -> {
             if (obj == null)
@@ -139,7 +149,7 @@ public class ProperteyKeyTypes {
         return new PropertyKey<Set<RequiredBlockEntry>>(key, defaultProvider, (obj, type) -> {
             if (obj != null && (obj instanceof List)) {
                 // RequiredBlockEntry is serializable!
-                return new HashSet<>((Set<RequiredBlockEntry>)obj);
+                return new HashSet<>((List<RequiredBlockEntry>)obj);
             }
             return defaultProvider.apply(type);
         }, (s) -> s, copySet(RequiredBlockEntry::new));
@@ -180,6 +190,15 @@ public class ProperteyKeyTypes {
             }
             return returnList;
         }, (s) -> s, EnumSet::copyOf);
+    }
+
+    public static PropertyKey<BlockSetProperty> blockSetPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, BlockSetProperty> defaultProvider) {
+        return new PropertyKey<>(key, defaultProvider, (obj, type) -> {
+            BlockSetProperty result = new BlockSetProperty();
+            Set<NamespacedKey> namespacedKeys = SerializationUtil.deserializeNamespacedKeySet(obj, new HashSet<>(), RegistryKey.BLOCK);
+            result.addAll(namespacedKeys);
+            return result;
+        }, (s) -> s, BlockSetProperty::new);
     }
 
 }
