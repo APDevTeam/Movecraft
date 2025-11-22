@@ -23,6 +23,7 @@ import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
+import net.countercraft.movecraft.craft.type.CraftProperties;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
@@ -328,4 +329,6 @@ public interface Craft {
     public default MovecraftLocation getCraftOrigin() {
         return this.getDataTag(CRAFT_ORIGIN);
     }
+
+    public CraftProperties getCraftProperties();
 }

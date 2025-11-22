@@ -6,6 +6,7 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagContainer;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
+import net.countercraft.movecraft.craft.type.CraftProperties;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -39,7 +40,8 @@ import static net.countercraft.movecraft.util.SignUtils.getFacing;
 
 public abstract class BaseCraft implements Craft {
     @NotNull
-    protected final CraftType type;
+    protected CraftType type;
+    protected final CraftProperties craftProperties;
     @NotNull
     protected final MutableHitBox collapsedHitBox;
     @NotNull
@@ -80,6 +82,7 @@ public abstract class BaseCraft implements Craft {
 
     private double cruiseTickMultiplier = 1;
 
+    // TODO: Replace CraftType with TypeSafeCraftProperties
     public BaseCraft(@NotNull CraftType type, @NotNull World world) {
         this(type, world, UUID.randomUUID());
     }
@@ -87,7 +90,7 @@ public abstract class BaseCraft implements Craft {
     public BaseCraft(@NotNull CraftType type, @NotNull World world, final @NotNull UUID uuid) {
         this.uuid = uuid;
         Hidden.uuidToCraft.put(uuid, this);
-        this.type = type;
+        this.craftProperties = type.createCraftProperties(this);
         this.w = world;
         hitBox = new SetHitBox();
         collapsedHitBox = new SetHitBox();
@@ -120,6 +123,9 @@ public abstract class BaseCraft implements Craft {
 
     @NotNull
     public CraftType getType() {
+        if (this.type == null) {
+            this.type = new CraftType(this.getCraftProperties());
+        }
         return type;
     }
 
@@ -148,7 +154,7 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void translate(@NotNull World world, int dx, int dy, int dz) {
-        var v = type.getObjectProperty(CraftType.DISABLE_TELEPORT_TO_WORLDS);
+        var v = getType().getObjectProperty(CraftType.DISABLE_TELEPORT_TO_WORLDS);
         if (!(v instanceof Collection<?>))
             throw new IllegalStateException("DISABLE_TELEPORT_TO_WORLDS must be of type Collection");
         var disableTeleportToWorlds = ((Collection<?>) v);
@@ -341,7 +347,7 @@ public abstract class BaseCraft implements Craft {
     @Override
     public int getTickCooldown() {
         if (this instanceof SinkingCraft)
-            return type.getIntProperty(CraftType.SINK_RATE_TICKS);
+            return getType().getIntProperty(CraftType.SINK_RATE_TICKS);
 
         Counter<Material> materials = getDataTag(Craft.MATERIALS);
 
@@ -351,20 +357,20 @@ public abstract class BaseCraft implements Craft {
                 chestPenalty += materials.get(m);
             }
         }
-        chestPenalty *= (int) type.getDoubleProperty(CraftType.CHEST_PENALTY);
+        chestPenalty *= (int) getType().getDoubleProperty(CraftType.CHEST_PENALTY);
         if (!cruising)
-            return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+            return ((int) getType().getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
 
         // Ascent or Descent
         if (cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN)
-            return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+            return ((int) getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_TICK_COOLDOWN, w) + chestPenalty) * (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
 
         // Dynamic Fly Block Speed
-        int cruiseTickCooldown = (int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_TICK_COOLDOWN, w);
+        int cruiseTickCooldown = (int) getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_TICK_COOLDOWN, w);
         if (
             !materials.isEmpty() 
-            && type.getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) != null 
-            && (type.getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) instanceof Map<?, ?> mapping)
+            && getType().getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) != null
+            && (getType().getObjectProperty(CraftType.SPEED_MODIFIER_BLOCKS) instanceof Map<?, ?> mapping)
             && !mapping.isEmpty()
         ) {
             double modifier = 0.0D;
@@ -390,13 +396,13 @@ public abstract class BaseCraft implements Craft {
             // Recalculate the tick cooldown to a speed in m/s
             //tickcooldown = (int) Math.round((1.0 + data.get(CRUISE_SKIP_BLOCKS)) * 20.0 / type.getDoubleProperty(CRUISE_SPEED))
             // => CruiseSpeed = Math.round((1 + CruiseSkipBlocks) * 20 / tickCooldown)
-            final int skipDistance = (cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) ? ((int) type.getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, w) + 1) : ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1);
-            double normalSpeedUnmodified = (cruiseTickCooldown + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+            final int skipDistance = (cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) ? ((int) getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, w) + 1) : ((int) getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1);
+            double normalSpeedUnmodified = (cruiseTickCooldown + chestPenalty) * (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
             double speedInMetersPerSecond = 20.0 * skipDistance / normalSpeedUnmodified;
             speedInMetersPerSecond += modifier;
 
             // Apply max limit
-            speedInMetersPerSecond = Math.min((double)this.type.getPerWorldProperty(CraftType.PER_WORLD_MODIFIER_MAX_SPEED, this.getWorld()), Math.max(1.0D, speedInMetersPerSecond));
+            speedInMetersPerSecond = Math.min((double)this.getType().getPerWorldProperty(CraftType.PER_WORLD_MODIFIER_MAX_SPEED, this.getWorld()), Math.max(1.0D, speedInMetersPerSecond));
 
             // Recalculate speed to cooldown ticks again
             int speed = Math.max(1, (int) Math.round(20.0 * skipDistance / speedInMetersPerSecond));
@@ -404,60 +410,60 @@ public abstract class BaseCraft implements Craft {
             // Now, calculate the actual speed and apply it!
             // Return at least one as a safeguard
             //return Math.max((int) Math.round((20.0 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / speed) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
-            return (speed + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+            return (speed + chestPenalty) * (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
         }
-        else if (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
+        else if (getType().getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) != 0) {
             if (materials.isEmpty()) {
-                return ((int) type.getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+                return ((int) getType().getPerWorldProperty(CraftType.PER_WORLD_TICK_COOLDOWN, w) + chestPenalty) * (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
             }
-            EnumSet<Material> flyBlockMaterials = type.getMaterialSetProperty(CraftType.DYNAMIC_FLY_BLOCK);
+            EnumSet<Material> flyBlockMaterials = getType().getMaterialSetProperty(CraftType.DYNAMIC_FLY_BLOCK);
             double count = 0;
             for (Material m : flyBlockMaterials) {
                 count += materials.get(m);
             }
             // Percentual amount of blocks of the craft
             double ratio = count / hitBox.size();
-            double speed = (type.getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) * 1.5)
+            double speed = (getType().getDoubleProperty(CraftType.DYNAMIC_FLY_BLOCK_SPEED_FACTOR) * 1.5)
                     * (ratio - 0.5)
                     // Add the base speed to it (current cruise speed + 1)
                         + (20.0 / cruiseTickCooldown) + 1;
             // Return at least one as a safeguard
-            return Math.max((int) Math.round((20.0 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / speed) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
+            return Math.max((int) Math.round((20.0 * ((int) getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1)) / speed) * (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1), 1);
         }
 
-        if (type.getDoubleProperty(CraftType.DYNAMIC_LAG_SPEED_FACTOR) == 0.0
-                || type.getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR) == 0.0
-                || Math.abs(type.getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR)) > 1.0)
-            return (cruiseTickCooldown + chestPenalty) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+        if (getType().getDoubleProperty(CraftType.DYNAMIC_LAG_SPEED_FACTOR) == 0.0
+                || getType().getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR) == 0.0
+                || Math.abs(getType().getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR)) > 1.0)
+            return (cruiseTickCooldown + chestPenalty) * (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
 
-        int cruiseSkipBlocks = (int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w);
+        int cruiseSkipBlocks = (int) getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w);
         if (stats.getCount() == 0) {
             if (Settings.Debug) {
                 Bukkit.getLogger().info("First cruise: ");
                 Bukkit.getLogger().info("\t- Skip: " + cruiseSkipBlocks);
                 Bukkit.getLogger().info("\t- Tick: " + cruiseTickCooldown);
-                Bukkit.getLogger().info("\t- MinSpeed: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED));
-                Bukkit.getLogger().info("\t- Gearshifts: " + (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1));
-                Bukkit.getLogger().info("\t- Cooldown: " + (int) Math.round(20.0 * ((cruiseSkipBlocks + 1.0) / type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED)) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1)));
+                Bukkit.getLogger().info("\t- MinSpeed: " + getType().getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED));
+                Bukkit.getLogger().info("\t- Gearshifts: " + (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1));
+                Bukkit.getLogger().info("\t- Cooldown: " + (int) Math.round(20.0 * ((cruiseSkipBlocks + 1.0) / getType().getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED)) * (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1)));
             }
-            return (int) Math.round(20.0 * ((cruiseSkipBlocks + 1.0) / type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED)) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1));
+            return (int) Math.round(20.0 * ((cruiseSkipBlocks + 1.0) / getType().getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED)) * (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1));
         }
 
         if (Settings.Debug) {
             Bukkit.getLogger().info("Cruise: ");
             Bukkit.getLogger().info("\t- Skip: " + cruiseSkipBlocks);
             Bukkit.getLogger().info("\t- Tick: " + cruiseTickCooldown);
-            Bukkit.getLogger().info("\t- SpeedFactor: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_SPEED_FACTOR));
-            Bukkit.getLogger().info("\t- PowerFactor: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR));
-            Bukkit.getLogger().info("\t- MinSpeed: " + type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED));
+            Bukkit.getLogger().info("\t- SpeedFactor: " + getType().getDoubleProperty(CraftType.DYNAMIC_LAG_SPEED_FACTOR));
+            Bukkit.getLogger().info("\t- PowerFactor: " + getType().getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR));
+            Bukkit.getLogger().info("\t- MinSpeed: " + getType().getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED));
             Bukkit.getLogger().info("\t- CruiseTime: " + getMeanCruiseTime() * 1000.0 + "ms");
         }
 
         // Dynamic Lag Speed
         double speed = 20.0 * (cruiseSkipBlocks + 1.0) / (float) cruiseTickCooldown;
-        speed -= type.getDoubleProperty(CraftType.DYNAMIC_LAG_SPEED_FACTOR) * Math.pow(getMeanCruiseTime() * 1000.0, type.getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR));
-        speed = Math.max(type.getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED), speed);
-        return (int) Math.round((20.0 * (cruiseSkipBlocks + 1.0)) / speed) * (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+        speed -= getType().getDoubleProperty(CraftType.DYNAMIC_LAG_SPEED_FACTOR) * Math.pow(getMeanCruiseTime() * 1000.0, getType().getDoubleProperty(CraftType.DYNAMIC_LAG_POWER_FACTOR));
+        speed = Math.max(getType().getDoubleProperty(CraftType.DYNAMIC_LAG_MIN_SPEED), speed);
+        return (int) Math.round((20.0 * (cruiseSkipBlocks + 1.0)) / speed) * (getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
         //In theory, the chest penalty is not needed for a DynamicLag craft.
     }
 
@@ -469,10 +475,10 @@ public abstract class BaseCraft implements Craft {
     @Override
     public double getSpeed() {
         if (cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) {
-            return 20 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, w) + 1) / (double) getTickCooldown();
+            return 20 * ((int) getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, w) + 1) / (double) getTickCooldown();
         }
         else {
-            return 20 * ((int) type.getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1) / (double) getTickCooldown();
+            return 20 * ((int) getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w) + 1) / (double) getTickCooldown();
         }
     }
 
@@ -491,8 +497,8 @@ public abstract class BaseCraft implements Craft {
         //TODO: Remove this temporary system in favor of passthrough blocks
         // Find the waterline from the surrounding terrain or from the static level in the craft type
         int waterLine = 0;
-        if (type.getIntProperty(CraftType.STATIC_WATER_LEVEL) != 0 || hitBox.isEmpty()) {
-            return type.getIntProperty(CraftType.STATIC_WATER_LEVEL);
+        if (getType().getIntProperty(CraftType.STATIC_WATER_LEVEL) != 0 || hitBox.isEmpty()) {
+            return getType().getIntProperty(CraftType.STATIC_WATER_LEVEL);
         }
 
         // figure out the water level by examining blocks next to the outer boundaries of the craft
@@ -590,7 +596,7 @@ public abstract class BaseCraft implements Craft {
 
     @Override
     public void setCurrentGear(int currentGear) {
-        this.currentGear = Math.min(Math.max(currentGear, 1), type.getIntProperty(CraftType.GEAR_SHIFTS));
+        this.currentGear = Math.min(Math.max(currentGear, 1), getType().getIntProperty(CraftType.GEAR_SHIFTS));
     }
 
     @Override
@@ -651,5 +657,10 @@ public abstract class BaseCraft implements Craft {
     @Override
     public <T> boolean hasDataTag(final @NotNull CraftDataTagKey<T> tagKey) {
         return this.dataTagContainer.has(tagKey);
+    }
+
+    @Override
+    public CraftProperties getCraftProperties() {
+        return this.craftProperties;
     }
 }
