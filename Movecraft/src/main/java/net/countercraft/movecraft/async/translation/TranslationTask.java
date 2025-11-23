@@ -241,6 +241,8 @@ public class TranslationTask extends AsyncTask {
                 return;
             }
         }
+
+        
         //call event
         CraftTranslateEvent translateEvent = new CraftTranslateEvent(craft, oldHitBox, newHitBox, world);
         Bukkit.getServer().getPluginManager().callEvent(translateEvent);
