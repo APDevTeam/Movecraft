@@ -25,7 +25,7 @@ public class HoverValidator implements TetradicPredicate<MovecraftLocation, Move
                     test = test.translate(0, -1, 0);
                 }
                 Material testType = world.getMaterial(test);
-                if (type.getMaterialSetProperty(CraftType.ALLOW_HOVER_OVER_BLOCKS).contains(testType)){
+                if (!type.getMaterialSetProperty(CraftType.ALLOW_HOVER_OVER_BLOCKS).contains(testType)){
                     return Result.failWithMessage(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft over block"), testType.name().toLowerCase().replace("_", " ")));
                     }
                 }               
