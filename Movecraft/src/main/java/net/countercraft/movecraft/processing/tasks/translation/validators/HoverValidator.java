@@ -17,7 +17,7 @@ public class HoverValidator implements TetradicPredicate<MovecraftLocation, Move
     public @NotNull Result validate(@NotNull MovecraftLocation translation, @NotNull MovecraftWorld world, @NotNull HitBox hitBox, @NotNull CraftType type) {
 
             //If its inverted set to allow hover over blocks 
-            if (craft.getType().getBoolProperty(CraftType.INVERT_HOVER_OVER_BLOCS)) {
+            if (craft.getType().getBoolProperty(CraftType.INVERT_HOVER_OVER_BLOCKS)) {
                 if (type.getMaterialSetProperty(CraftType.ALLOW_HOVER_OVER_BLOCKS).size() > 0){
                 MovecraftLocation test = new MovecraftLocation(hitBox.getMidPoint().getX(), hitBox.getMinY(), hitBox.getMidPoint().getZ());
                 test = test.translate(0, -1, 0);
