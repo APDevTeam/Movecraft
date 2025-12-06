@@ -68,10 +68,8 @@ public class PropertyKeys {
             register(PropertyKeyTypes.boolPropertyKey(key("can_fly")).immutable());
     public static final PropertyKey<Boolean> BLOCKED_BY_WATER =
             register(PropertyKeyTypes.boolPropertyKey(key("blocked_by_water")).immutable());
-    public static final PropertyKey<Integer> TICK_COOLDOWN =
-            register(PropertyKeyTypes.intPropertyKey(key("tick_cooldown")).immutable());
-    public static final PropertyKey<PerWorldData<Integer>> PER_WORLD_TICK_COOLDOWN =
-            register(PropertyKeyTypes.intPropertyKey(key("per_world_tick_cooldown")).perWorld().immutable());
+    public static final PropertyKey<PerWorldData<Integer>> TICK_COOLDOWN =
+            register(PropertyKeyTypes.intPropertyKey(key("tick_cooldown")).perWorld().immutable());
     public static final PropertyKey<Boolean> REQUIRE_WATER_CONTACT =
             register(PropertyKeyTypes.boolPropertyKey(key("require_water_contact")).immutable());
     public static final PropertyKey<Boolean> TRY_NUDGE =
