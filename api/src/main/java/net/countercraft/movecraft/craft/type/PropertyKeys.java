@@ -5,11 +5,10 @@ import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoublePrope
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.SoundCategory;
+import org.bukkit.block.BlockType;
+import org.bukkit.inventory.ItemType;
 
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class PropertyKeys {
 
@@ -243,7 +242,14 @@ public class PropertyKeys {
             register(PropertyKeyTypes.configuredSoundPropertyKey(
                     key("collision_sound"), "block.anvil.land", SoundCategory.NEUTRAL, 2.0F, 1.0F
             ).immutable());
-    public static final PropertyKey<Object> FUEL_TYPES = null; //TODO: Also needs implementation
+    public static final PropertyKey<NamespacedKeyToDoubleProperty> FUEL_TYPES =
+            register(PropertyKeyTypes.namespacedKeyToDoublePropertyKey(
+                    key("fuel_types"), Map.of(
+                            BlockType.COAL_BLOCK.getKey(), 80.0D,
+                            ItemType.COAL.getKey(), 8.0D,
+                            ItemType.CHARCOAL.getKey(), 8.0D
+                    )
+            ).immutable());
     // Modified from original
     public static final PropertyKey<List<String>> DISABLE_TELEPORT_TO_WORLDS =
             register(PropertyKeyTypes.stringListPropertyKey(key("disable_teleport_to_worlds")).immutable());

@@ -24,8 +24,6 @@ import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.registration.TypedKey;
-import net.kyori.adventure.key.Key;
-import net.kyori.adventure.sound.Sound;
 import org.bukkit.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -469,39 +467,6 @@ final public class CraftType extends TypeSafeCraftType {
 
 
     static {
-        registerProperty(new ObjectPropertyImpl("fuelTypes", FUEL_TYPES,
-                (data, type, fileKey, namespacedKey) -> {
-                    var map = data.getData(fileKey).getBackingData();
-                    if(map.isEmpty())
-                        throw new TypeData.InvalidValueException("Value for " + fileKey + " must not be an empty map");
-
-                    Map<Material, Double> fuelTypes = new HashMap<>();
-                    for(var i : map.entrySet()) {
-                        EnumSet<Material> materials = Tags.parseMaterials(i.getKey());
-                        Object o = i.getValue();
-                        double burnRate;
-                        if (o instanceof String)
-                            burnRate = Double.parseDouble((String) o);
-                        else if (o instanceof Integer)
-                            burnRate = ((Integer) o).doubleValue();
-                        else
-                            burnRate = (double) o;
-                        for(Material m : materials) {
-                            fuelTypes.put(m, burnRate);
-                        }
-                    }
-                    return fuelTypes;
-                },
-                type -> {
-                    Map<Material, Double> fuelTypes = new HashMap<>();
-                    fuelTypes.put(Material.COAL_BLOCK, 80.0);
-                    fuelTypes.put(Material.COAL, 8.0);
-                    fuelTypes.put(Material.CHARCOAL, 8.0);
-                    return fuelTypes;
-                }
-        ));
-
-
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN
         registerTypeTransform((IntegerTransform) (data, type) -> {
