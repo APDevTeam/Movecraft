@@ -67,8 +67,7 @@ public class PropertyKeys {
             register(PropertyKeyTypes.blockSetPropertyKey(key("move_break_blocks"), new BlockSetProperty(EnumSet.of(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR))).immutable());
     // endregion block sets
 
-    // idk if we should keep these
-
+    // region idk if we should keep these
     public static final PropertyKey<Boolean> CAN_FLY =
             register(PropertyKeyTypes.boolPropertyKey(key("can_fly")).immutable());
     public static final PropertyKey<Boolean> BLOCKED_BY_WATER =
@@ -95,7 +94,7 @@ public class PropertyKeys {
             register(PropertyKeyTypes.doublePropertyKey(key("dynamic_fly_block_speed_factor")).immutable());
     public static final PropertyKey<Double> CHEST_PENALTY =
             register(PropertyKeyTypes.doublePropertyKey(key("chest_penalty")).immutable());
-    // endidk if we should keep these
+    // endregion idk if we should keep these
 
     public static final PropertyKey<List<String>> FORBIDDEN_SIGN_STRINGS =
             register(PropertyKeyTypes.stringListPropertyKey(key("forbidden_sign_strings")).immutable());
@@ -133,6 +132,7 @@ public class PropertyKeys {
             register(PropertyKeyTypes.boolPropertyKey(key("focused_explosion"), t -> false).immutable());
     public static final PropertyKey<Boolean> MUST_BE_SUBCRAFT =
             register(PropertyKeyTypes.boolPropertyKey(key("must_be_subcraft"), t -> false).immutable());
+    // TODO: Remove, worlds have their own waterlevel which should be used instead
     public static final PropertyKey<Integer> STATIC_WATER_LEVEL =
             register(PropertyKeyTypes.intPropertyKey(key("static_water_level"), t -> 0).immutable());
     public static final PropertyKey<PerWorldData<Double>> FUEL_BURN_RATE =
@@ -147,12 +147,15 @@ public class PropertyKeys {
             register(PropertyKeyTypes.doublePropertyKey(
                     key("underwater_detection_multiplier"), t -> t.get(DETECTION_MULTIPLIER).get()
             ).perWorld().immutable());
+    // TODO: Move to sinkhandler
     public static final PropertyKey<Double> SINK_SPEED =
             register(PropertyKeyTypes.doublePropertyKey(key("sink_speed"), t -> 1D).immutable());
+    // TODO: Move to sinkhandler
     public static final PropertyKey<Integer> SINK_RATE_TICKS =
             register(PropertyKeyTypes.intPropertyKey(
             key("sink_rate_ticks"), t -> (int) Math.ceil(20 / t.get(SINK_SPEED))
             ).immutable());
+    // TODO: Move to sinkhandler
     public static final PropertyKey<Boolean> KEEP_MOVING_ON_SINK =
             register(PropertyKeyTypes.boolPropertyKey(key("keep_moving_on_sink"), t -> false).immutable());
     // TODO: Change to per world
@@ -161,6 +164,7 @@ public class PropertyKeys {
             register(PropertyKeyTypes.boolPropertyKey(
                     key("sink_when_out_of_fuel")
             ).immutable());
+    // TODO: Move to sinkhandler
     public static final PropertyKey<Integer> SMOKE_ON_SINK =
             register(PropertyKeyTypes.intPropertyKey(key("smoke_on_sink"), t -> 0).immutable());
     public static final PropertyKey<Float> EXPLODE_ON_CRASH =
