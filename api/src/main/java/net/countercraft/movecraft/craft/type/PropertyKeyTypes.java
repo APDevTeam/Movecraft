@@ -4,8 +4,10 @@ import io.papermc.paper.registry.RegistryKey;
 import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import net.countercraft.movecraft.util.SerializationUtil;
 import net.countercraft.movecraft.util.Tags;
+import net.kyori.adventure.sound.Sound;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.SoundCategory;
 import org.bukkit.util.NumberConversions;
 
 import java.util.*;
@@ -91,6 +93,10 @@ public class PropertyKeyTypes {
 
     public static PropertyKey<BlockSetProperty> blockSetPropertyKey(NamespacedKey key, BlockSetProperty defaultValue) {
         return blockSetPropertyKey(key, t -> defaultValue);
+    }
+
+    public static PropertyKey<ConfiguredSound> configuredSoundPropertyKey(NamespacedKey key, String defaultSound, SoundCategory defaultSource, float defaultVolume, float defaultPitch) {
+        return configuredSoundPropertyKey(key, t -> new ConfiguredSound(defaultSound, defaultSource, defaultVolume, defaultVolume, defaultPitch, defaultPitch));
     }
 
     public static PropertyKey<Integer> intPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, Integer> defaultProvider) {
@@ -199,6 +205,16 @@ public class PropertyKeyTypes {
             result.addAll(namespacedKeys);
             return result;
         }, (s) -> s, BlockSetProperty::new);
+    }
+
+    public static PropertyKey<ConfiguredSound> configuredSoundPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, ConfiguredSound> defaultProvider) {
+        return new PropertyKey<>(key, defaultProvider, (obj, type) -> {
+            if (obj != null && (obj instanceof ConfiguredSound)) {
+                // ConfiguredSound is serializable!
+                return (ConfiguredSound)obj;
+            }
+            return defaultProvider.apply(type);
+        }, (s) -> s, t -> new ConfiguredSound(t.sound(), t.category(), t.minVolume(), t.maxVolume(), t.minPitch(), t.maxPitch()));
     }
 
 }
