@@ -27,7 +27,6 @@ import net.countercraft.movecraft.util.registration.TypedKey;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.*;
-import org.bukkit.block.Block;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,10 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 // Use TypeSafeCraftType and CraftProperties instead!
 @Deprecated(forRemoval = true)
@@ -56,153 +52,148 @@ final public class CraftType extends TypeSafeCraftType {
     public static final NamespacedKey ALLOWED_BLOCKS = PropertyKeys.ALLOWED_BLOCKS.key();
     private static final NamespacedKey SPEED = PropertyKeys.SPEED.key();
         // Private key used to calculate TICK_COOLDOWN
-    private static final NamespacedKey TICK_COOLDOWN = buildKey("tick_cooldown");
+    private static final NamespacedKey TICK_COOLDOWN = PropertyKeys.TICK_COOLDOWN.key();
         // Private key used as default for PER_WORLD_TICK_COOLDOWN
     public static final NamespacedKey FLY_BLOCKS = PropertyKeys.FLY_BLOCKS.key();
     public static final NamespacedKey DETECTION_BLOCKS = PropertyKeys.DETECTION_BLOCKS.key();
-    public static final NamespacedKey FORBIDDEN_SIGN_STRINGS = buildKey("forbidden_sign_strings");
-    private static final NamespacedKey PER_WORLD_SPEED = buildKey("per_world_speed");
+    public static final NamespacedKey FORBIDDEN_SIGN_STRINGS = PropertyKeys.FORBIDDEN_SIGN_STRINGS.key();
+    private static final NamespacedKey PER_WORLD_SPEED = PropertyKeys.SPEED.key();
         // Private key used to calculate PER_WORLD_TICK_COOLDOWN
-    public static final NamespacedKey PER_WORLD_TICK_COOLDOWN = buildKey("per_world_tick_cooldown");
+    public static final NamespacedKey PER_WORLD_TICK_COOLDOWN = PropertyKeys.TICK_COOLDOWN.key();
     public static final NamespacedKey FORBIDDEN_BLOCKS = PropertyKeys.FORBIDDEN_BLOCKS.key();
-    public static final NamespacedKey BLOCKED_BY_WATER = buildKey("blocked_by_water");
-    private static final NamespacedKey CAN_FLY = buildKey("can_fly");
+    public static final NamespacedKey BLOCKED_BY_WATER = PropertyKeys.BLOCKED_BY_WATER.key();
+    private static final NamespacedKey CAN_FLY = PropertyKeys.CAN_FLY.key();
         // Private key used to calculate BLOCKED_BY_WATER
     @Deprecated(forRemoval = true)
     /*
      * Use contact blocks and traction blocks instead!
      */
-    public static final NamespacedKey REQUIRE_WATER_CONTACT = buildKey("require_water_contact");
-    public static final NamespacedKey REQUIRED_CONTACT_BLOCKS = buildKey("required_contact_blocks");
-    public static final NamespacedKey TRACTION_BLOCKS = buildKey("traction_blocks");
-    public static final NamespacedKey TRY_NUDGE = buildKey("try_nudge");
-    public static final NamespacedKey MOVE_BLOCKS = buildKey("move_blocks");
-    public static final NamespacedKey CAN_CRUISE = buildKey("can_cruise");
-    public static final NamespacedKey CAN_TELEPORT = buildKey("can_teleport");
-    public static final NamespacedKey CAN_SWITCH_WORLD = buildKey("can_switch_world");
-    public static final NamespacedKey CAN_BE_NAMED = buildKey("can_be_named");
-    public static final NamespacedKey CRUISE_ON_PILOT = buildKey("cruise_on_pilot");
-    public static final NamespacedKey CRUISE_ON_PILOT_VERT_MOVE = buildKey("cruise_on_pilot_vert_move");
-    public static final NamespacedKey ALLOW_VERTICAL_MOVEMENT = buildKey("allow_vertical_movement");
-    public static final NamespacedKey ROTATE_AT_MIDPOINT = buildKey("rotate_at_midpoint");
-    public static final NamespacedKey ALLOW_HORIZONTAL_MOVEMENT = buildKey("allow_horizontal_movement");
-    public static final NamespacedKey ALLOW_REMOTE_SIGN = buildKey("allow_remote_sign");
-    public static final NamespacedKey CAN_STATIC_MOVE = buildKey("can_static_move");
-    public static final NamespacedKey MAX_STATIC_MOVE = buildKey("max_static_move");
-    private static final NamespacedKey CRUISE_SKIP_BLOCKS = buildKey("cruise_skip_blocks");
+    public static final NamespacedKey REQUIRE_WATER_CONTACT = PropertyKeys.REQUIRE_WATER_CONTACT.key();
+    public static final NamespacedKey REQUIRED_CONTACT_BLOCKS = PropertyKeys.REQUIRED_CONTACT_BLOCKS.key();
+    public static final NamespacedKey TRACTION_BLOCKS = PropertyKeys.TRACTION_BLOCKS.key();
+    public static final NamespacedKey TRY_NUDGE = PropertyKeys.TRY_NUDGE.key();
+    public static final NamespacedKey MOVE_BLOCKS = PropertyKeys.MOVE_BLOCKS.key();
+    public static final NamespacedKey CAN_CRUISE = PropertyKeys.CAN_CRUISE.key();
+    public static final NamespacedKey CAN_TELEPORT = PropertyKeys.CAN_TELEPORT.key();
+    public static final NamespacedKey CAN_SWITCH_WORLD = PropertyKeys.CAN_SWITCH_WORLD.key();
+    public static final NamespacedKey CAN_BE_NAMED = PropertyKeys.CAN_BE_NAMED.key();
+    public static final NamespacedKey CRUISE_ON_PILOT = PropertyKeys.CRUISE_ON_PILOT.key();
+    public static final NamespacedKey CRUISE_ON_PILOT_VERT_MOVE = PropertyKeys.CRUISE_ON_PILOT_VERT_MOVE.key();
+    public static final NamespacedKey ALLOW_VERTICAL_MOVEMENT = PropertyKeys.ALLOW_VERTICAL_MOVEMENT.key();
+    public static final NamespacedKey ROTATE_AT_MIDPOINT = PropertyKeys.ROTATE_AT_MIDPOINT.key();
+    public static final NamespacedKey ALLOW_HORIZONTAL_MOVEMENT = PropertyKeys.ALLOW_HORIZONTAL_MOVEMENT.key();
+    public static final NamespacedKey ALLOW_REMOTE_SIGN = PropertyKeys.ALLOW_REMOTE_SIGN.key();
+    public static final NamespacedKey CAN_STATIC_MOVE = PropertyKeys.CAN_STATIC_MOVE.key();
+    public static final NamespacedKey MAX_STATIC_MOVE = PropertyKeys.MAX_STATIC_MOVE.key();
+    private static final NamespacedKey CRUISE_SKIP_BLOCKS = PropertyKeys.CRUISE_SKIP_BLOCKS.key();
         // Private key used as default for PER_WORLD_CRUISE_SKIP_BLOCKS
-    public static final NamespacedKey PER_WORLD_CRUISE_SKIP_BLOCKS = buildKey("per_world_cruise_skip_blocks");
-    private static final NamespacedKey VERT_CRUISE_SKIP_BLOCKS = buildKey("vert_cruise_skip_blocks");
+    public static final NamespacedKey PER_WORLD_CRUISE_SKIP_BLOCKS = PropertyKeys.CRUISE_SKIP_BLOCKS.key();
+    private static final NamespacedKey VERT_CRUISE_SKIP_BLOCKS = PropertyKeys.VERT_CRUISE_SKIP_BLOCKS.key();
         // Private key used as default for PER_WORLD_VERT_CRUISE_SKIP_BLOCKS
-    public static final NamespacedKey PER_WORLD_VERT_CRUISE_SKIP_BLOCKS = buildKey("per_world_vert_cruise_skip_blocks");
-    public static final NamespacedKey HALF_SPEED_UNDERWATER = buildKey("half_speed_underwater");
-    public static final NamespacedKey FOCUSED_EXPLOSION = buildKey("focused_explosion");
-    public static final NamespacedKey MUST_BE_SUBCRAFT = buildKey("must_be_subcraft");
-    public static final NamespacedKey STATIC_WATER_LEVEL = buildKey("static_water_level");
-    private static final NamespacedKey FUEL_BURN_RATE = buildKey("fuel_burn_rate");
+    public static final NamespacedKey PER_WORLD_VERT_CRUISE_SKIP_BLOCKS = PropertyKeys.VERT_CRUISE_SKIP_BLOCKS.key();
+    public static final NamespacedKey HALF_SPEED_UNDERWATER = PropertyKeys.HALF_SPEED_UNDERWATER.key();
+    public static final NamespacedKey FOCUSED_EXPLOSION = PropertyKeys.FOCUSED_EXPLOSION.key();
+    public static final NamespacedKey MUST_BE_SUBCRAFT = PropertyKeys.MUST_BE_SUBCRAFT.key();
+    public static final NamespacedKey STATIC_WATER_LEVEL = PropertyKeys.STATIC_WATER_LEVEL.key();
+    private static final NamespacedKey FUEL_BURN_RATE = PropertyKeys.FUEL_BURN_RATE.key();
         // Private key used as default for PER_WORLD_FUEL_BURN_RATE
-    public static final NamespacedKey PER_WORLD_FUEL_BURN_RATE = buildKey("per_world_fuel_burn_rate");
-    public static final NamespacedKey SINK_PERCENT = buildKey("sink_percent");
-    public static final NamespacedKey OVERALL_SINK_PERCENT = buildKey("overall_sink_percent");
-    private static final NamespacedKey DETECTION_MULTIPLIER = buildKey("detection_multiplier");
+    public static final NamespacedKey PER_WORLD_FUEL_BURN_RATE = PropertyKeys.FUEL_BURN_RATE.key();
+    public static final NamespacedKey SINK_PERCENT = PropertyKeys.SINK_PERCENT.key();
+    public static final NamespacedKey OVERALL_SINK_PERCENT = PropertyKeys.OVERALL_SINK_PERCENT.key();
+    private static final NamespacedKey DETECTION_MULTIPLIER = PropertyKeys.DETECTION_MULTIPLIER.key();
         // Private key used as default for PER_WORLD_DETECTION_MULTIPLIER
-    public static final NamespacedKey PER_WORLD_DETECTION_MULTIPLIER = buildKey("per_world_detection_multiplier");
-    private static final NamespacedKey UNDERWATER_DETECTION_MULTIPLIER = buildKey("underwater_detection_multiplier");
+    public static final NamespacedKey PER_WORLD_DETECTION_MULTIPLIER = PropertyKeys.DETECTION_MULTIPLIER.key();
+    private static final NamespacedKey UNDERWATER_DETECTION_MULTIPLIER = PropertyKeys.UNDERWATER_DETECTION_MULTIPLIER.key();
         // Private key used as default for PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER
-    public static final NamespacedKey PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER = buildKey(
-            "per_world_underwater_detection_multiplier");
-    private static final NamespacedKey SINK_SPEED = buildKey("sink_speed");
+    public static final NamespacedKey PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER = PropertyKeys.UNDERWATER_DETECTION_MULTIPLIER.key();
+    private static final NamespacedKey SINK_SPEED = PropertyKeys.SINK_SPEED.key();
         // Private key used to calculate SINK_RATE_TICKS
-    public static final NamespacedKey SINK_RATE_TICKS = buildKey("sink_rate_ticks");
-    public static final NamespacedKey KEEP_MOVING_ON_SINK = buildKey("keep_moving_on_sink");
-    public static final NamespacedKey SMOKE_ON_SINK = buildKey("smoke_on_sink");
-    public static final NamespacedKey EXPLODE_ON_CRASH = buildKey("explode_on_crash");
-    public static final NamespacedKey INCENDIARY_ON_CRASH = buildKey("incendiary_on_crash");
-    public static final NamespacedKey COLLISION_EXPLOSION = buildKey("collision_explosion");
-    public static final NamespacedKey UNDERWATER_COLLISION_EXPLOSION = buildKey("underwater_collision_explosion");
-    private static final NamespacedKey MIN_HEIGHT_LIMIT = buildKey("min_height_limit");
+    public static final NamespacedKey SINK_RATE_TICKS = PropertyKeys.SINK_RATE_TICKS.key();
+    public static final NamespacedKey KEEP_MOVING_ON_SINK = PropertyKeys.KEEP_MOVING_ON_SINK.key();
+    public static final NamespacedKey SMOKE_ON_SINK = PropertyKeys.SMOKE_ON_SINK.key();
+    public static final NamespacedKey EXPLODE_ON_CRASH = PropertyKeys.EXPLODE_ON_CRASH.key();
+    public static final NamespacedKey INCENDIARY_ON_CRASH = PropertyKeys.INCENDIARY_ON_CRASH.key();
+    public static final NamespacedKey COLLISION_EXPLOSION = PropertyKeys.COLLISION_EXPLOSION.key();
+    public static final NamespacedKey UNDERWATER_COLLISION_EXPLOSION = PropertyKeys.UNDERWATER_COLLISION_EXPLOSION.key();
+    private static final NamespacedKey MIN_HEIGHT_LIMIT = PropertyKeys.MIN_HEIGHT_LIMIT.key();
         // Private key used as default for PER_WORLD_MIN_HEIGHT_LIMIT
-    public static final NamespacedKey PER_WORLD_MIN_HEIGHT_LIMIT = buildKey("per_world_min_height_limit");
-    private static final NamespacedKey CRUISE_SPEED = buildKey("cruise_speed");
+    public static final NamespacedKey PER_WORLD_MIN_HEIGHT_LIMIT = PropertyKeys.MIN_HEIGHT_LIMIT.key();
+    private static final NamespacedKey CRUISE_SPEED = PropertyKeys.CRUISE_SPEED.key();
         // Private key used to calculate CRUISE_TICK_COOLDOWN
-    private static final NamespacedKey CRUISE_TICK_COOLDOWN = buildKey("cruise_tick_cooldown");
+    private static final NamespacedKey CRUISE_TICK_COOLDOWN = PropertyKeys.TICK_COOLDOWN.key();
         // Private key used as default for PER_WORLD_CRUISE_TICK_COOLDOWN
-    private static final NamespacedKey PER_WORLD_CRUISE_SPEED = buildKey("per_world_cruise_speed");
+    private static final NamespacedKey PER_WORLD_CRUISE_SPEED = PropertyKeys.CRUISE_SPEED.key();
         // Private key used to calculate PER_WORLD_CRUISE_TICK_COOLDOWN
-    public static final NamespacedKey PER_WORLD_CRUISE_TICK_COOLDOWN = buildKey("per_world_cruise_tick_cooldown");
-    private static final NamespacedKey VERT_CRUISE_SPEED = buildKey("vert_cruise_speed");
+    public static final NamespacedKey PER_WORLD_CRUISE_TICK_COOLDOWN = PropertyKeys.TICK_COOLDOWN.key();
+    private static final NamespacedKey VERT_CRUISE_SPEED = PropertyKeys.VERT_CRUISE_SPEED.key();
         // Private key used to calculate VERT_CRUISE_TICK_COOLDOWN
-    private static final NamespacedKey VERT_CRUISE_TICK_COOLDOWN = buildKey("vert_cruise_tick_cooldown");
+    private static final NamespacedKey VERT_CRUISE_TICK_COOLDOWN = PropertyKeys.VERT_TICK_COOLDOWN.key();
         // Private key used as default for PER_WORLD_VERT_CRUISE_TICK_COOLDOWN
-    private static final NamespacedKey PER_WORLD_VERT_CRUISE_SPEED = buildKey("per_world_vert_cruise_speed");
+    private static final NamespacedKey PER_WORLD_VERT_CRUISE_SPEED = PropertyKeys.VERT_CRUISE_SPEED.key();
         // Private key used to calculate PER_WORLD_VERT_CRUISE_SPEED
-    public static final NamespacedKey PER_WORLD_VERT_CRUISE_TICK_COOLDOWN = buildKey(
-            "per_world_vert_cruise_tick_cooldown");
-    private static final NamespacedKey MAX_HEIGHT_LIMIT = buildKey("max_height_limit");
+    public static final NamespacedKey PER_WORLD_VERT_CRUISE_TICK_COOLDOWN = PropertyKeys.VERT_TICK_COOLDOWN.key();
+    private static final NamespacedKey MAX_HEIGHT_LIMIT = PropertyKeys.MAX_HEIGHT_LIMIT.key();
         // Private key used as default for PER_WORLD_MAX_HEIGHT_LIMIT
-    public static final NamespacedKey PER_WORLD_MAX_HEIGHT_LIMIT = buildKey("per_world_max_height_limit");
-    private static final NamespacedKey MAX_HEIGHT_ABOVE_GROUND = buildKey("max_height_above_ground");
+    public static final NamespacedKey PER_WORLD_MAX_HEIGHT_LIMIT = PropertyKeys.MAX_HEIGHT_LIMIT.key();
+    private static final NamespacedKey MAX_HEIGHT_ABOVE_GROUND = PropertyKeys.MAX_HEIGHT_ABOVE_GROUND.key();
         // Private key used as default for PER_WORLD_MAX_HEIGHT_ABOVE_GROUND
-    public static final NamespacedKey PER_WORLD_MAX_HEIGHT_ABOVE_GROUND = buildKey("per_world_max_height_above_ground");
-    public static final NamespacedKey CAN_DIRECT_CONTROL = buildKey("can_direct_control");
-    public static final NamespacedKey CAN_HOVER = buildKey("can_hover");
-    public static final NamespacedKey CAN_HOVER_OVER_WATER = buildKey("can_hover_over_water");
-    public static final NamespacedKey MOVE_ENTITIES = buildKey("move_entities");
-    public static final NamespacedKey ONLY_MOVE_PLAYERS = buildKey("only_move_players");
-    public static final NamespacedKey USE_GRAVITY = buildKey("use_gravity");
-    public static final NamespacedKey HOVER_LIMIT = buildKey("hover_limit");
-    public static final NamespacedKey HARVEST_BLOCKS = buildKey("harvest_blocks");
-    public static final NamespacedKey HARVESTER_BLADE_BLOCKS = buildKey("harvester_blade_blocks");
-    public static final NamespacedKey PASSTHROUGH_BLOCKS = buildKey("passthrough_blocks");
-    public static final NamespacedKey FORBIDDEN_HOVER_OVER_BLOCKS = buildKey("forbidden_hover_over_blocks");
-    public static final NamespacedKey ALLOW_VERTICAL_TAKEOFF_AND_LANDING = buildKey(
-            "allow_vertical_takeoff_and_landing");
-    public static final NamespacedKey DYNAMIC_LAG_SPEED_FACTOR = buildKey("dynamic_lag_speed_factor");
-    public static final NamespacedKey DYNAMIC_LAG_POWER_FACTOR = buildKey("dynamic_lag_power_factor");
-    public static final NamespacedKey DYNAMIC_LAG_MIN_SPEED = buildKey("dynamic_lag_min_speed");
-    public static final NamespacedKey DYNAMIC_FLY_BLOCK_SPEED_FACTOR = buildKey("dynamic_fly_block_speed_factor");
-    public static final NamespacedKey DYNAMIC_FLY_BLOCK = buildKey("dynamic_fly_block");
-    private static final NamespacedKey SPEED_MODIFIER_MAX_SPEED = buildKey("speed_modifier_max_speed");
-    public static final NamespacedKey PER_WORLD_MODIFIER_MAX_SPEED = buildKey("per_world_speed_modifier_max_speed");
-    public static final NamespacedKey SPEED_MODIFIER_BLOCKS = buildKey("speed_modifier_blocks");
-    public static final NamespacedKey CHEST_PENALTY = buildKey("chest_penalty");
-    public static final NamespacedKey GRAVITY_INCLINE_DISTANCE = buildKey("gravity_incline_distance");
-    public static final NamespacedKey GRAVITY_DROP_DISTANCE = buildKey("gravity_drop_distance");
-    public static final NamespacedKey COLLISION_SOUND = buildKey("collision_sound");
-    public static final NamespacedKey FUEL_TYPES = buildKey("fuel_types");
-    public static final NamespacedKey SINK_WHEN_OUT_OF_FUEL = buildKey("sink_when_out_of_fuel");
-    public static final NamespacedKey DISABLE_TELEPORT_TO_WORLDS = buildKey("disable_teleport_to_worlds");
-    public static final NamespacedKey TELEPORTATION_COOLDOWN = buildKey("teleportation_cooldown");
-    public static final NamespacedKey GEAR_SHIFTS = buildKey("gear_shifts");
-    public static final NamespacedKey GEAR_SHIFTS_AFFECT_TICK_COOLDOWN = buildKey("gear_shifts_affect_tick_cooldown");
-    public static final NamespacedKey GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT = buildKey(
-            "gear_shifts_affect_direct_movement");
-    public static final NamespacedKey GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS = buildKey(
-            "gear_shifts_affect_cruise_skip_blocks");
-    public static final NamespacedKey RELEASE_TIMEOUT = buildKey("release_timeout");
-    public static final NamespacedKey MERGE_PISTON_EXTENSIONS = buildKey("merge_piston_extensions");
+    public static final NamespacedKey PER_WORLD_MAX_HEIGHT_ABOVE_GROUND = PropertyKeys.MAX_HEIGHT_ABOVE_GROUND.key();
+    public static final NamespacedKey CAN_DIRECT_CONTROL = PropertyKeys.CAN_DIRECT_CONTROL.key();
+    public static final NamespacedKey CAN_HOVER = PropertyKeys.CAN_HOVER.key();
+    public static final NamespacedKey CAN_HOVER_OVER_WATER = PropertyKeys.CAN_HOVER_OVER_WATER.key();
+    public static final NamespacedKey MOVE_ENTITIES = PropertyKeys.CAN_MOVE_ENTITIES.key();
+    public static final NamespacedKey ONLY_MOVE_PLAYERS = PropertyKeys.ONLY_MOVE_PLAYERS.key();
+    public static final NamespacedKey USE_GRAVITY = PropertyKeys.USE_GRAVITY.key();
+    public static final NamespacedKey HOVER_LIMIT = PropertyKeys.HOVER_LIMIT.key();
+    public static final NamespacedKey HARVEST_BLOCKS = PropertyKeys.HARVEST_BLOCKS.key();
+    public static final NamespacedKey HARVESTER_BLADE_BLOCKS = PropertyKeys.HARVESTER_BLADE_BLOCKS.key();
+    public static final NamespacedKey PASSTHROUGH_BLOCKS = PropertyKeys.PASSTHROUGH_BLOCKS.key();
+    public static final NamespacedKey FORBIDDEN_HOVER_OVER_BLOCKS = PropertyKeys.FORBIDDEN_HOVER_OVER_BLOCKS.key();
+    public static final NamespacedKey ALLOW_VERTICAL_TAKEOFF_AND_LANDING = PropertyKeys.ALLOW_VERTICAL_TAKEOFF_AND_LANDING.key();
+    public static final NamespacedKey DYNAMIC_LAG_SPEED_FACTOR = PropertyKeys.DYNAMIC_LAG_SPEED_FACTOR.key();
+    public static final NamespacedKey DYNAMIC_LAG_POWER_FACTOR = PropertyKeys.DYNAMIC_LAG_POWER_FACTOR.key();
+    public static final NamespacedKey DYNAMIC_LAG_MIN_SPEED = PropertyKeys.DYNAMIC_LAG_MIN_SPEED.key();
+    public static final NamespacedKey DYNAMIC_FLY_BLOCK_SPEED_FACTOR = PropertyKeys.DYNAMIC_FLY_BLOCK_SPEED_FACTOR.key();
+    public static final NamespacedKey DYNAMIC_FLY_BLOCK = PropertyKeys.DYNAMIC_FLY_BLOCKS.key();
+    private static final NamespacedKey SPEED_MODIFIER_MAX_SPEED = PropertyKeys.SPEED_MODIFIER_MAX_SPEED.key();
+    public static final NamespacedKey PER_WORLD_MODIFIER_MAX_SPEED = PropertyKeys.SPEED_MODIFIER_MAX_SPEED.key();
+    public static final NamespacedKey SPEED_MODIFIER_BLOCKS = PropertyKeys.SPEED_MODIFIER_BLOCKS.key();
+    public static final NamespacedKey CHEST_PENALTY = PropertyKeys.CHEST_PENALTY.key();
+    public static final NamespacedKey GRAVITY_INCLINE_DISTANCE = PropertyKeys.GRAVITY_INCLINE_DISTANCE.key();
+    public static final NamespacedKey GRAVITY_DROP_DISTANCE = PropertyKeys.GRAVITY_DROP_DISTANCE.key();
+    public static final NamespacedKey COLLISION_SOUND = PropertyKeys.COLLISION_SOUND.key();
+    public static final NamespacedKey FUEL_TYPES = PropertyKeys.FUEL_TYPES.key();
+    public static final NamespacedKey SINK_WHEN_OUT_OF_FUEL = PropertyKeys.SINK_WHEN_OUT_OF_FUEL.key();
+    public static final NamespacedKey DISABLE_TELEPORT_TO_WORLDS = PropertyKeys.DISABLE_TELEPORT_TO_WORLDS.key();
+    public static final NamespacedKey TELEPORTATION_COOLDOWN = PropertyKeys.TELEPORTATION_COOLDOWN.key();
+    public static final NamespacedKey GEAR_SHIFTS = PropertyKeys.GEAR_SHIFTS.key();
+    public static final NamespacedKey GEAR_SHIFTS_AFFECT_TICK_COOLDOWN = PropertyKeys.GEAR_SHIFT_AFFECT_TICK_COOLDOWN.key();
+    public static final NamespacedKey GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT = PropertyKeys.GEAR_SHIFT_AFFECT_DIRECT_MOVEMENT.key();
+    public static final NamespacedKey GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS = PropertyKeys.GEAR_SHIFT_AFFECT_AFFECT_CRUISE_SKIP_BLOCKS.key();
+    public static final NamespacedKey RELEASE_TIMEOUT = PropertyKeys.RELEASE_TIMEOUT.key();
+    public static final NamespacedKey MERGE_PISTON_EXTENSIONS = PropertyKeys.MERGE_PISTON_EXTENSIONS.key();
 
-    public static final NamespacedKey CRUISE_ON_PILOT_LIFETIME = buildKey("cruise_on_pilot_lifetime");
+    public static final NamespacedKey CRUISE_ON_PILOT_LIFETIME = PropertyKeys.CRUISE_ON_PILOT_LIFETIME.key();
 
-    public static final NamespacedKey EXPLOSION_ARMING_TIME = buildKey("explosion_arming_time");
-    public static final NamespacedKey DIRECTIONAL_DEPENDENT_MATERIALS = buildKey("directional_dependent_materials");
-    public static final NamespacedKey ALLOW_INTERNAL_COLLISION_EXPLOSION = buildKey("allow_internal_collision_explosion");
+    public static final NamespacedKey EXPLOSION_ARMING_TIME = PropertyKeys.EXPLOSION_ARMING_TIME.key();
+    public static final NamespacedKey DIRECTIONAL_DEPENDENT_MATERIALS = PropertyKeys.DIRECTIONAL_DEPENDENT_MATERIALS.key();
+    public static final NamespacedKey ALLOW_INTERNAL_COLLISION_EXPLOSION = PropertyKeys.ALLOW_INTERNAL_EXPLOSION.key();
 
-    public static final NamespacedKey MOVE_BREAK_BLOCKS = buildKey("move_break_blocks");
+    public static final NamespacedKey MOVE_BREAK_BLOCKS = PropertyKeys.MOVE_BREAK_BLOCKS.key();
 
-    public static final NamespacedKey FALL_OUT_OF_WORLD_BLOCK_CHANCE = buildKey("fall_out_of_world_block_chance");
+    public static final NamespacedKey FALL_OUT_OF_WORLD_BLOCK_CHANCE = PropertyKeys.FALL_OUT_OF_WORLD_BLOCK_CHANCE.key();
 
     // TODO: Create a explosion property => min, max power, incendiary, etc
-    public static final NamespacedKey USE_ALTERNATIVE_SINKING_PROCESS = buildKey("use_alternative_sinking_process");
-    public static final NamespacedKey ALTERNATIVE_SINKING_TIME_BEFORE_DISINTEGRATION = buildKey("afloat_timeout_before_sinking_per_block");
-    public static final NamespacedKey ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS = buildKey("alternative_sinking_min_disintegrations");
-    public static final NamespacedKey ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS = buildKey("alternative_sinking_max_disintegrations");
-    public static final NamespacedKey ALTERNATIVE_SINKING_MIN_EXPLOSIONS = buildKey("alternative_sinking_max_explosions");
-    public static final NamespacedKey ALTERNATIVE_SINKING_MAX_EXPLOSIONS = buildKey("alternative_sinking_max_explosions");
-    public static final NamespacedKey ALTERNATIVE_SINKING_EXPLOSION_CHANCE = buildKey("alternative_sinking_explosion_chance");
-    public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_SOUND = buildKey("alternative_sinking_disintegration_sound");
-    public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE = buildKey("alternative_sinking_disintegration_sound_chance");
-    public static final NamespacedKey ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE = buildKey("alternative_sinking_max_remaining_size_percentage");
+    public static final NamespacedKey USE_ALTERNATIVE_SINKING_PROCESS = PropertyKeys.USE_ALTERNATIVE_SINKING_PROCESS.key();
+    public static final NamespacedKey ALTERNATIVE_SINKING_TIME_BEFORE_DISINTEGRATION = PropertyKeys.ALTERNATIVE_SINKING_TIME_BEFORE_DISINITEGRATION.key();
+    public static final NamespacedKey ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS = PropertyKeys.ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS.key();
+    public static final NamespacedKey ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS = PropertyKeys.ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS.key();
+    public static final NamespacedKey ALTERNATIVE_SINKING_MIN_EXPLOSIONS = PropertyKeys.ALTERNATIVE_SINKING_MIN_EXPLOSIONS.key();
+    public static final NamespacedKey ALTERNATIVE_SINKING_MAX_EXPLOSIONS = PropertyKeys.ALTERNATIVE_SINKING_MAX_EXPLOSIONS.key();
+    public static final NamespacedKey ALTERNATIVE_SINKING_EXPLOSION_CHANCE = PropertyKeys.ALTERNATIVE_SINKING_EXPLOSION_CHANCE.key();
+    public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_SOUND = PropertyKeys.ALTERNATIVE_SINKING_DISINTEGRATION_SOUND.key();
+    public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE = PropertyKeys.ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE.key();
+    public static final NamespacedKey ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE = PropertyKeys.ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE.key();
     //endregion
 
     @Contract("_ -> new")
@@ -478,142 +469,6 @@ final public class CraftType extends TypeSafeCraftType {
 
 
     static {
-        /* Required properties */
-        registerProperty(new StringProperty("name", NAME));
-        registerProperty(new IntegerProperty("maxSize", MAX_SIZE));
-        registerProperty(new IntegerProperty("minSize", MIN_SIZE));
-        registerProperty(new MaterialSetProperty("allowedBlocks", ALLOWED_BLOCKS));
-        registerProperty(new DoubleProperty("speed", SPEED));
-
-        /* Optional properties */
-        registerProperty(new RequiredBlockProperty("flyblocks", FLY_BLOCKS, type -> new HashSet<>()));
-        registerProperty(new RequiredBlockProperty("detectionblocks", DETECTION_BLOCKS, type -> new HashSet<>()));
-        registerProperty(new MaterialSetProperty("directionDependentMaterials", DIRECTIONAL_DEPENDENT_MATERIALS, type -> {
-            return EnumSet.noneOf(Material.class);
-        }));
-
-        registerProperty(new ObjectPropertyImpl("forbiddenSignStrings", FORBIDDEN_SIGN_STRINGS,
-                (data, type, fileKey, namespacedKey) -> data.getStringListOrEmpty(fileKey).stream().map(
-                        String::toLowerCase).collect(Collectors.toSet()),
-                craftType -> new HashSet<>()
-        ));
-        registerProperty(new PerWorldProperty<>("perWorldSpeed", PER_WORLD_SPEED,
-                (type, worldName) -> type.getDoubleProperty(SPEED)));
-        registerProperty(new MaterialSetProperty("forbiddenBlocks", FORBIDDEN_BLOCKS,
-                type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new BooleanProperty("blockedByWater", BLOCKED_BY_WATER, type -> true));
-        registerProperty(new BooleanProperty("canFly", CAN_FLY, type -> type.getBoolProperty(BLOCKED_BY_WATER)));
-        registerProperty(new BooleanProperty("requireWaterContact", REQUIRE_WATER_CONTACT, type -> false));
-        registerProperty(new MaterialSetProperty("requiredContactBlocks", REQUIRED_CONTACT_BLOCKS, type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new MaterialSetProperty("tractionBlocks", TRACTION_BLOCKS, type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new BooleanProperty("tryNudge", TRY_NUDGE, type -> false));
-        registerProperty(new RequiredBlockProperty("moveblocks", MOVE_BLOCKS, type -> new HashSet<>()));
-        registerProperty(new BooleanProperty("canCruise", CAN_CRUISE, type -> false));
-        registerProperty(new BooleanProperty("canTeleport", CAN_TELEPORT, type -> false));
-        registerProperty(new BooleanProperty("canSwitchWorld", CAN_SWITCH_WORLD, type -> false));
-        registerProperty(new BooleanProperty("canBeNamed", CAN_BE_NAMED, type -> true));
-        registerProperty(new BooleanProperty("cruiseOnPilot", CRUISE_ON_PILOT, type -> false));
-        registerProperty(new IntegerProperty("cruiseOnPilotVertMove", CRUISE_ON_PILOT_VERT_MOVE, type -> 0));
-        registerProperty(new BooleanProperty("allowVerticalMovement", ALLOW_VERTICAL_MOVEMENT, type -> true));
-        registerProperty(new BooleanProperty("rotateAtMidpoint", ROTATE_AT_MIDPOINT, type -> false));
-        registerProperty(new BooleanProperty("allowHorizontalMovement", ALLOW_HORIZONTAL_MOVEMENT, type -> true));
-        registerProperty(new BooleanProperty("allowRemoteSign", ALLOW_REMOTE_SIGN, type -> true));
-        registerProperty(new BooleanProperty("canStaticMove", CAN_STATIC_MOVE, type -> false));
-        registerProperty(new IntegerProperty("maxStaticMove", MAX_STATIC_MOVE, type -> 10000));
-        registerProperty(new IntegerProperty("cruiseSkipBlocks", CRUISE_SKIP_BLOCKS, type -> 0));
-        registerProperty(new PerWorldProperty<>("perWorldCruiseSkipBlocks", PER_WORLD_CRUISE_SKIP_BLOCKS,
-                (type, worldName) -> type.getIntProperty(CRUISE_SKIP_BLOCKS)));
-        registerProperty(new IntegerProperty("vertCruiseSkipBlocks", VERT_CRUISE_SKIP_BLOCKS,
-                type -> type.getIntProperty(CRUISE_SKIP_BLOCKS)));
-        registerProperty(new PerWorldProperty<>("perWorldVertCruiseSkipBlocks",
-                PER_WORLD_VERT_CRUISE_SKIP_BLOCKS,
-                (type, worldName) -> type.getIntProperty(VERT_CRUISE_SKIP_BLOCKS))
-        );
-        registerProperty(new BooleanProperty("halfSpeedUnderwater", HALF_SPEED_UNDERWATER, type -> false));
-        registerProperty(new BooleanProperty("focusedExplosion", FOCUSED_EXPLOSION, type -> false));
-        registerProperty(new BooleanProperty("mustBeSubcraft", MUST_BE_SUBCRAFT, type -> false));
-        registerProperty(new IntegerProperty("staticWaterLevel", STATIC_WATER_LEVEL, type -> 0));
-        registerProperty(new DoubleProperty("fuelBurnRate", FUEL_BURN_RATE, type -> 0D));
-        registerProperty(new PerWorldProperty<>("perWorldFuelBurnRate", PER_WORLD_FUEL_BURN_RATE,
-                (type, worldName) -> type.getDoubleProperty(FUEL_BURN_RATE)));
-        registerProperty(new DoubleProperty("sinkPercent", SINK_PERCENT, type -> 0D));
-        registerProperty(new DoubleProperty("overallSinkPercent", OVERALL_SINK_PERCENT, type -> 0D));
-        registerProperty(new DoubleProperty("detectionMultiplier", DETECTION_MULTIPLIER, type -> 0D));
-        registerProperty(new PerWorldProperty<>("perWorldDetectionMultiplier", PER_WORLD_DETECTION_MULTIPLIER,
-                (type, worldName) -> type.getDoubleProperty(DETECTION_MULTIPLIER)));
-        registerProperty(new DoubleProperty("underwaterDetectionMultiplier", UNDERWATER_DETECTION_MULTIPLIER,
-                type-> type.getDoubleProperty(DETECTION_MULTIPLIER)));
-        registerProperty(new PerWorldProperty<>("perWorldUnderWaterDetectionMultiplier",
-                PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER,
-                (type, worldName) -> type.getDoubleProperty(UNDERWATER_DETECTION_MULTIPLIER)));
-        registerProperty(new DoubleProperty("sinkSpeed", SINK_SPEED, type -> 1D));
-        registerProperty(new IntegerProperty("sinkRateTicks", SINK_RATE_TICKS,
-                type -> (int) Math.ceil(20 / type.getDoubleProperty(SINK_SPEED))));
-        registerProperty(new BooleanProperty("keepMovingOnSink", KEEP_MOVING_ON_SINK, type -> false));
-        registerProperty(new IntegerProperty("smokeOnSink", SMOKE_ON_SINK, type -> 0));
-        registerProperty(new FloatProperty("explodeOnCrash", EXPLODE_ON_CRASH, type -> 0F));
-        registerProperty(new BooleanProperty("incendiaryOnCrash", INCENDIARY_ON_CRASH, type -> false));
-        registerProperty(new FloatProperty("collisionExplosion", COLLISION_EXPLOSION, type -> 0F));
-        registerProperty(new FloatProperty("underwaterCollisionExplosion", UNDERWATER_COLLISION_EXPLOSION, type -> type.getFloatProperty(COLLISION_EXPLOSION)));
-        registerProperty(new IntegerProperty("minHeightLimit", MIN_HEIGHT_LIMIT, type -> Integer.MIN_VALUE));
-        registerProperty(new PerWorldProperty<>("perWorldMinHeightLimit", PER_WORLD_MIN_HEIGHT_LIMIT,
-                (type, worldName) -> type.getIntProperty(MIN_HEIGHT_LIMIT)));
-        registerProperty(new DoubleProperty("cruiseSpeed", CRUISE_SPEED, type -> type.getDoubleProperty(SPEED)));
-        registerProperty(new PerWorldProperty<>("perWorldCruiseSpeed", PER_WORLD_CRUISE_SPEED,
-                (type, worldName) -> type.getDoubleProperty(CRUISE_SPEED)));
-        registerProperty(new DoubleProperty("vertCruiseSpeed", VERT_CRUISE_SPEED,
-                type -> type.getDoubleProperty(CRUISE_SPEED)));
-        registerProperty(new PerWorldProperty<>("perWorldVertCruiseSpeed", PER_WORLD_VERT_CRUISE_SPEED,
-                (type, worldName) -> type.getDoubleProperty(VERT_CRUISE_SPEED)));
-        registerProperty(new IntegerProperty("maxHeightLimit", MAX_HEIGHT_LIMIT, type -> Integer.MAX_VALUE));
-        registerProperty(new PerWorldProperty<>("perWorldMaxHeightLimit", PER_WORLD_MAX_HEIGHT_LIMIT,
-                (type, worldName) -> {
-                    var w = Bukkit.getWorld(worldName);
-                    if(w == null)
-                        return type.getIntProperty(MAX_HEIGHT_LIMIT);
-                    return Math.min(type.getIntProperty(MAX_HEIGHT_LIMIT), w.getMaxHeight());
-                }
-        ));
-        registerProperty(new IntegerProperty("maxHeightAboveGround", MAX_HEIGHT_ABOVE_GROUND, type -> -1));
-        registerProperty(new PerWorldProperty<>("perWorldMaxHeightAboveGround",
-                PER_WORLD_MAX_HEIGHT_ABOVE_GROUND,
-                (type, worldName) -> {
-                    var w = Bukkit.getWorld(worldName);
-                    if(w == null)
-                        return type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND);
-
-                    return Math.min(type.getIntProperty(MAX_HEIGHT_ABOVE_GROUND), w.getMaxHeight() - w.getMinHeight());
-                }
-        ));
-        registerProperty(new BooleanProperty("canDirectControl", CAN_DIRECT_CONTROL, type -> true));
-        registerProperty(new BooleanProperty("canHover", CAN_HOVER, type -> false));
-        registerProperty(new BooleanProperty("canHoverOverWater", CAN_HOVER_OVER_WATER, type -> true));
-        registerProperty(new BooleanProperty("moveEntities", MOVE_ENTITIES, type -> true));
-        registerProperty(new BooleanProperty("onlyMovePlayers", ONLY_MOVE_PLAYERS, type -> true));
-        registerProperty(new BooleanProperty("useGravity", USE_GRAVITY, type -> false));
-        registerProperty(new IntegerProperty("hoverLimit", HOVER_LIMIT, type -> 0));
-        registerProperty(new MaterialSetProperty("harvestBlocks", HARVEST_BLOCKS,
-                type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new MaterialSetProperty("harvesterBladeBlocks", HARVESTER_BLADE_BLOCKS,
-                type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new MaterialSetProperty("passthroughBlocks", PASSTHROUGH_BLOCKS,
-                type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new MaterialSetProperty("forbiddenHoverOverBlocks", FORBIDDEN_HOVER_OVER_BLOCKS,
-                type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new BooleanProperty("allowVerticalTakeoffAndLanding",
-                ALLOW_VERTICAL_TAKEOFF_AND_LANDING,
-                type -> true
-        ));
-        registerProperty(new DoubleProperty("dynamicLagSpeedFactor", DYNAMIC_LAG_SPEED_FACTOR, type -> 0D));
-        registerProperty(new DoubleProperty("dynamicLagPowerFactor", DYNAMIC_LAG_POWER_FACTOR, type -> 0D));
-        registerProperty(new DoubleProperty("dynamicLagMinSpeed", DYNAMIC_LAG_MIN_SPEED, type -> 0D));
-        registerProperty(new DoubleProperty("dynamicFlyBlockSpeedFactor", DYNAMIC_FLY_BLOCK_SPEED_FACTOR,
-                type -> 0D));
-        registerProperty(new MaterialSetProperty("dynamicFlyBlock", DYNAMIC_FLY_BLOCK,
-                type -> EnumSet.noneOf(Material.class)));
-        registerProperty(new DoubleProperty("speedModifierMaxSpeed", SPEED_MODIFIER_MAX_SPEED, type -> type.getDoubleProperty(CRUISE_SPEED)));
-        registerProperty(new PerWorldProperty<>("perWorldSpeedModifierMaxSpeed", PER_WORLD_MODIFIER_MAX_SPEED,
-                (type, worldName) -> type.getDoubleProperty(SPEED_MODIFIER_MAX_SPEED)));
         registerProperty(new ObjectPropertyImpl("speedModifierBlocks", SPEED_MODIFIER_BLOCKS,
                 (data, type, fileKey, namespacedKey) -> {
                     var map = data.getData(fileKey).getBackingData();
@@ -639,9 +494,7 @@ final public class CraftType extends TypeSafeCraftType {
                     return Map.of();
                 }
         ));
-        registerProperty(new DoubleProperty("chestPenalty", CHEST_PENALTY, type -> 0D));
-        registerProperty(new IntegerProperty("gravityInclineDistance", GRAVITY_INCLINE_DISTANCE, type -> -1));
-        registerProperty(new IntegerProperty("gravityDropDistance", GRAVITY_DROP_DISTANCE, type -> -8));
+
         registerProperty(new ObjectPropertyImpl("collisionSound", COLLISION_SOUND,
                 (data, type, fileKey, namespacedKey) -> data.getSound(fileKey),
                 type -> Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f)
@@ -677,43 +530,7 @@ final public class CraftType extends TypeSafeCraftType {
                     return fuelTypes;
                 }
         ));
-        registerProperty(new BooleanProperty("sinkWhenOutOfFuel", SINK_WHEN_OUT_OF_FUEL, type -> false));
-        registerProperty(new ObjectPropertyImpl("disableTeleportToWorlds", DISABLE_TELEPORT_TO_WORLDS,
-                (data, type, fileKey, namespacedKey) -> data.getStringList(fileKey),
-                type -> new ArrayList<>()
-        ));
-        registerProperty(new IntegerProperty("teleportationCooldown", TELEPORTATION_COOLDOWN, type -> 0));
-        registerProperty(new IntegerProperty("gearShifts", GEAR_SHIFTS, type -> 1));
-        registerProperty(new BooleanProperty("gearShiftsAffectTickCooldown", GEAR_SHIFTS_AFFECT_TICK_COOLDOWN,
-                type -> true));
-        registerProperty(new BooleanProperty("gearShiftsAffectDirectMovement",
-                GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT,
-                type -> false
-        ));
-        registerProperty(new BooleanProperty("gearShiftsAffectCruiseSkipBlocks",
-                GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS,
-                type -> false
-        ));
-        registerProperty(new IntegerProperty("releaseTimeout", RELEASE_TIMEOUT, type -> 30));
-        registerProperty(new BooleanProperty("mergePistonExtensions", MERGE_PISTON_EXTENSIONS, type -> false));
-        registerProperty(new IntegerProperty("cruiseOnPilotLifetime", CRUISE_ON_PILOT_LIFETIME, type -> 15*20));
-        registerProperty(new IntegerProperty("explosionArmingTime", EXPLOSION_ARMING_TIME, type -> 1000));
-        registerProperty(new BooleanProperty("allowInternalCollisionExplosion", ALLOW_INTERNAL_COLLISION_EXPLOSION, type -> false));
 
-        registerProperty(new MaterialSetProperty("moveBreakBlocks", MOVE_BREAK_BLOCKS,  type -> EnumSet.noneOf(Material.class)));
-
-        registerProperty(new DoubleProperty("fallOutOfWorldBlockChance", FALL_OUT_OF_WORLD_BLOCK_CHANCE, type -> 0.0D));
-
-        registerProperty(new IntegerProperty("alternativeSinkingDisintegrationStartDelayPerBlock", ALTERNATIVE_SINKING_TIME_BEFORE_DISINTEGRATION, type -> 0));
-        registerProperty(new BooleanProperty("useAlternativeSinkProcess", USE_ALTERNATIVE_SINKING_PROCESS, type -> false));
-        registerProperty(new DoubleProperty("alternativeSinkingExplosionChance", ALTERNATIVE_SINKING_EXPLOSION_CHANCE, type -> 0.0D));
-        registerProperty(new IntegerProperty("alternativeSinkingMinExplosion", ALTERNATIVE_SINKING_MIN_EXPLOSIONS, type -> 1));
-        registerProperty(new IntegerProperty("alternativeSinkingMaxExplosion", ALTERNATIVE_SINKING_MAX_EXPLOSIONS, type -> 4));
-        registerProperty(new DoubleProperty("alternativeSinkingDisintegrationChance", ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE, type -> 0.5D));
-        registerProperty(new IntegerProperty("alternativeSinkingMinDisintegrations", ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS, type -> 25));
-        registerProperty(new IntegerProperty("alternativeSinkingMaxDisintegrations", ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS, type -> 100));
-        registerProperty(new StringProperty("alternativeSinkingDisintegrationSound", ALTERNATIVE_SINKING_DISINTEGRATION_SOUND, type -> ""));
-        registerProperty(new DoubleProperty("alternativeSinkingMaxRemainingPercentage", ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE, type -> 0.25D));
 
         /* Craft type transforms */
         // Convert speed to TICK_COOLDOWN
@@ -921,63 +738,6 @@ final public class CraftType extends TypeSafeCraftType {
     public CraftType(File f) {
         this.backing = null;
         TypeData data = TypeData.loadConfiguration(f);
-
-        // Load craft type properties
-        stringPropertyMap = new HashMap<>();
-        intPropertyMap = new HashMap<>();
-        boolPropertyMap = new HashMap<>();
-        floatPropertyMap = new HashMap<>();
-        doublePropertyMap = new HashMap<>();
-        objectPropertyMap = new HashMap<>();
-        materialSetPropertyMap = new HashMap<>();
-        perWorldPropertyMap = new HashMap<>();
-        requiredBlockPropertyMap = new HashMap<>();
-
-        for(var propertyValue : properties.values()) {
-
-            final Property<?> property = propertyValue;
-
-            if(property instanceof StringProperty)
-                stringPropertyMap.put(property.getNamespacedKey(),
-                        ((StringProperty) property).load(data, this));
-            else if(property instanceof IntegerProperty)
-                intPropertyMap.put(property.getNamespacedKey(),
-                        ((IntegerProperty) property).load(data, this));
-            else if(property instanceof BooleanProperty)
-                boolPropertyMap.put(property.getNamespacedKey(),
-                        ((BooleanProperty) property).load(data, this));
-            else if(property instanceof FloatProperty)
-                floatPropertyMap.put(property.getNamespacedKey(),
-                        ((FloatProperty) property).load(data, this));
-            else if(property instanceof DoubleProperty)
-                doublePropertyMap.put(property.getNamespacedKey(),
-                        ((DoubleProperty) property).load(data, this));
-            else if(property instanceof ObjectProperty)
-                objectPropertyMap.put(property.getNamespacedKey(),
-                        ((ObjectProperty) property).load(data, this));
-            else if(property instanceof MaterialSetProperty)
-                materialSetPropertyMap.put(property.getNamespacedKey(),
-                        ((MaterialSetProperty) property).load(data, this));
-            else if(property instanceof PerWorldProperty<?>) {
-                var perWorldProperty = (PerWorldProperty<?>) property;
-                var map = perWorldProperty.load(data, this);
-                if(map == null)
-                    continue;
-
-                // Conversion of the map is simple, copy it to one of the right type.
-                Map<String, Object> resultMap = new HashMap<>(map);
-                // The defaultProvider is of type Function<CraftType, ?> which can not be cast to
-                //   Function<CraftType, Object>.  We can create a Function<CraftType, Object> by chaining an identity
-                //   Function<Object, Object> on the end.
-                var defaultProvider = perWorldProperty.getDefaultProvider().andThen(
-                        (Function<Object, Object>) o -> o);
-                var pair = new Pair<>(resultMap, defaultProvider);
-                perWorldPropertyMap.put(perWorldProperty.getNamespacedKey(), pair);
-            }
-            else if(property instanceof RequiredBlockProperty)
-                requiredBlockPropertyMap.put(property.getNamespacedKey(),
-                        ((RequiredBlockProperty) property).load(data, this));
-        }
 
         // Transform craft type
         for(var transform : transforms) {

@@ -1,8 +1,10 @@
 package net.countercraft.movecraft.craft.type;
 
 import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,6 +62,8 @@ public class PropertyKeys {
             register(PropertyKeyTypes.blockSetPropertyKey(key("required_contact_blocks")).immutable());
     public static final PropertyKey<BlockSetProperty> TRACTION_BLOCKS =
             register(PropertyKeyTypes.blockSetPropertyKey(key("traction_blocks")).immutable());
+    public static final PropertyKey<BlockSetProperty> MOVE_BREAK_BLOCKS =
+            register(PropertyKeyTypes.blockSetPropertyKey(key("move_break_blocks"), new BlockSetProperty(EnumSet.of(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR))).immutable());
     // endregion block sets
 
     // idk if we should keep these
@@ -70,6 +74,10 @@ public class PropertyKeys {
             register(PropertyKeyTypes.boolPropertyKey(key("blocked_by_water")).immutable());
     public static final PropertyKey<PerWorldData<Integer>> TICK_COOLDOWN =
             register(PropertyKeyTypes.intPropertyKey(key("tick_cooldown")).perWorld().immutable());
+    public static final PropertyKey<PerWorldData<Integer>> VERT_TICK_COOLDOWN =
+            register(PropertyKeyTypes.intPropertyKey(
+                    key("vert_tick_cooldown"), t -> t.get(PropertyKeys.TICK_COOLDOWN).get() * 2
+            ).perWorld().immutable());
     public static final PropertyKey<Boolean> REQUIRE_WATER_CONTACT =
             register(PropertyKeyTypes.boolPropertyKey(key("require_water_contact")).immutable());
     public static final PropertyKey<Boolean> TRY_NUDGE =
@@ -84,8 +92,6 @@ public class PropertyKeys {
             register(PropertyKeyTypes.doublePropertyKey(key("dynamic_lag_min_speed")).immutable());
     public static final PropertyKey<Double> DYNAMIC_FLY_BLOCK_SPEED_FACTOR =
             register(PropertyKeyTypes.doublePropertyKey(key("dynamic_fly_block_speed_factor")).immutable());
-    public static final PropertyKey<BlockSetProperty> DYNAMIC_FLY_BLOCK =
-            register(PropertyKeyTypes.blockSetPropertyKey(key("dynamic_fly_block")).immutable());
     public static final PropertyKey<Double> CHEST_PENALTY =
             register(PropertyKeyTypes.doublePropertyKey(key("chest_penalty")).immutable());
     // endidk if we should keep these
@@ -148,6 +154,12 @@ public class PropertyKeys {
             ).immutable());
     public static final PropertyKey<Boolean> KEEP_MOVING_ON_SINK =
             register(PropertyKeyTypes.boolPropertyKey(key("keep_moving_on_sink"), t -> false).immutable());
+    // TODO: Change to per world
+    // TODO: Incorporate into sinkhandler
+    public static final PropertyKey<Boolean> SINK_WHEN_OUT_OF_FUEL =
+            register(PropertyKeyTypes.boolPropertyKey(
+                    key("sink_when_out_of_fuel")
+            ).immutable());
     public static final PropertyKey<Integer> SMOKE_ON_SINK =
             register(PropertyKeyTypes.intPropertyKey(key("smoke_on_sink"), t -> 0).immutable());
     public static final PropertyKey<Float> EXPLODE_ON_CRASH =
@@ -187,6 +199,11 @@ public class PropertyKeys {
     public static final PropertyKey<Boolean> CAN_HOVER =
             register(PropertyKeyTypes.boolPropertyKey(
                     key("can_hover"), t -> false
+            ).immutable());
+    // TODO: make per world
+    public static final PropertyKey<Integer> HOVER_LIMIT =
+            register(PropertyKeyTypes.intPropertyKey(
+                    key("hover_limit"), 0
             ).immutable());
     public static final PropertyKey<Boolean> CAN_HOVER_OVER_WATER =
             register(PropertyKeyTypes.boolPropertyKey(
@@ -257,6 +274,63 @@ public class PropertyKeys {
             register(PropertyKeyTypes.boolPropertyKey(
                     key("merge_piston_extensions"), t -> false
             ).immutable());
+
+    // region speed modifier blocks
+    public static final PropertyKey<PerWorldData<Double>> SPEED_MODIFIER_MAX_SPEED =
+            register(PropertyKeyTypes.doublePropertyKey(
+                    key("speed_modifier_max_speed")
+            ).perWorld().immutable());
+    // TODO: Implement
+    public static final PropertyKey<Object> SPEED_MODIFIER_BLOCKS = null;
+    // endregion speed modifier blocks
+
+    // region Alternative sinking process
+    // TODO: Replace sinking logic by configuring a sinking handler which creates the task and so on
+    public static final PropertyKey<Double> FALL_OUT_OF_WORLD_BLOCK_CHANCE =
+            register(PropertyKeyTypes.doublePropertyKey(
+                    key("fall_out_of_world_block_chance")
+            ).immutable());
+    public static final PropertyKey<Boolean> USE_ALTERNATIVE_SINKING_PROCESS =
+            register(PropertyKeyTypes.boolPropertyKey(
+                    key("use_alternative_sinking_process")
+            ).immutable());
+    public static final PropertyKey<Integer> ALTERNATIVE_SINKING_TIME_BEFORE_DISINITEGRATION =
+            register(PropertyKeyTypes.intPropertyKey(
+                    key("alternative_sinking_time_before_disintegration")
+            ).immutable());
+    public static final PropertyKey<Double> ALTERNATIVE_SINKING_EXPLOSION_CHANCE =
+            register(PropertyKeyTypes.doublePropertyKey(
+                    key("alternative_sinking_explosion_chance")
+            ).immutable());
+    public static final PropertyKey<Integer> ALTERNATIVE_SINKING_MIN_EXPLOSIONS =
+            register(PropertyKeyTypes.intPropertyKey(
+                    key("alternative_sinking_min_explosions"), 1
+            ).immutable());
+    public static final PropertyKey<Integer> ALTERNATIVE_SINKING_MAX_EXPLOSIONS =
+            register(PropertyKeyTypes.intPropertyKey(
+                    key("alternative_sinking_max_explosions"), 4
+            ).immutable());
+    public static final PropertyKey<Double> ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE =
+            register(PropertyKeyTypes.doublePropertyKey(
+                    key("alternative_sinking_disintegration_chance"), 0.5D
+            ).immutable());
+    public static final PropertyKey<Integer> ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS =
+            register(PropertyKeyTypes.intPropertyKey(
+                    key("alternative_sinking_min_disintegrate_blocks"), 25
+            ).immutable());
+    public static final PropertyKey<Integer> ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS =
+            register(PropertyKeyTypes.intPropertyKey(
+                    key("alternative_sinking_max_disintegrate_blocks"), 100
+            ).immutable());
+    public static final PropertyKey<String> ALTERNATIVE_SINKING_DISINTEGRATION_SOUND =
+            register(PropertyKeyTypes.stringPropertyKey(
+                    key("alternative_sinking_disintegration_sound"), ""
+            ).immutable());
+    public static final PropertyKey<Double> ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE =
+            register(PropertyKeyTypes.doublePropertyKey(
+                    key("alternative_sinking_sink_max_remaining_percentage"), 0.25D
+            ).immutable());
+    // endregion Alternative sinking process
 
     public static <T> PropertyKey<T> register(PropertyKey<T> propertyKey) {
         return TypeSafeCraftType.PROPERTY_REGISTRY.register(propertyKey.key(), propertyKey);
