@@ -19,11 +19,12 @@ public class SerializationUtil {
         return result;
     }
 
-    static void parseInternal(Set<NamespacedKey> collector, Object object) {
+    static void parseInternal(Set<NamespacedKey> collectorNormal, Set<NamespacedKey> collectorTag, Object object) {
         String workingString = null;
         if (object instanceof Keyed keyed) {
             if (keyed.key() instanceof NamespacedKey namespacedKey) {
-                collector.add(namespacedKey);
+                // NamespacedKeys CAN NOT have # in the namespace, so it is always normal
+                collectorNormal.add(namespacedKey);
             } else {
                 workingString = keyed.key().toString();
             }
@@ -31,15 +32,23 @@ public class SerializationUtil {
             workingString = string;
         }
         if (workingString != null) {
-            // TODO: Special case for tags: remove the # before applying this! Otherwise it will fail
-            collector.add(NamespacedKey.fromString(workingString));
+            if (workingString.startsWith("#")) {
+                collectorTag.add(NamespacedKey.fromString(workingString.substring(1)));
+            } else {
+                collectorNormal.add(NamespacedKey.fromString(workingString.substring(1)));
+            }
         }
     }
 
     // Use TagKey and similar according to https://copilot.microsoft.com/shares/V2YcA9LmddP53ZsBdnAZG
     // Primarily, parse tag key with "#" marker, remove marker, create TagKey object and use that
     // Careful: Registry.getTag() throws an exception if the tag does not exist!
-    private static <T extends org.bukkit.Keyed> void parseTagInternal(Set<NamespacedKey> result, TagKey namespacedKey, Registry<T> registry) {
+    private static <T extends org.bukkit.Keyed> void parseTagInternalTypeAware(Set<T> result, TagKey<T> namespacedKey, Registry<T> registry) {
+        // If we dont even know that tag, we can quit early
+        if (!registry.hasTag(namespacedKey)) {
+            return;
+        }
+
         Queue<TagKey> tagQueue = new LinkedList<>();
         final Set<TagKey> visited = new HashSet<>();
         tagQueue.add(namespacedKey);
@@ -47,7 +56,7 @@ public class SerializationUtil {
         while (!tagQueue.isEmpty()) {
             final TagKey polledKey = tagQueue.poll();
             if (!registry.hasTag(polledKey)) {
-                // TODO: Log warnign that the tag does not exist for this registry!
+                // TODO: Log warning that the tag does not exist for this registry!
                 continue;
             }
             Tag<T> tag = registry.getTag(polledKey);
@@ -59,21 +68,30 @@ public class SerializationUtil {
                         tagQueue.add(tagKeyTmp);
                     }
                 } else {
-                    result.add(key.getKey());
+                    result.add(key);
                 }
             }
         }
     }
 
+    private static <T extends org.bukkit.Keyed> void parseTagInternal(Set<NamespacedKey> result, TagKey<T> namespacedKey, Registry<T> registry) {
+        Set<T> resultTmp = new HashSet<>();
+        parseTagInternalTypeAware(resultTmp, namespacedKey, registry);
+        for (T tmp : resultTmp) {
+            result.add(tmp.getKey());
+        }
+    }
+
     public static <T extends org.bukkit.Keyed> Set<NamespacedKey> deserializeNamespacedKeySet(Object rawDataObject, Set<NamespacedKey> defaultValue, RegistryKey<T>... registryKeys) {
         Set<NamespacedKey> resultTmp = new HashSet<>();
+        Set<NamespacedKey> tagsTmp = new HashSet<>();
         if (rawDataObject != null) {
             if (rawDataObject instanceof List list) {
                 for (Object obj : list) {
-                    parseInternal(resultTmp, obj);
+                    parseInternal(resultTmp, tagsTmp, obj);
                 }
             } else {
-                parseInternal(resultTmp, rawDataObject);
+                parseInternal(resultTmp, tagsTmp, rawDataObject);
             }
         }
 
@@ -81,17 +99,15 @@ public class SerializationUtil {
         for (RegistryKey<T> registryKey : registryKeys) {
             final Registry<T> registry = RegistryAccess.registryAccess().getRegistry(registryKey);
             for (NamespacedKey namespacedKey : resultTmp) {
-                if (namespacedKey.namespace().startsWith("#")) {
-                    NamespacedKey keyTmp = NamespacedKey.fromString(namespacedKey.toString().substring(1));
-                    parseTagInternal(result, TagKey.create(registryKey, keyTmp), registry);
+                T value = registry.get(namespacedKey);
+                if (value != null) {
+                    result.add(namespacedKey);
                 } else {
-                    T value = registry.get(namespacedKey);
-                    if (value != null) {
-                        result.add(namespacedKey);
-                    } else {
-                       throw new IllegalArgumentException("Unable to lookup value for key <" + namespacedKey.toString() + "> in registry <" + registryKey.toString() + ">!");
-                    }
+                   throw new IllegalArgumentException("Unable to lookup value for key <" + namespacedKey.toString() + "> in registry <" + registryKey.toString() + ">!");
                 }
+            }
+            for (NamespacedKey tagNamespacedKey : tagsTmp) {
+                parseTagInternal(result, TagKey.create(registryKey, tagNamespacedKey), registry);
             }
         }
 
@@ -109,12 +125,12 @@ public class SerializationUtil {
         Set<T> result = new HashSet<>(resultTmp.size());
         final Registry<T> registry = RegistryAccess.registryAccess().getRegistry(registryKey);
         for (NamespacedKey namespacedKey : resultTmp) {
-            if (namespacedKey.namespace().startsWith("#")) {
-                throw new RuntimeException("Caught tag in parsed NamespacedKey list!");
-            }
             T value = registry.get(namespacedKey);
             if (value != null) {
                 result.add(value);
+            } else {
+                // Tries to parse the key as tag, quits early if no such tag exists
+                parseTagInternalTypeAware(result, TagKey.create(registryKey, namespacedKey), registry);
             }
         }
         if (result.isEmpty()) {
