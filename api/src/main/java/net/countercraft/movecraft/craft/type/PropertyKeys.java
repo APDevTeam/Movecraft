@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.craft.type;
 
 import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
+import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.SoundCategory;
@@ -288,8 +289,10 @@ public class PropertyKeys {
             register(PropertyKeyTypes.doublePropertyKey(
                     key("speed_modifier_max_speed")
             ).perWorld().immutable());
-    // TODO: Implement
-    public static final PropertyKey<Object> SPEED_MODIFIER_BLOCKS = null;
+    public static final PropertyKey<NamespacedKeyToDoubleProperty> SPEED_MODIFIER_BLOCKS =
+            register(PropertyKeyTypes.namespacedKeyToDoublePropertyKey(
+                    key("speed_modifier_blocks")
+            ).immutable());
     // endregion speed modifier blocks
 
     // region Alternative sinking process

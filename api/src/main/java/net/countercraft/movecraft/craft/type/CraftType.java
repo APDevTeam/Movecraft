@@ -469,32 +469,6 @@ final public class CraftType extends TypeSafeCraftType {
 
 
     static {
-        registerProperty(new ObjectPropertyImpl("speedModifierBlocks", SPEED_MODIFIER_BLOCKS,
-                (data, type, fileKey, namespacedKey) -> {
-                    var map = data.getData(fileKey).getBackingData();
-                    if(map.isEmpty())
-                        throw new TypeData.InvalidValueException("Value for " + fileKey + " must not be an empty map");
-
-                    Map<EnumSet<Material>, Double> modifierMapping = new HashMap<>();
-                    for(var i : map.entrySet()) {
-                        EnumSet<Material> materials = Tags.parseMaterials(i.getKey());
-                        Object o = i.getValue();
-                        double modifier;
-                        if (o instanceof String)
-                            modifier = Double.parseDouble((String) o);
-                        else if (o instanceof Integer)
-                            modifier = ((Integer) o).doubleValue();
-                        else
-                            modifier = (double) o;
-                        modifierMapping.put(materials, modifier);
-                    }
-                    return modifierMapping;
-                },
-                type -> {
-                    return Map.of();
-                }
-        ));
-
         registerProperty(new ObjectPropertyImpl("fuelTypes", FUEL_TYPES,
                 (data, type, fileKey, namespacedKey) -> {
                     var map = data.getData(fileKey).getBackingData();
