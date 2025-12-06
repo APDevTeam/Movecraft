@@ -31,6 +31,7 @@ public class SerializationUtil {
             workingString = string;
         }
         if (workingString != null) {
+            // TODO: Special case for tags: remove the # before applying this! Otherwise it will fail
             collector.add(NamespacedKey.fromString(workingString));
         }
     }
