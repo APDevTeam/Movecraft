@@ -25,7 +25,11 @@ public class SerializationUtil {
             if (keyed.key() instanceof NamespacedKey namespacedKey) {
                 // NamespacedKeys CAN NOT have # in the namespace, so it is always normal
                 collectorNormal.add(namespacedKey);
-            } else {
+            }
+            if (keyed instanceof TagKey<?> tagKey) {
+                collectorTag.add(new NamespacedKey(tagKey.key().namespace(), tagKey.key().value()));
+            }
+            else {
                 workingString = keyed.key().toString();
             }
         } else if (object instanceof String string) {
