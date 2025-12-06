@@ -2,6 +2,7 @@ package net.countercraft.movecraft.craft.type;
 
 import io.papermc.paper.registry.RegistryKey;
 import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
+import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
 import net.countercraft.movecraft.util.SerializationUtil;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.sound.Sound;
@@ -97,6 +98,14 @@ public class PropertyKeyTypes {
 
     public static PropertyKey<ConfiguredSound> configuredSoundPropertyKey(NamespacedKey key, String defaultSound, SoundCategory defaultSource, float defaultVolume, float defaultPitch) {
         return configuredSoundPropertyKey(key, t -> new ConfiguredSound(defaultSound, defaultSource, defaultVolume, defaultVolume, defaultPitch, defaultPitch));
+    }
+
+    public static PropertyKey<NamespacedKeyToDoubleProperty> namespacedKeyToDoublePropertyKey(NamespacedKey key) {
+        return namespacedKeyToDoublePropertyKey(key, Map.of());
+    }
+
+    public static PropertyKey<NamespacedKeyToDoubleProperty> namespacedKeyToDoublePropertyKey(NamespacedKey key, Map<NamespacedKey, Double> defaultValue) {
+        return namespacedKeyToDoublePropertyKey(key, t -> new NamespacedKeyToDoubleProperty(defaultValue));
     }
 
     public static PropertyKey<Integer> intPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, Integer> defaultProvider) {
@@ -215,6 +224,16 @@ public class PropertyKeyTypes {
             }
             return defaultProvider.apply(type);
         }, (s) -> s, t -> new ConfiguredSound(t.sound(), t.category(), t.minVolume(), t.maxVolume(), t.minPitch(), t.maxPitch()));
+    }
+
+    public static PropertyKey<NamespacedKeyToDoubleProperty> namespacedKeyToDoublePropertyKey(NamespacedKey key, Function<TypeSafeCraftType, NamespacedKeyToDoubleProperty> defaultProvider) {
+        return new PropertyKey<>(key, defaultProvider, (obj, type) -> {
+            if (obj != null && (obj instanceof NamespacedKeyToDoubleProperty)) {
+                // ConfiguredSound is serializable!
+                return (NamespacedKeyToDoubleProperty)obj;
+            }
+            return defaultProvider.apply(type);
+        }, (s) -> s, NamespacedKeyToDoubleProperty::new);
     }
 
 }
