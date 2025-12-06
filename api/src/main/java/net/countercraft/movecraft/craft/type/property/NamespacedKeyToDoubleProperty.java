@@ -25,7 +25,7 @@ public class NamespacedKeyToDoubleProperty implements ConfigurationSerializable 
     }
 
     public NamespacedKeyToDoubleProperty(Map<NamespacedKey, Double> copyFrom) {
-        super();
+        this();
         for (Map.Entry<NamespacedKey, Double> entry : copyFrom.entrySet()) {
             this.put(entry.getKey(), entry.getValue());
         }
@@ -54,10 +54,14 @@ public class NamespacedKeyToDoubleProperty implements ConfigurationSerializable 
 
         for (Map.Entry<String, Object> entry : args.entrySet()) {
             List<String> strings = Arrays.asList(entry.getKey().split(","));
-            Set<NamespacedKey> keys = SerializationUtil.deserializeNamespacedKeySet(strings, new HashSet<>(), RegistryKey.BLOCK);
+            Set<NamespacedKey> blockKeys = SerializationUtil.deserializeNamespacedKeySet(strings, new HashSet<>(), RegistryKey.BLOCK);
+            Set<NamespacedKey> itemKeys = SerializationUtil.deserializeNamespacedKeySet(strings, new HashSet<>(), RegistryKey.BLOCK);
             Object value = entry.getValue();
             double doubleVal = NumberConversions.toDouble(value);
-            for (NamespacedKey keyTmp : keys) {
+            for (NamespacedKey keyTmp : blockKeys) {
+                result.put(keyTmp, doubleVal);
+            }
+            for (NamespacedKey keyTmp : itemKeys) {
                 result.put(keyTmp, doubleVal);
             }
         }
