@@ -3,6 +3,7 @@ package net.countercraft.movecraft.craft.type;
 import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.SoundCategory;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -233,7 +234,10 @@ public class PropertyKeys {
             register(PropertyKeyTypes.intPropertyKey(
                     key("gravity_drop_distance"), t -> -8
             ).immutable());
-    public static final PropertyKey<Object> COLLISION_SOUND = null; //TODO: Needs implementation
+    public static final PropertyKey<ConfiguredSound> COLLISION_SOUND =
+            register(PropertyKeyTypes.configuredSoundPropertyKey(
+                    key("collision_sound"), "block.anvil.land", SoundCategory.NEUTRAL, 2.0F, 1.0F
+            ).immutable());
     public static final PropertyKey<Object> FUEL_TYPES = null; //TODO: Also needs implementation
     // Modified from original
     public static final PropertyKey<List<String>> DISABLE_TELEPORT_TO_WORLDS =

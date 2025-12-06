@@ -495,10 +495,6 @@ final public class CraftType extends TypeSafeCraftType {
                 }
         ));
 
-        registerProperty(new ObjectPropertyImpl("collisionSound", COLLISION_SOUND,
-                (data, type, fileKey, namespacedKey) -> data.getSound(fileKey),
-                type -> Sound.sound(Key.key("block.anvil.land"), Sound.Source.NEUTRAL, 2.0f,1.0f)
-        ));
         registerProperty(new ObjectPropertyImpl("fuelTypes", FUEL_TYPES,
                 (data, type, fileKey, namespacedKey) -> {
                     var map = data.getData(fileKey).getBackingData();
