@@ -24,11 +24,10 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.craft.*;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
-import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.util.MathUtils;
@@ -174,7 +173,7 @@ public class AsyncManager extends BukkitRunnable {
             World w = craft.getWorld();
             // if the craft should go slower underwater, make
             // time pass more slowly there
-            if (craft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER)
+            if (craft.getCraftProperties().get(PropertyKeys.HALF_SPEED_UNDERWATER)
                     && craft.getHitBox().getMinY() < w.getSeaLevel())
                 ticksElapsed >>= 1;
             // check direct controls to modify movement
@@ -208,8 +207,8 @@ public class AsyncManager extends BukkitRunnable {
             }
 
             // Account for banking and diving in speed calculations by changing the tickCoolDown
-            int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(
-                    CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w);
+            int cruiseSkipBlocks = craft.getCraftProperties().get(
+                    PropertyKeys.CRUISE_SKIP_BLOCKS).get(w);
             if (craft.getCruiseDirection() != CruiseDirection.UP
                     && craft.getCruiseDirection() != CruiseDirection.DOWN) {
                 if (bankLeft || bankRight) {
@@ -239,7 +238,7 @@ public class AsyncManager extends BukkitRunnable {
             int dz = 0;
             int dy = 0;
 
-            int vertCruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, craft.getWorld());
+            int vertCruiseSkipBlocks = craft.getCraftProperties().get(PropertyKeys.VERT_CRUISE_SKIP_BLOCKS).get(craft.getWorld());
 
             // ascend
             if (craft.getCruiseDirection() == CruiseDirection.UP)
@@ -292,10 +291,10 @@ public class AsyncManager extends BukkitRunnable {
                 if (bankRight)
                     dx = (1 + cruiseSkipBlocks) >> 1;
             }
-            if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
-                dy = craft.getType().getIntProperty(CraftType.CRUISE_ON_PILOT_VERT_MOVE);
+            if (craft.getCraftProperties().get(PropertyKeys.CRUISE_ON_PILOT)) {
+                dy = craft.getCraftProperties().get(PropertyKeys.CRUISE_ON_PILOT_VERT_MOVE);
             }
-            if (craft.getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS)) {
+            if (craft.getCraftProperties().get(PropertyKeys.GEAR_SHIFT_AFFECT_AFFECT_CRUISE_SKIP_BLOCKS)) {
                 final int gearshift = craft.getCurrentGear();
                 dx *= gearshift;
                 dy *= gearshift;
@@ -323,34 +322,34 @@ public class AsyncManager extends BukkitRunnable {
             }
 
             long ticksElapsed = (System.currentTimeMillis() - craft.getLastCruiseUpdate()) / 50;
-            if (Math.abs(ticksElapsed) < craft.getType().getIntProperty(CraftType.SINK_RATE_TICKS))
+            if (Math.abs(ticksElapsed) < craft.getCraftProperties().get(PropertyKeys.SINK_RATE_TICKS))
                 continue;
 
             // Do this first so we stay in sync with the rate
             craft.setLastCruiseUpdate(System.currentTimeMillis());
 
             // TODO: Refactor into own submethod
-            if (craft.getType().getBoolProperty(CraftType.USE_ALTERNATIVE_SINKING_PROCESS)) {
+            if (craft.getCraftProperties().get(PropertyKeys.USE_ALTERNATIVE_SINKING_PROCESS)) {
                 // We stay afloat for some time, then we play a sound every now and then
                 // Then we will start to sink
                 // If we fall under a certain minimal percentage of our original size, we will sink normally
                 final int originalSize = craft.getOrigBlockCount();
 
                 final long craftAge = System.currentTimeMillis() - craft.getOrigPilotTime();
-                final long stayAfloatDuration = (long) craft.getOrigBlockCount() * (long) craft.getType().getIntProperty(CraftType.ALTERNATIVE_SINKING_TIME_BEFORE_DISINTEGRATION);
+                final long stayAfloatDuration = (long) craft.getOrigBlockCount() * (long) craft.getCraftProperties().get(PropertyKeys.ALTERNATIVE_SINKING_TIME_BEFORE_DISINITEGRATION);
                 if (stayAfloatDuration > 0 && craftAge <= stayAfloatDuration) {
                     // Craft is still afloat => Does not begin to sink or disintegrate yet
                     continue;
                 }
 
                 // craft config values
-                final double maxRemainingPercentageBeforeSinking = craft.getType().getDoubleProperty(CraftType.ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE);
-                final double disintegrationChance = craft.getType().getDoubleProperty(CraftType.ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE);
-                final double explosionChance = craft.getType().getDoubleProperty(CraftType.ALTERNATIVE_SINKING_EXPLOSION_CHANCE);
-                final int minDisintegrate = craft.getType().getIntProperty(CraftType.ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS);
-                final int maxDisintegrate = craft.getType().getIntProperty(CraftType.ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS);
-                final int minExplosions = craft.getType().getIntProperty(CraftType.ALTERNATIVE_SINKING_MIN_EXPLOSIONS);
-                final int maxExplosions = craft.getType().getIntProperty(CraftType.ALTERNATIVE_SINKING_MAX_EXPLOSIONS);
+                final double maxRemainingPercentageBeforeSinking = craft.getCraftProperties().get(PropertyKeys.ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE);
+                final double disintegrationChance = craft.getCraftProperties().get(PropertyKeys.ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE);
+                final double explosionChance = craft.getCraftProperties().get(PropertyKeys.ALTERNATIVE_SINKING_EXPLOSION_CHANCE);
+                final int minDisintegrate = craft.getCraftProperties().get(PropertyKeys.ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS);
+                final int maxDisintegrate = craft.getCraftProperties().get(PropertyKeys.ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS);
+                final int minExplosions = craft.getCraftProperties().get(PropertyKeys.ALTERNATIVE_SINKING_MIN_EXPLOSIONS);
+                final int maxExplosions = craft.getCraftProperties().get(PropertyKeys.ALTERNATIVE_SINKING_MAX_EXPLOSIONS);
 
                 Set<MovecraftLocation> toRemove = new HashSet<>();
                 List<MovecraftLocation> blocks = new ArrayList<>(craft.getHitBox().asSet());
@@ -390,7 +389,8 @@ public class AsyncManager extends BukkitRunnable {
                 if (RANDOM.nextDouble() <= disintegrationChance) {
                     int disintegrations = MathUtils.randomBetween(RANDOM, minDisintegrate, maxDisintegrate);
                     // First: Play sound
-                    final String disintegrationSound = craft.getType().getStringProperty(CraftType.ALTERNATIVE_SINKING_DISINTEGRATION_SOUND);
+                    // TODO: Change to configured sound instead
+                    final String disintegrationSound = craft.getCraftProperties().get(PropertyKeys.ALTERNATIVE_SINKING_DISINTEGRATION_SOUND);
                     if (!(disintegrationSound == null || disintegrationSound.isBlank())) {
                         int radius = (int)(Math.max(Math.max(craft.getHitBox().getXLength(), craft.getHitBox().getYLength()), craft.getHitBox().getZLength()) * 1.5D);
                         Location centerLocation = craft.getCraftOrigin().toBukkit(craft.getWorld());
@@ -417,7 +417,7 @@ public class AsyncManager extends BukkitRunnable {
 
                 int nonNegligibleBlocks = craft.getDataTag(Craft.NON_NEGLIGIBLE_BLOCKS);
                 int nonNegligibleSolidBlocks = craft.getDataTag(Craft.NON_NEGLIGIBLE_SOLID_BLOCKS);
-                final int currentSize = (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER) ? nonNegligibleBlocks : nonNegligibleSolidBlocks);
+                final int currentSize = (craft.getCraftProperties().get(PropertyKeys.BLOCKED_BY_WATER) ? nonNegligibleBlocks : nonNegligibleSolidBlocks);
                 final double remainingSizePercentage = ((double)currentSize) / ((double)originalSize);
 
                 // We are still not damaged enough to actually sink, so postpone the uninevitable
@@ -436,7 +436,7 @@ public class AsyncManager extends BukkitRunnable {
 
             int dx = 0;
             int dz = 0;
-            if (craft.getType().getBoolProperty(CraftType.KEEP_MOVING_ON_SINK)) {
+            if (craft.getCraftProperties().get(PropertyKeys.KEEP_MOVING_ON_SINK)) {
                 dx = craft.getLastTranslation().getX();
                 dz = craft.getLastTranslation().getZ();
             }
@@ -454,7 +454,7 @@ public class AsyncManager extends BukkitRunnable {
         int bottomY = craft.getHitBox().getMinY();
         World world = craft.getWorld();
 
-        final double chance = craft.getType().getDoubleProperty(CraftType.FALL_OUT_OF_WORLD_BLOCK_CHANCE);
+        final double chance = craft.getCraftProperties().get(PropertyKeys.FALL_OUT_OF_WORLD_BLOCK_CHANCE);
 
         List<MovecraftLocation> toRemove = new ArrayList<>();
         Set<MovecraftLocation> oldHitbox = craft.getHitBox().asSet();
