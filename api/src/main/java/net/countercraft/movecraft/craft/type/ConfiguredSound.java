@@ -1,6 +1,8 @@
 package net.countercraft.movecraft.craft.type;
 
 import net.countercraft.movecraft.util.MathUtils;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.key.Key;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -65,5 +67,15 @@ public record ConfiguredSound(
                 "MinPitch", minPitch(),
                 "MaxPitch", maxPitch()
         );
+    }
+
+    public void play(Audience audience) {
+        final net.kyori.adventure.sound.Sound kyoriSound = net.kyori.adventure.sound.Sound.sound(
+                Key.key(this.sound()),
+                this.category().soundSource(),
+                MathUtils.randomBetween(minVolume(), maxVolume()),
+                MathUtils.randomBetween(minPitch(), maxPitch())
+        );
+        audience.playSound(kyoriSound);
     }
 }
