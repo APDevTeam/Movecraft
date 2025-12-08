@@ -99,6 +99,8 @@ public interface Craft {
      * @return the Craft's CraftType
      */
     @NotNull
+    @Deprecated(forRemoval = true)
+    // Use getCraftProperties() instead!
     CraftType getType();
 
     @Deprecated(forRemoval = true) @NotNull
