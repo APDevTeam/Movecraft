@@ -8,6 +8,7 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -152,7 +153,7 @@ public class DetectionTask implements Supplier<Effect> {
     @NotNull
     private Effect water(@NotNull Craft craft) {
         final int waterLine = WorldManager.INSTANCE.executeMain(craft::getWaterLine);
-        if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER) || craft.getHitBox().getMinY() > waterLine)
+        if (craft.getCraftProperties().get(PropertyKeys.BLOCKED_BY_WATER) || craft.getHitBox().getMinY() > waterLine)
             return () -> {};
 
         var badWorld = WorldManager.INSTANCE.executeMain(craft::getWorld);
@@ -301,7 +302,7 @@ public class DetectionTask implements Supplier<Effect> {
             Movecraft.getInstance().getLogger().info(String.format(
                     I18nSupport.getInternationalisedString("Detection - Success - Log Output"),
                     player == null ? "null" : player.getName(),
-                    craft.getType().getStringProperty(CraftType.NAME),
+                    craft.getCraftProperties().getName(),
                     craft.getHitBox().size(),
                     craft.getHitBox().getMinX(),
                     craft.getHitBox().getMinZ()
@@ -395,6 +396,7 @@ public class DetectionTask implements Supplier<Effect> {
                     continue;
 
                 visitedMaterials.computeIfAbsent(material, Functions.forSupplier(ConcurrentLinkedDeque::new)).add(probe);
+                // TODO: Use BlockData.getAsString() for validation
                 if(!ALLOWED_BLOCK_VALIDATOR.validate(probe, type, movecraftWorld, player).isSucess())
                     continue;
 
