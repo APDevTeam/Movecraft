@@ -9,7 +9,8 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
+import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.sign.SignListener;
 import net.countercraft.movecraft.util.MathUtils;
@@ -57,12 +58,12 @@ public class CraftTranslateCommand extends UpdateCommand {
         }
         long time = System.nanoTime();
         World oldWorld = craft.getWorld();
-        final Set<Material> passthroughBlocks = new HashSet<>(
-                craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS));
+        final BlockSetProperty passthroughBlocks = new BlockSetProperty(
+                craft.getCraftProperties().get(PropertyKeys.PASSTHROUGH_BLOCKS));
         if (craft instanceof SinkingCraft) {
-            passthroughBlocks.addAll(Tags.FLUID);
-            passthroughBlocks.addAll(Tag.LEAVES.getValues());
-            passthroughBlocks.addAll(Tags.SINKING_PASSTHROUGH);
+            passthroughBlocks.addEnumSet(Tags.FLUID);
+            passthroughBlocks.addTag(Tag.LEAVES);
+            passthroughBlocks.addEnumSet(Tags.SINKING_PASSTHROUGH);
         }
         if (passthroughBlocks.isEmpty()){
             //translate the craft
