@@ -47,7 +47,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static jdk.javadoc.internal.doclets.formats.html.markup.HtmlStyle.block;
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
 
 public class RotationTask extends AsyncTask {
