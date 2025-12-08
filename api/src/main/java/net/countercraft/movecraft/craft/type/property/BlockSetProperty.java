@@ -3,6 +3,7 @@ package net.countercraft.movecraft.craft.type.property;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Tag;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -13,9 +14,7 @@ public class BlockSetProperty extends HashSet<NamespacedKey> implements Supplier
 
     public BlockSetProperty(EnumSet<Material> materialEnumSet) {
         this();
-        for (Material material : materialEnumSet) {
-            this.add(material.getKey());
-        }
+        this.addEnumSet(materialEnumSet);
     }
 
     public BlockSetProperty() {
@@ -41,4 +40,15 @@ public class BlockSetProperty extends HashSet<NamespacedKey> implements Supplier
         return result;
     }
 
+    public void addEnumSet(EnumSet<Material> materialEnumSet) {
+        for (Material material : materialEnumSet) {
+            this.add(material.getKey());
+        }
+    }
+
+    public void addTag(Tag<Material> tag) {
+        for (Material material : tag.getValues()) {
+            this.add(material.getKey());
+        }
+    }
 }
