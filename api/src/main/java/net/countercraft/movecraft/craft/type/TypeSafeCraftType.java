@@ -3,12 +3,14 @@ package net.countercraft.movecraft.craft.type;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.transform.TypeSafeTransform;
+import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.LazyLoadField;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.registration.SimpleRegistry;
 import net.countercraft.movecraft.util.registration.TypedContainer;
 import net.countercraft.movecraft.util.registration.TypedKey;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
@@ -181,12 +183,26 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         return null;
     }
 
+    public <T> T get(@NotNull PropertyKey<PerWorldData<T>> key, MovecraftWorld world) {
+        return this.get(key, world.getName());
+    }
+
+    public <T> T get(@NotNull PropertyKey<PerWorldData<T>> key, World world) {
+        return this.get(key, world.getName());
+    }
+
+    public <T> T get(@NotNull PropertyKey<PerWorldData<T>> key, String world) {
+        final PerWorldData<T> data = this.get(key);
+        return data.get(world);
+    }
+
     public <T> T get(@NotNull PropertyKey<T> key) {
         final TypeSafeCraftType self = this;
         return this.get(key, self);
     }
 
-    public <T> T get(@NotNull PropertyKey<T> key, TypeSafeCraftType type) {
+    // Internal retrieval function, do not override unless you know what you are doing
+    protected <T> T get(@NotNull PropertyKey<T> key, TypeSafeCraftType type) {
         final TypeSafeCraftType self = this;
         T result = super.get(key, (k) -> (T)this.parentRetrievalFunction.get().apply(k, self));
         return result;

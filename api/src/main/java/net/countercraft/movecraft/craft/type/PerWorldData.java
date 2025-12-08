@@ -1,5 +1,8 @@
 package net.countercraft.movecraft.craft.type;
 
+import net.countercraft.movecraft.processing.MovecraftWorld;
+import org.bukkit.World;
+
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,6 +52,14 @@ public class PerWorldData<T> {
 
     public T get(String worldName) {
         return this.worldMapping.getOrDefault(worldName, this.defaultFallback);
+    }
+
+    public T get(MovecraftWorld movecraftWorld) {
+        return get(movecraftWorld.getName());
+    }
+
+    public T get(World world) {
+        return get(world.getName());
     }
 
     public boolean set(T value) {

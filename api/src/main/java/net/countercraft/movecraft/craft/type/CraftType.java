@@ -728,7 +728,7 @@ final public class CraftType extends TypeSafeCraftType {
     }
 
     @Override
-    public <T> T get(@NotNull PropertyKey<T> key, TypeSafeCraftType type) {
+    protected <T> T get(@NotNull PropertyKey<T> key, TypeSafeCraftType type) {
         return this.backing.get(key, type);
     }
 
