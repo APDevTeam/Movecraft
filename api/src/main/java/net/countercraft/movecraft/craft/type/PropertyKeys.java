@@ -193,10 +193,10 @@ public class PropertyKeys {
             register(PropertyKeyTypes.intPropertyKey(
                     key("max_height_limit"), t -> Integer.MAX_VALUE
             ).perWorld().immutable());
-    public static final PropertyKey<Integer> MAX_HEIGHT_ABOVE_GROUND =
+    public static final PropertyKey<PerWorldData<Integer>> MAX_HEIGHT_ABOVE_GROUND =
             register(PropertyKeyTypes.intPropertyKey(
                     key("max_height_above_ground"), t -> -1
-            ).immutable());
+            ).perWorld().immutable());
     public static final PropertyKey<Boolean> CAN_DIRECT_CONTROL =
             register(PropertyKeyTypes.boolPropertyKey(
                     key("can_direct_control"), t -> true
@@ -234,6 +234,7 @@ public class PropertyKeys {
             register(PropertyKeyTypes.intPropertyKey(
                     key("gravity_incline_distance"), t -> -1
             ).immutable());
+    // TODO: Make perWorld property?
     public static final PropertyKey<Integer> GRAVITY_DROP_DISTANCE =
             register(PropertyKeyTypes.intPropertyKey(
                     key("gravity_drop_distance"), t -> -8
