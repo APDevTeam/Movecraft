@@ -291,13 +291,8 @@ public class AsyncManager extends BukkitRunnable {
                 cruiseVector.setY(craft.getType().getIntProperty(CraftType.CRUISE_ON_PILOT_VERT_MOVE));
             }
 
-            // TODO: Implement bresenhams algo
-            int dx = (int) Math.round(cruiseVector.getX());
-            int dy = (int) Math.round(cruiseVector.getY());
-            int dz = (int) Math.round(cruiseVector.getZ());
-
-            craft.translate(dx, dy, dz);
-            craft.setLastTranslation(new MovecraftLocation(dx, dy, dz));
+            Vector discreteTranslation = craft.translate(craft.getWorld(), cruiseVector);
+            craft.setLastTranslation(new MovecraftLocation((int) discreteTranslation.getX(), (int) discreteTranslation.getY(), (int) discreteTranslation.getZ()));
             craft.setLastCruiseUpdate(System.currentTimeMillis());
         }
     }

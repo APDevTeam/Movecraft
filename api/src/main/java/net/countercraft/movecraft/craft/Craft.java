@@ -42,8 +42,8 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Vector3i;
 
 import javax.naming.Name;
 import java.util.*;
@@ -138,6 +138,14 @@ public interface Craft {
      * @param dz The amount to shift in the z axis
      */
     void translate(World world, int dx, int dy, int dz);
+
+    /**
+     * Attempts to translate the blocks controlled by the craft by a vector. If a world argument is supplied, the blocks will be transformed to a different world.
+     * @param world The world to move to
+     * @param dv The translation vector
+     * @return The discrete (integer) translation vector performed
+     */
+    Vector translate(World world, Vector dv);
 
     @Deprecated
     void translate(int dx, int dy, int dz);
