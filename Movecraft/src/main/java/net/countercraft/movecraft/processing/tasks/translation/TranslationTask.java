@@ -5,6 +5,9 @@ import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
+import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
 import net.countercraft.movecraft.events.CraftCollisionEvent;
 import net.countercraft.movecraft.events.CraftPreTranslateEvent;
 import net.countercraft.movecraft.events.CraftTranslateEvent;
@@ -22,13 +25,16 @@ import net.countercraft.movecraft.processing.tasks.translation.validators.HoverV
 import net.countercraft.movecraft.processing.tasks.translation.validators.MaxHeightValidator;
 import net.countercraft.movecraft.processing.tasks.translation.validators.MinHeightValidator;
 import net.countercraft.movecraft.processing.tasks.translation.validators.WorldBorderValidator;
+import net.countercraft.movecraft.util.NamespacedIDUtil;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.ItemStack;
@@ -95,9 +101,10 @@ public class TranslationTask implements Supplier<Effect> {
         var harvestLocations = new SetHitBox();
         var fuelSources = new ArrayList<FurnaceInventory>();
         for(var originLocation : craft.getHitBox()){
-            var originMaterial = craft.getMovecraftWorld().getMaterial(originLocation);
+            BlockData originBlock = craft.getMovecraftWorld().getData(originLocation);
+            NamespacedKey originMaterial = NamespacedIDUtil.getBlockID(originBlock);
             // Remove air from hitboxes
-            if(originMaterial.isAir())
+            if(originBlock.getMaterial().isAir())
                 continue;
             if(Tags.FURNACES.contains(originMaterial)) {
                 var state = craft.getMovecraftWorld().getState(originLocation);
@@ -112,19 +119,19 @@ public class TranslationTask implements Supplier<Effect> {
             if(craft.getMovecraftWorld().equals(destinationWorld) && craft.getHitBox().contains(destination)){
                 continue;
             }
-            var destinationMaterial = destinationWorld.getMaterial(destination);
-            if(craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(destinationMaterial)){
+            NamespacedKey destinationMaterial = NamespacedIDUtil.getBlockID(destinationWorld.getData(destination));
+            if(craft.getCraftProperties().get(PropertyKeys.PASSTHROUGH_BLOCKS).contains(destinationMaterial)){
                 phaseLocations.add(destination);
                 continue;
             }
-            if(craft.getType().getMaterialSetProperty(CraftType.HARVEST_BLOCKS).contains(destinationMaterial) &&
-                    craft.getType().getMaterialSetProperty(CraftType.HARVESTER_BLADE_BLOCKS).contains(originMaterial)){
+            if(craft.getCraftProperties().get(PropertyKeys.HARVEST_BLOCKS).contains(destinationMaterial) &&
+                    craft.getCraftProperties().get(PropertyKeys.HARVESTER_BLADE_BLOCKS).contains(originMaterial)){
                 harvestLocations.add(destination);
                 continue;
             }
             collisions.add(destination);
         }
-        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, preTranslateEvent.getWorld());
+        double fuelBurnRate = craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, preTranslateEvent.getWorld());
         Effect fuelBurnEffect;
         if (craft.getBurningFuel() >= fuelBurnRate) {
             //call event
@@ -132,12 +139,12 @@ public class TranslationTask implements Supplier<Effect> {
             submitEvent(event);
             fuelBurnEffect = () -> craft.setBurningFuel(event.getBurningFuel() - event.getFuelBurnRate());
         } else {
-            var fuelSource = findFuelHolders(craft.getType(), fuelSources);
+            var fuelSource = findFuelHolders(craft.getCraftProperties(), fuelSources);
             if(fuelSource == null){
                 // TODO: If configured, and if this is not on the ground, scuttle the vehicle
                 return () -> craft.getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Translation - Failed Craft out of fuel"));
             }
-            callFuelEvent(craft, findFuelStack(craft.getType(), fuelSource));
+            callFuelEvent(craft, findFuelStack(craft.getCraftProperties(), fuelSource));
             //TODO: Take Fuel
             fuelBurnEffect = () -> Bukkit.getLogger().info("This is where we'd take ur fuel, if we had some");
         }
@@ -150,7 +157,7 @@ public class TranslationTask implements Supplier<Effect> {
 
         // Direct float comparison due to check for statically initialized value
         callCollisionEvent(craft, collisions, preTranslateEvent.getWorld());
-        if(craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F && !collisions.isEmpty()){
+        if(craft.getCraftProperties().get(PropertyKeys.COLLISION_EXPLOSION) <= 0F && !collisions.isEmpty()){
             //TODO: collision highlights
             return () -> craft.getAudience().sendMessage(Component.text(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", 0, 0, 0, "not_implemented")));
         }
@@ -194,7 +201,7 @@ public class TranslationTask implements Supplier<Effect> {
         return submitEvent(new CraftTranslateEvent(craft, craft.getHitBox(), destinationHitBox, destinationWorld));
     }
 
-    private static @Nullable FurnaceInventory findFuelHolders(CraftType type, List<FurnaceInventory> inventories){
+    private static @Nullable FurnaceInventory findFuelHolders(TypeSafeCraftType type, List<FurnaceInventory> inventories){
         for(var inventory : inventories){
             var stack = findFuelStack(type, inventory);
             if(stack != null){
@@ -204,20 +211,11 @@ public class TranslationTask implements Supplier<Effect> {
         return null;
     }
 
-    private static @Nullable ItemStack findFuelStack(@NotNull CraftType type, @NotNull FurnaceInventory inventory){
-        var v = type.getObjectProperty(CraftType.FUEL_TYPES);
-        if(!(v instanceof Map<?, ?>))
-            throw new IllegalStateException("FUEL_TYPES must be of type Map");
-        var fuelTypes = (Map<?, ?>) v;
-        for(var e : fuelTypes.entrySet()) {
-            if(!(e.getKey() instanceof Material))
-                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
-            if(!(e.getValue() instanceof Double))
-                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
-        }
+    private static @Nullable ItemStack findFuelStack(@NotNull TypeSafeCraftType type, @NotNull FurnaceInventory inventory){
+        NamespacedKeyToDoubleProperty fuelTypes = type.get(PropertyKeys.FUEL_TYPES);
 
         for(var item : inventory) {
-            if(item == null || !fuelTypes.containsKey(item.getType())){
+            if(item == null || !fuelTypes.contains(item.getType().getKey())){
                 continue;
             }
             return item;
@@ -226,18 +224,9 @@ public class TranslationTask implements Supplier<Effect> {
     }
 
     private static @NotNull FuelBurnEvent callFuelEvent(@NotNull Craft craft, @NotNull ItemStack burningFuel) {
-        var v = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
-        if(!(v instanceof Map<?, ?>))
-            throw new IllegalStateException("FUEL_TYPES must be of type Map");
-        var fuelTypes = (Map<?, ?>) v;
-        for(var e : fuelTypes.entrySet()) {
-            if(!(e.getKey() instanceof Material))
-                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
-            if(!(e.getValue() instanceof Double))
-                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
-        }
+        NamespacedKeyToDoubleProperty fuelTypes = craft.getCraftProperties().get(PropertyKeys.FUEL_TYPES);
 
-        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
-        return submitEvent(new FuelBurnEvent(craft, (double) fuelTypes.get(burningFuel.getType()), fuelBurnRate));
+        double fuelBurnRate = craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, craft.getWorld());
+        return submitEvent(new FuelBurnEvent(craft, fuelTypes.get(burningFuel.getType().getKey()), fuelBurnRate));
     }
 }
