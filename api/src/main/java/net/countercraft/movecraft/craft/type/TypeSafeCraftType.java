@@ -6,6 +6,7 @@ import net.countercraft.movecraft.craft.type.transform.TypeSafeTransform;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.LazyLoadField;
 import net.countercraft.movecraft.util.Pair;
+import net.countercraft.movecraft.util.SerializationUtil;
 import net.countercraft.movecraft.util.registration.SimpleRegistry;
 import net.countercraft.movecraft.util.registration.TypedContainer;
 import net.countercraft.movecraft.util.registration.TypedKey;
@@ -90,6 +91,13 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
 
     private static TypeSafeCraftType buildType(String name, Function<String, TypeSafeCraftType> typeRetriever, Map<String, Object> yamlMapping) {
         TypeSafeCraftType result = new TypeSafeCraftType(name, typeRetriever);
+        Object parentObj = yamlMapping.getOrDefault("parent", null);
+        if (parentObj != null) {
+            String parentStr = String.valueOf(parentObj);
+            if (parentStr != "null" && !parentStr.isEmpty()) {
+                result.parentName = parentStr;
+            }
+        }
 
         // Structure: Simple map per namespace inside the file
         // Helps to differentiate things
@@ -100,7 +108,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         // TODO: Sort the entries by registration index
 
         // Step 1: Set all default values
-        for (Map.Entry<NamespacedKey, PropertyKey> entry : PROPERTY_REGISTRY.entries()) {
+        for (Map.Entry<NamespacedKey, PropertyKey> entry : entries) {
             namespaces.computeIfAbsent(entry.getKey().getNamespace(), k -> new HashMap<>()).putIfAbsent(entry.getKey().getKey(), entry.getValue().getDefault(result));
         }
         // Step 2: Load the values from the file
