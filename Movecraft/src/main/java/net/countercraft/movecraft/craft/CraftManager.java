@@ -219,7 +219,7 @@ public class CraftManager implements Iterable<Craft>{
                 Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString(
                         "Release - Player has released a craft console"),
                         ((PilotedCraft) craft).getPilot() == null ? ((PilotedCraft) craft).getPilotUUID().toString() : ((PilotedCraft) craft).getPilot().getName(),
-                        craft.getType().getStringProperty(CraftType.NAME),
+                        craft.getCraftProperties().getName(),
                         craft.getHitBox().size(),
                         craft.getHitBox().getMinX(),
                         craft.getHitBox().getMinZ())
@@ -227,7 +227,7 @@ public class CraftManager implements Iterable<Craft>{
             else
                 Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString(
                         "Release - Null Craft Release Console"),
-                        craft.getType().getStringProperty(CraftType.NAME),
+                        craft.getCraftProperties().getName(),
                         craft.getHitBox().size(),
                         craft.getHitBox().getMinX(),
                         craft.getHitBox().getMinZ())
