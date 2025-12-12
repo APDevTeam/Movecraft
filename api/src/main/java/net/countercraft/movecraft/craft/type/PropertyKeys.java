@@ -147,6 +147,10 @@ public class PropertyKeys {
             register(PropertyKeyTypes.doublePropertyKey(
                     key("underwater_detection_multiplier"), t -> t.get(DETECTION_MULTIPLIER).get()
             ).perWorld().immutable());
+    public static final PropertyKey<ConfiguredSound> NEW_CONTACT_SOUND =
+            register(PropertyKeyTypes.configuredSoundPropertyKey(
+                    key("new_contact_sound"), "block.anvil.land", SoundCategory.NEUTRAL, 2.0F, 1.0F
+            ));
     // TODO: Move to sinkhandler
     public static final PropertyKey<Double> SINK_SPEED =
             register(PropertyKeyTypes.doublePropertyKey(key("sink_speed"), t -> 1D).immutable());
