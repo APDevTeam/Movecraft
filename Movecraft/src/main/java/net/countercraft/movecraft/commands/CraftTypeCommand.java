@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
+// TODO Rewrite and open a virtual book instead
+// Or use the new dialogues for this
 public class CraftTypeCommand implements TabExecutor {
 
     private static final Field[] craftTypeFields;
