@@ -6,6 +6,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
@@ -110,7 +111,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
                             parent.setOrigBlockCount(parent.getOrigBlockCount() - craft.getHitBox().size());
                         }
 
-                        if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                        if (craft.getCraftProperties().get(PropertyKeys.CRUISE_ON_PILOT)) {
                             // Setup cruise direction
                             BlockFace facing = signWrapper.facing();
                             craft.setCruiseDirection(CruiseDirection.fromBlockFace(facing));

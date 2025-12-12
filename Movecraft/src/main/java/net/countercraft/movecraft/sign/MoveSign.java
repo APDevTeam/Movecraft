@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -49,7 +49,7 @@ public class MoveSign extends AbstractCraftSign {
         if (!super.canPlayerUseSignOn(player, craft)) {
             return false;
         }
-        if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")) {
+        if (!player.hasPermission("movecraft." + craft.getCraftProperties().getName().toLowerCase() + ".move")) {
             player.sendMessage(
                     I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return false;
@@ -59,7 +59,7 @@ public class MoveSign extends AbstractCraftSign {
 
     @Override
     protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
-        if (!craft.getType().getBoolProperty(CraftType.CAN_STATIC_MOVE)) {
+        if (!craft.getCraftProperties().get(PropertyKeys.CAN_STATIC_MOVE)) {
             return false;
         }
 
@@ -72,7 +72,7 @@ public class MoveSign extends AbstractCraftSign {
     }
 
     protected boolean translateCraft(final byte signDataRaw, int dxRaw, int dyRaw, int dzRaw, Craft craft, SignListener.SignWrapper signWrapper) {
-        int maxMove = craft.getType().getIntProperty(CraftType.MAX_STATIC_MOVE);
+        int maxMove = craft.getCraftProperties().get(PropertyKeys.MAX_STATIC_MOVE);
 
         if (dxRaw > maxMove)
             dxRaw = maxMove;

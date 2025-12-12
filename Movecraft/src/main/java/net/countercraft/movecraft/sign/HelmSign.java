@@ -3,6 +3,7 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.ChatColor;
@@ -101,7 +102,7 @@ public class HelmSign extends AbstractCraftSign {
             return false;
 
         // TODO: Why was this used before?  CraftManager.getInstance().getCraftByPlayer(event.getPlayer())...  The craft variable did exist, so why don't use it?
-        if (craft.getType().getBoolProperty(CraftType.ROTATE_AT_MIDPOINT)) {
+        if (craft.getCraftProperties().get(PropertyKeys.ROTATE_AT_MIDPOINT)) {
             craft.rotate(rotation, craft.getHitBox().getMidPoint());
         } else {
            craft.rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.block().getLocation()));
@@ -123,7 +124,7 @@ public class HelmSign extends AbstractCraftSign {
     @Override
     protected boolean canPlayerUseSignOn(Player player, Craft craft) {
         if (super.canPlayerUseSignOn(player, craft)) {
-            if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".rotate")) {
+            if (!player.hasPermission("movecraft." + craft.getCraftProperties().getName().toLowerCase() + ".rotate")) {
                 player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return false;
             }

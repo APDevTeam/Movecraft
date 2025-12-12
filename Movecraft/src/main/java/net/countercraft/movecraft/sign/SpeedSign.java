@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.kyori.adventure.text.Component;
@@ -22,7 +22,7 @@ public class SpeedSign extends AbstractInformationSign {
         if (clickType != Action.RIGHT_CLICK_BLOCK)
             return false;
 
-        final int gearShifts = craft.getType().getIntProperty(CraftType.GEAR_SHIFTS);
+        final int gearShifts = craft.getCraftProperties().get(PropertyKeys.GEAR_SHIFTS);
         int currentGear = craft.getCurrentGear();
         if (gearShifts == 1) {
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR,

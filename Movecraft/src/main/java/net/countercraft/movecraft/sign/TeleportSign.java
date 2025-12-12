@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -49,9 +49,9 @@ public class TeleportSign extends MoveSign {
     @Override
     protected boolean canPlayerUseSignOn(Player player, Craft craft) {
         if (super.canPlayerUseSignOn(player, craft)) {
-            if (craft.getType().getBoolProperty(CraftType.CAN_TELEPORT)) {
+            if (craft.getCraftProperties().get(PropertyKeys.CAN_TELEPORT)) {
                 long timeSinceLastTeleport = System.currentTimeMillis() - craft.getLastTeleportTime();
-                if (craft.getType().getIntProperty(CraftType.TELEPORTATION_COOLDOWN) > 0 && timeSinceLastTeleport < craft.getType().getIntProperty(CraftType.TELEPORTATION_COOLDOWN)) {
+                if (craft.getCraftProperties().get(PropertyKeys.TELEPORTATION_COOLDOWN) > 0 && timeSinceLastTeleport < craft.getCraftProperties().get(PropertyKeys.TELEPORTATION_COOLDOWN)) {
                     player.sendMessage(String.format(I18nSupport.getInternationalisedString("Teleportation - Cooldown active"), timeSinceLastTeleport));
                     return false;
                 }
