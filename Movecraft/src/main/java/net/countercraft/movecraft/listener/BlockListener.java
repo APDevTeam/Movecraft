@@ -22,7 +22,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
@@ -148,7 +148,7 @@ public class BlockListener implements Listener {
            if (!craft.isNotProcessing())
                e.setCancelled(true); // prevent pistons on cruising crafts           
             // merge piston extensions to craft if the property is true
-           if (!craft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS))
+           if (!craft.getCraftProperties().get(PropertyKeys.MERGE_PISTON_EXTENSIONS))
                 continue;
 
            BitmapHitBox hitBox = new BitmapHitBox();
