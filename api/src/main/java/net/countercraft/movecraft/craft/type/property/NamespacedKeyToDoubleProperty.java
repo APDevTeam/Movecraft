@@ -81,6 +81,14 @@ public class NamespacedKeyToDoubleProperty implements ConfigurationSerializable 
         return result;
     }
 
+    public boolean isEmpty() {
+        return this.mapping.isEmpty();
+    }
+
+    public Iterable<? extends Map.Entry<NamespacedKey, Double>> entrySet() {
+        return this.mapping.entrySet();
+    }
+
     @SerializableAs("NamespacedKeyToDoublePropertyMutable")
     public static class Mutable extends NamespacedKeyToDoubleProperty {
         public Mutable() {
