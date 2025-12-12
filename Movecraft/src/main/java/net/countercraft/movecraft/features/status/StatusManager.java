@@ -1,6 +1,5 @@
 package net.countercraft.movecraft.features.status;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
@@ -8,8 +7,9 @@ import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.features.status.events.CraftStatusUpdateEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -31,7 +31,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
 import java.util.function.Supplier;
 
 public class StatusManager extends BukkitRunnable implements Listener {
@@ -51,21 +50,12 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
     public static final class StatusUpdateTask implements Supplier<Effect> {
         private final Craft craft;
-        private final Map<Material, Double> fuelTypes;
+        private final NamespacedKeyToDoubleProperty fuelTypes;
 
         public StatusUpdateTask(@NotNull Craft craft) {
             this.craft = craft;
 
-            Object object = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
-            if(!(object instanceof Map<?, ?> map))
-                throw new IllegalStateException("FUEL_TYPES must be of type Map");
-            for(var e : map.entrySet()) {
-                if(!(e.getKey() instanceof Material))
-                    throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
-                if(!(e.getValue() instanceof Double))
-                    throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
-            }
-            fuelTypes = (Map<Material, Double>) map;
+            fuelTypes = craft.getCraftProperties().get(PropertyKeys.FUEL_TYPES);
         }
 
         @Override
@@ -89,9 +79,9 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 if (Tags.FURNACES.contains(type)) {
                     InventoryHolder inventoryHolder = (InventoryHolder) craft.getMovecraftWorld().getState(l);
                     for (ItemStack iStack : inventoryHolder.getInventory()) {
-                        if (iStack == null || !fuelTypes.containsKey(iStack.getType()))
+                        if (iStack == null || !fuelTypes.contains(iStack.getType().getKey()))
                             continue;
-                        fuel += iStack.getAmount() * fuelTypes.get(iStack.getType());
+                        fuel += iStack.getAmount() * fuelTypes.get(iStack.getType().getKey());
                     }
                 }
             }
@@ -99,13 +89,13 @@ public class StatusManager extends BukkitRunnable implements Listener {
             Counter<RequiredBlockEntry> flyblocks = new Counter<>();
             Counter<RequiredBlockEntry> moveblocks = new Counter<>();
             for(Material material : materials.getKeySet()) {
-                for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.FLY_BLOCKS)) {
+                for(RequiredBlockEntry entry : craft.getCraftProperties().get(PropertyKeys.FLY_BLOCKS)) {
                     if(entry.contains(material)) {
                         flyblocks.add(entry, materials.get(material) );
                     }
                 }
 
-                for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
+                for(RequiredBlockEntry entry : craft.getCraftProperties().get(PropertyKeys.MOVE_BLOCKS)) {
                     if(entry.contains(material)) {
                         moveblocks.add(entry, materials.get(material) );
                     }
@@ -131,7 +121,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
         if (craft instanceof SinkingCraft)
             return;
-        if (craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) == 0.0)
+        if (craft.getCraftProperties().get(PropertyKeys.SINK_PERCENT) == 0.0)
             return;
 
         boolean sinking = false;
@@ -144,7 +134,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
         Counter<RequiredBlockEntry> moveBlocks = craft.getDataTag(Craft.MOVEBLOCKS);
 
         // now see if any of the resulting percentages are below the threshold specified in sinkPercent
-        double sinkPercent = craft.getType().getDoubleProperty(CraftType.SINK_PERCENT) / 100.0;
+        double sinkPercent = craft.getCraftProperties().get(PropertyKeys.SINK_PERCENT) / 100.0;
         for (RequiredBlockEntry entry : flyBlocks.getKeySet()) {
             if(!entry.check(flyBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
                 sinking = true;
@@ -155,9 +145,9 @@ public class StatusManager extends BukkitRunnable implements Listener {
         }
 
         // And check the OverallSinkPercent
-        if (craft.getType().getDoubleProperty(CraftType.OVERALL_SINK_PERCENT) != 0.0) {
+        if (craft.getCraftProperties().get(PropertyKeys.OVERALL_SINK_PERCENT) != 0.0) {
             double percent;
-            if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
+            if (craft.getCraftProperties().get(PropertyKeys.BLOCKED_BY_WATER)) {
                 percent = (double) nonNegligibleBlocks
                         / (double) craft.getOrigBlockCount();
             }
@@ -165,7 +155,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 percent = (double) nonNegligibleSolidBlocks
                         / (double) craft.getOrigBlockCount();
             }
-            if (percent * 100.0 < craft.getType().getDoubleProperty(CraftType.OVERALL_SINK_PERCENT))
+            if (percent * 100.0 < craft.getCraftProperties().get(PropertyKeys.OVERALL_SINK_PERCENT))
                 sinking = true;
         }
 
