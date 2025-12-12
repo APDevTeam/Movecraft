@@ -23,14 +23,16 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PlayerCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
+import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.NamespacedIDUtil;
 import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -48,8 +50,8 @@ public class PlayerListener implements Listener {
 
     private Set<Location> checkCraftBorders(Craft craft) {
         Set<Location> mergePoints = new HashSet<>();
-        final EnumSet<Material> ALLOWED_BLOCKS = craft.getType().getMaterialSetProperty(CraftType.ALLOWED_BLOCKS);
-        final EnumSet<Material> FORBIDDEN_BLOCKS = craft.getType().getMaterialSetProperty(CraftType.FORBIDDEN_BLOCKS);
+        final BlockSetProperty ALLOWED_BLOCKS = craft.getCraftProperties().get(PropertyKeys.ALLOWED_BLOCKS);
+        final BlockSetProperty FORBIDDEN_BLOCKS = craft.getCraftProperties().get(PropertyKeys.FORBIDDEN_BLOCKS);
         final MovecraftLocation[] SHIFTS = {
                 //x
                 new MovecraftLocation(-1, 0, 0),
@@ -78,7 +80,7 @@ public class PlayerListener implements Listener {
                     continue;
                 }
                 Block testBlock = test.toBukkit(craft.getWorld()).getBlock();
-                Material testMaterial = testBlock.getType();
+                NamespacedKey testMaterial = NamespacedIDUtil.getBlockID(testBlock);
                 //Break the loop if an allowed block is found adjacent to the craft's hitbox
                 if (ALLOWED_BLOCKS.contains(testMaterial)){
                     mergePoints.add(testBlock.getLocation());
@@ -162,7 +164,7 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        if (c.isNotProcessing() && c.getType().getBoolProperty(CraftType.MOVE_ENTITIES)
+        if (c.isNotProcessing() && c.getCraftProperties().get(PropertyKeys.CAN_MOVE_ENTITIES)
                 && !timeToReleaseAfter.containsKey(c)) {
             if (Settings.ManOverboardTimeout != 0) {
                 c.getAudience().sendActionBar(I18nSupport.getInternationalisedComponent("Manoverboard - Player has left craft"));
@@ -174,7 +176,7 @@ public class PlayerListener implements Listener {
             var mergePoints = checkCraftBorders(c);
             if (!mergePoints.isEmpty())
                 p.sendMessage(I18nSupport.getInternationalisedString("Manoverboard - Craft May Merge"));
-            timeToReleaseAfter.put(c, System.currentTimeMillis() + c.getType().getIntProperty(CraftType.RELEASE_TIMEOUT) * 1000L);
+            timeToReleaseAfter.put(c, System.currentTimeMillis() + c.getCraftProperties().get(PropertyKeys.RELEASE_TIMEOUT) * 1000L);
         }
     }
 }
