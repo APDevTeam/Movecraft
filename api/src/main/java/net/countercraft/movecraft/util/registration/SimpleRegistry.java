@@ -46,6 +46,10 @@ public class SimpleRegistry<K, T> {
         return _register.keySet().stream().toList();
     }
 
+    public @NotNull Iterable<@NotNull T> getAllValues(){
+        return _register.values().stream().toList();
+    }
+
     public Set<Map.Entry<K, T>> entries() {
         return new HashSet<>(this._register.entrySet());
     }

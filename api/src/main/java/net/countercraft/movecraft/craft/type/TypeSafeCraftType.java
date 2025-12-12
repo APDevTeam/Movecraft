@@ -17,10 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -89,7 +86,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         this.typeRetriever = typeRetriever;
     }
 
-    private static TypeSafeCraftType buildType(String name, Function<String, TypeSafeCraftType> typeRetriever, Map<String, Object> yamlMapping) {
+    private static TypeSafeCraftType buildType(String name, Function<String, TypeSafeCraftType> typeRetriever, final Map<String, Object> yamlMapping) {
         TypeSafeCraftType result = new TypeSafeCraftType(name, typeRetriever);
         Object parentObj = yamlMapping.getOrDefault("parent", null);
         if (parentObj != null) {
@@ -105,26 +102,35 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         Map<String, Map<String, Object>> namespaces = new HashMap<>();
 
         Set<Map.Entry<NamespacedKey, PropertyKey>> entries = PROPERTY_REGISTRY.entries();
-        // TODO: Sort the entries by registration index
 
-        // Step 1: Set all default values
-        for (Map.Entry<NamespacedKey, PropertyKey> entry : entries) {
-            namespaces.computeIfAbsent(entry.getKey().getNamespace(), k -> new HashMap<>()).putIfAbsent(entry.getKey().getKey(), entry.getValue().getDefault(result));
-        }
-        // Step 2: Load the values from the file
-        for (Map.Entry<String, Object> entry : yamlMapping.entrySet()) {
-            String namespace = "movecraft";
-            if (entry.getValue() instanceof Map) {
-                namespace = entry.getKey();
-                try {
-                    namespaces.put(namespace, (Map<String, Object>) entry.getValue());
-                } catch(ClassCastException cce) {
-                    // TODO: log error
+        // No longer necessary. Through the parentloading it will end up at the property level if not set and retrieve the default from there
+//        // Step 1: Set all default values
+//        for (Map.Entry<NamespacedKey, PropertyKey> entry : entries) {
+//            namespaces.computeIfAbsent(entry.getKey().getNamespace(), k -> new HashMap<>()).putIfAbsent(entry.getKey().getKey(), entry.getValue().getDefault(result));
+//        }
+//        // Step 2: Load the values from the file
+//        for (Map.Entry<String, Object> entry : yamlMapping.entrySet()) {
+//            String namespace = "movecraft";
+//            if (entry.getValue() instanceof Map) {
+//                namespace = entry.getKey();
+//                try {
+//                    namespaces.put(namespace, (Map<String, Object>) entry.getValue());
+//                } catch(ClassCastException cce) {
+//                    // TODO: log error
+//                }
+//            } else {
+//                namespaces.putIfAbsent(namespace, yamlMapping);
+//            }
+//        }
+        // DONE: Add support for sorting => dashes in the ID separate to own sections!
+        PROPERTY_REGISTRY.getAllValues().forEach(
+                prop -> {
+                    if (!readProperty(prop, yamlMapping, result)) {
+                        // TODO: Log warning
+                    }
                 }
-            } else {
-                namespaces.putIfAbsent(namespace, yamlMapping);
-            }
-        }
+        );
+        // Try to read every key we have instead
         // Step 3: Read from the parsed namespaces and apply it
         for (Map.Entry<String, Map<String, Object>> entry : namespaces.entrySet()) {
             readNamespace(entry.getKey(), entry.getValue(), result);
@@ -154,9 +160,55 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         }
     }
 
+    // Returns false if nothing was read or if it failed
+    // Returns true if something was parsed successfully
+    private static <T> boolean readProperty(final PropertyKey<T> key, final Map<String, Object> yamlData, final TypeSafeCraftType type) {
+        NamespacedKey namespacedKey = key.key();
+        Object namespaceValues = yamlData.getOrDefault(namespacedKey.getNamespace(), null);
+        if (namespaceValues != null && (namespaceValues instanceof Map namespaceMappingRaw)) {
+            Map<String, Object> namespaceMapping;
+            try {
+                namespaceMapping = (Map<String, Object>) namespaceMappingRaw;
+            } catch(ClassCastException cce) {
+                // TODO: Print message
+                return false;
+            }
+            String[] valueArr = namespacedKey.value().split("/");
+            T value = null;
+            for (int i = 0; i < valueArr.length; i++) {
+                String workingPath = valueArr[i];
+                Object objTmp = namespaceMapping.getOrDefault(workingPath, null);
+                if (objTmp == null) {
+                    break;
+                } else {
+                    if (i == valueArr.length - 1) {
+                        try {
+                            value = key.read(objTmp, type);
+                        } catch (Exception exception) {
+                            // TODO: Log warning
+                            return false;
+                        }
+                    } else {
+                        try {
+                            namespaceMapping = (Map<String, Object>) namespaceMappingRaw;
+                        } catch(ClassCastException cce) {
+                            // TODO: Print message
+                            break;
+                        }
+                    }
+                }
+            }
+            if (value != null) {
+                type.set(key, value);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static <T> void readNamespace(final String namespace, final Map<String, Object> data, final TypeSafeCraftType type) {
         for (Map.Entry<String, Object> entry : data.entrySet()) {
-            NamespacedKey key = NamespacedKey.fromString(entry.getKey());
+            NamespacedKey key = new NamespacedKey(namespace, entry.getKey());
             PropertyKey<T> propertyKey = PROPERTY_REGISTRY.get(key);
             if (propertyKey == null) {
                 // TODO: Log => unknown property!
