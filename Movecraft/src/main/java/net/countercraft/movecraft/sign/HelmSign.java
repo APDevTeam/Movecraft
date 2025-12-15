@@ -27,22 +27,6 @@ public class HelmSign extends AbstractCraftSign {
         super(false);
     }
 
-    @EventHandler
-    public void onSignChange(SignChangeEvent event){
-        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
-            return;
-        }
-        for (int i = 0; i < PRETTY_LINES.length && i < event.getLines().length; i++) {
-            event.setLine(i, PRETTY_LINES[i]);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onSignClick(@NotNull PlayerInteractEvent event) {
-
-
-    }
-
     @Override
     protected void onCraftIsBusy(Player player, Craft craft) {
 
@@ -64,9 +48,9 @@ public class HelmSign extends AbstractCraftSign {
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
             return true;
         }
-        event.setLine(0, "\\  ||  /");
-        event.setLine(1, "==      ==");
-        event.setLine(2, "/  ||  \\");
+        for (int i = 0; i < PRETTY_LINES.length && i < event.getLines().length; i++) {
+            event.setLine(i, PRETTY_LINES[i]);
+        }
         return true;
     }
 
