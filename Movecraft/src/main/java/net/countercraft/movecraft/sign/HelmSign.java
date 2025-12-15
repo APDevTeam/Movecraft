@@ -16,12 +16,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class HelmSign extends AbstractCraftSign {
 
-    public static final String[] PRETTY_LINES = new String[] {
-            "\\  ||  /",
-            "\\  ||  /",
-            "/  ||  \\"
-    };
-    public static final String PRETTY_HEADER = PRETTY_LINES[0];
+     public static final String PRETTY_HEADER = "\\  ||  /";
+    public static final Component[] PRETTY_LINES = new String[] {
+            Component.text(PRETTY_HEADER),
+            Component.text("\\  ||  /"),
+            Component.text("/  ||  \\")
+    };   
 
     public HelmSign() {
         super(false);
