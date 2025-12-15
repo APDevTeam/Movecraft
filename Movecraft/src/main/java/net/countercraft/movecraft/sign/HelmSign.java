@@ -5,21 +5,18 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
+import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.jetbrains.annotations.NotNull;
 
 public class HelmSign extends AbstractCraftSign {
 
      public static final String PRETTY_HEADER = "\\  ||  /";
-    public static final Component[] PRETTY_LINES = new String[] {
+    public static final Component[] PRETTY_LINES = new Component[] {
             Component.text(PRETTY_HEADER),
-            Component.text("\\  ||  /"),
+            Component.text("==      =="),
             Component.text("/  ||  \\")
     };   
 
@@ -49,7 +46,7 @@ public class HelmSign extends AbstractCraftSign {
             return true;
         }
         for (int i = 0; i < PRETTY_LINES.length && i < event.getLines().length; i++) {
-            event.setLine(i, PRETTY_LINES[i]);
+            event.line(i, PRETTY_LINES[i]);
         }
         return true;
     }
