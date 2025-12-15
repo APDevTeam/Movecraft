@@ -152,10 +152,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
     // On sign placement, if the entered header is the same as our ident, it will append the off-suffix automatically
     @Override
     public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
-        String header = sign.getRaw(0).trim();
-        if (header.equalsIgnoreCase(this.ident)) {
-            sign.line(0, buildHeaderOff());
-        }
+        sign.line(0, buildHeaderOff());
         return true;
     }
 
