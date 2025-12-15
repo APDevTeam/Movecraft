@@ -374,6 +374,7 @@ public class SignListener implements Listener {
             AbstractMovecraftSign ams = null;
 
             // If the side is empty, we should try a different side, like, the next side that is not empty and which has a signHandler
+            // TODO: If the side is empty, which means the sign was cleared, we do not need to search for a different side!
             if (wrapper.isEmpty()) {
                 SignWrapper[] wrapps = this.getSignWrappers(sign, true);
                 if (wrapps == null || wrapps.length == 0) {
