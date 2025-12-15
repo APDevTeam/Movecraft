@@ -361,6 +361,7 @@ public class SignListener implements Listener {
         Block block = event.getBlock();
         BlockState state = block.getState();
         if (state instanceof Sign sign) {
+            // TODO: Create the wrapper from the event, not the side! Otherwise the line() methods from the wrapper or the event won't really do anything
             SignWrapper wrapper = this.createFromSide(sign, event.getSide());
 
             boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
