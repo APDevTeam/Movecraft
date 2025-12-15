@@ -8,13 +8,13 @@ plugins {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 dependencies {
-    runtimeOnly(project(":movecraft-v1_20_6", "reobf"))
-    runtimeOnly(project(":movecraft-v1_21_1", "reobf"))
-    runtimeOnly(project(":movecraft-v1_21_4", "reobf"))
-    runtimeOnly(project(":movecraft-v1_21_5", "reobf"))
-    runtimeOnly(project(":movecraft-v1_21_8", "reobf"))
-    runtimeOnly(project(":movecraft-v1_21_10", "reobf"))
-    runtimeOnly(project(":movecraft-v1_21_11", "reobf"))
+    runtimeOnly(project(":movecraft-v1_20_6"))
+    runtimeOnly(project(":movecraft-v1_21_1"))
+    runtimeOnly(project(":movecraft-v1_21_4"))
+    runtimeOnly(project(":movecraft-v1_21_5"))
+    runtimeOnly(project(":movecraft-v1_21_8"))
+    runtimeOnly(project(":movecraft-v1_21_10"))
+    runtimeOnly(project(":movecraft-v1_21_11"))
     implementation(project(":movecraft-api"))
     compileOnly("org.yaml:snakeyaml:2.0")
 }
@@ -34,6 +34,10 @@ tasks.shadowJar {
         include(project(":movecraft-v1_21_10"))
         include(project(":movecraft-v1_21_11"))
     }
+
+    manifest.attributes(
+        "paperweight-mappings-namespace" to "mojang"
+    )
 }
 
 tasks.processResources {
