@@ -278,7 +278,7 @@ public class IWorldHandler extends WorldHandler {
     private void moveBlockEntity(@NotNull Level nativeWorld, @NotNull BlockPos newPosition, @NotNull BlockEntity tile) {
         LevelChunk chunk = nativeWorld.getChunkAt(newPosition);
         try {
-            var positionField = BlockEntity.class.getDeclaredField("o"); // o is obfuscated worldPosition
+            var positionField = BlockEntity.class.getDeclaredField("worldPosition");
             UnsafeUtils.setField(positionField, tile, newPosition);
         }
         catch (NoSuchFieldException e) {
