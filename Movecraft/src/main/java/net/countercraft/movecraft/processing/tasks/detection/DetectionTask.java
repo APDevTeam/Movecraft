@@ -7,8 +7,9 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SubCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.PropertyKeys;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
+import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -27,20 +28,14 @@ import net.countercraft.movecraft.processing.tasks.detection.validators.NameSign
 import net.countercraft.movecraft.processing.tasks.detection.validators.PilotSignValidator;
 import net.countercraft.movecraft.processing.tasks.detection.validators.SizeValidator;
 import net.countercraft.movecraft.processing.tasks.detection.validators.WaterContactValidator;
-import net.countercraft.movecraft.util.AtomicLocationSet;
-import net.countercraft.movecraft.util.CollectionUtils;
-import net.countercraft.movecraft.util.SupportUtils;
-import net.countercraft.movecraft.util.Tags;
+import net.countercraft.movecraft.util.*;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -52,7 +47,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -93,12 +87,12 @@ public class DetectionTask implements Supplier<Effect> {
             new NameSignValidator(),
             new PilotSignValidator()
     );
-    private static final List<DetectionPredicate<Map<Material, Deque<MovecraftLocation>>>> COMPLETION_VALIDATORS = List.of(
+    private static final List<DetectionPredicate<Map<NamespacedKey, Deque<MovecraftLocation>>>> COMPLETION_VALIDATORS = List.of(
             new SizeValidator(),
             new FlyBlockValidator(),
             new DetectionBlockValidator()
     );
-    private static final List<DetectionPredicate<Map<Material, Deque<MovecraftLocation>>>> VISITED_VALIDATORS = List.of(
+    private static final List<DetectionPredicate<Map<NamespacedKey, Deque<MovecraftLocation>>>> VISITED_VALIDATORS = List.of(
             new WaterContactValidator()
     );
 
@@ -106,7 +100,7 @@ public class DetectionTask implements Supplier<Effect> {
 
     private final MovecraftLocation startLocation;
     private final MovecraftWorld movecraftWorld;
-    private final CraftType type;
+    private final TypeSafeCraftType type;
     private final CraftSupplier supplier;
     private final World world;
     private final Player player;
@@ -116,15 +110,15 @@ public class DetectionTask implements Supplier<Effect> {
 
     private final LongAdder size = new LongAdder();
     private final Set<MovecraftLocation> visited = new AtomicLocationSet();
-    private final ConcurrentMap<Material, Deque<MovecraftLocation>> materials = new ConcurrentHashMap<>();
-    private final ConcurrentMap<Material, Deque<MovecraftLocation>> visitedMaterials = new ConcurrentHashMap<>();
+    private final ConcurrentMap<NamespacedKey, Deque<MovecraftLocation>> materials = new ConcurrentHashMap<>();
+    private final ConcurrentMap<NamespacedKey, Deque<MovecraftLocation>> visitedMaterials = new ConcurrentHashMap<>();
     private final ConcurrentLinkedDeque<MovecraftLocation> fluid = new ConcurrentLinkedDeque<>();
     private final ConcurrentLinkedDeque<MovecraftLocation> illegal = new ConcurrentLinkedDeque<>();
     private final ConcurrentLinkedDeque<MovecraftLocation> legal = new ConcurrentLinkedDeque<>();
 
 
     public DetectionTask(@NotNull MovecraftLocation startLocation, @NotNull MovecraftWorld movecraftWorld,
-                         @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                         @NotNull TypeSafeCraftType type, @NotNull CraftSupplier supplier,
                          @NotNull World world, @Nullable Player player,
                          @NotNull Audience audience,
                          @NotNull Function<Craft, Effect> postDetection) {
@@ -132,7 +126,7 @@ public class DetectionTask implements Supplier<Effect> {
     }
 
     public DetectionTask(@NotNull MovecraftLocation startLocation, @NotNull MovecraftWorld movecraftWorld,
-                            @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                            @NotNull TypeSafeCraftType type, @NotNull CraftSupplier supplier,
                             @NotNull World world, @Nullable Player player,
                             @NotNull Audience audience,
                             @NotNull Function<Craft, Effect> postDetection,
@@ -270,7 +264,7 @@ public class DetectionTask implements Supplier<Effect> {
         result = supplied.getLeft();
         Craft craft = supplied.getRight();
 
-        if (type.getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && !(craft instanceof SubCraft)) {
+        if (type.get(PropertyKeys.MUST_BE_SUBCRAFT) && !(craft instanceof SubCraft)) {
             result = Result.failWithMessage(I18nSupport.getInternationalisedString("Detection - Must Be Subcraft"));
         }
 
@@ -335,7 +329,7 @@ public class DetectionTask implements Supplier<Effect> {
         currentFrontier.add(startLocation);
         currentFrontier.addAll(Arrays.stream(SHIFTS).map(startLocation::add).collect(Collectors.toList()));
         int threads = Runtime.getRuntime().availableProcessors();
-        while(!currentFrontier.isEmpty() && size.intValue() < type.getIntProperty(CraftType.MAX_SIZE) + threads) {
+        while(!currentFrontier.isEmpty() && size.intValue() < type.get(PropertyKeys.MAX_SIZE) + threads) {
             List<ForkJoinTask<?>> tasks = new ArrayList<>();
             for(int j = 0; j < threads ; j++) {
                 tasks.add(ForkJoinPool.commonPool().submit(new DetectAction(currentFrontier, nextFrontier)));
@@ -376,11 +370,11 @@ public class DetectionTask implements Supplier<Effect> {
         @Override
         public void run() {
             MovecraftLocation probe;
-            EnumSet<Material> directionalDependent = type.getMaterialSetProperty(CraftType.DIRECTIONAL_DEPENDENT_MATERIALS);
+            BlockSetProperty directionalDependent = type.get(PropertyKeys.DIRECTIONAL_DEPENDENT_MATERIALS);
 
             while((probe = currentFrontier.poll()) != null) {
                 BlockData blockData = movecraftWorld.getData(probe);
-                Material material = blockData.getMaterial();
+                NamespacedKey material = NamespacedIDUtil.getBlockID(blockData);
 
                 if (directionalDependent.contains(material)) {
                     BlockFace supportFace = SupportUtils.getSupportFace(blockData);

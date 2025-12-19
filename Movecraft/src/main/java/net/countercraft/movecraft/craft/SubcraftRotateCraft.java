@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -15,7 +15,7 @@ public class SubcraftRotateCraft extends BaseCraft implements PilotedCraft {
     private WeakReference<Player> pilot;
     private final UUID pilotUUID;
 
-    public SubcraftRotateCraft(@NotNull CraftType type, @NotNull World world, @NotNull Player pilot) {
+    public SubcraftRotateCraft(@NotNull TypeSafeCraftType type, @NotNull World world, @NotNull Player pilot) {
         super(type, world);
         this.pilot = new WeakReference<>(pilot);
         // Copy UUID just to be safe

@@ -126,6 +126,7 @@ public abstract class BaseCraft implements Craft {
     }
 
     @NotNull
+    @Deprecated(forRemoval = true)
     public CraftType getType() {
         if (this.type == null) {
             this.type = new CraftType(this.getCraftProperties());

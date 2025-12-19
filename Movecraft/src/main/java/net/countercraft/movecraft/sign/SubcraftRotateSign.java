@@ -4,7 +4,7 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.*;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
@@ -24,12 +24,12 @@ import java.util.function.Supplier;
 
 public class SubcraftRotateSign extends AbstractSubcraftSign {
 
-    public SubcraftRotateSign(Function<String, @Nullable CraftType> craftTypeRetrievalFunction, Supplier<Plugin> plugin) {
+    public SubcraftRotateSign(Function<String, @Nullable TypeSafeCraftType> craftTypeRetrievalFunction, Supplier<Plugin> plugin) {
         super(craftTypeRetrievalFunction, plugin);
     }
 
     @Override
-    protected void runDetectTask(Action clickType, CraftType subcraftType, Craft parentcraft, World world, Player player, MovecraftLocation startPoint) {
+    protected void runDetectTask(Action clickType, TypeSafeCraftType subcraftType, Craft parentcraft, World world, Player player, MovecraftLocation startPoint) {
         final MovecraftRotation rotation = MovecraftRotation.fromAction(clickType);
         if (rotation == MovecraftRotation.NONE) {
             return;
@@ -99,8 +99,8 @@ public class SubcraftRotateSign extends AbstractSubcraftSign {
     }
 
     @Override
-    protected boolean canPlayerUseSignForCraftType(Action clickType, SignListener.SignWrapper sign, Player player, CraftType subcraftType) {
-        final String craftTypeStr = subcraftType.getStringProperty(CraftType.NAME).toLowerCase();
+    protected boolean canPlayerUseSignForCraftType(Action clickType, SignListener.SignWrapper sign, Player player, TypeSafeCraftType subcraftType) {
+        final String craftTypeStr = subcraftType.getName().toLowerCase();
         if (!player.hasPermission("movecraft." + craftTypeStr + ".rotate")) {
             player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return false;

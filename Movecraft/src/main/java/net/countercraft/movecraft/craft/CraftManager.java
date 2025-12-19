@@ -138,7 +138,7 @@ public class CraftManager implements Iterable<Craft>{
      *   Note: This is where you can perform any post-detection actions, such as starting a torpedo cruising.
      */
     public void detect(@NotNull MovecraftLocation startPoint,
-                        @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                        @NotNull TypeSafeCraftType type, @NotNull CraftSupplier supplier,
                         @NotNull World world, @Nullable Player player,
                         @NotNull Audience audience,
                         @NotNull Function<Craft, Effect> postDetection) {
@@ -152,7 +152,7 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void detect(@NotNull MovecraftLocation startPoint,
-                       @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                       @NotNull TypeSafeCraftType type, @NotNull CraftSupplier supplier,
                        @NotNull World world, @Nullable Player player,
                        @NotNull Audience audience,
                        @NotNull Function<Craft, Effect> postDetection,
@@ -284,6 +284,7 @@ public class CraftManager implements Iterable<Craft>{
 
     //region Type management
     @NotNull
+    @Deprecated(forRemoval = true)
     public Set<CraftType> getCraftTypes() {
         Set<CraftType> result = new HashSet(this.craftTypeMap.values().size());
         for (TypeSafeCraftType typeSafeCraftType : this.craftTypeMap.values()) {
@@ -293,6 +294,7 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     @Nullable
+    @Deprecated(forRemoval = true)
     public CraftType getCraftTypeFromString(String s) {
         TypeSafeCraftType typeSafeCraftType = this.getCraftTypeByName(s);
         if (typeSafeCraftType == null) {
