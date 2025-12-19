@@ -1,12 +1,10 @@
 package net.countercraft.movecraft.craft.type;
 
-import com.google.errorprone.annotations.concurrent.LazyInit;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.transform.TypeSafeTransform;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.LazyLoadField;
 import net.countercraft.movecraft.util.Pair;
-import net.countercraft.movecraft.util.SerializationUtil;
 import net.countercraft.movecraft.util.registration.SimpleRegistry;
 import net.countercraft.movecraft.util.registration.TypedContainer;
 import net.countercraft.movecraft.util.registration.TypedKey;
@@ -14,12 +12,11 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.Yaml;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -32,9 +29,9 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         Validators.registerAll();
     }
 
-    static final SimpleRegistry<NamespacedKey, PropertyKey> PROPERTY_REGISTRY = new SimpleRegistry();
-    static final Set<TypeSafeTransform> TRANSFORM_REGISTRY = new HashSet<>();
-    static final Set<Pair<Predicate<TypeSafeCraftType>, String>> VALIDATOR_REGISTRY = new HashSet<>();
+    public static final SimpleRegistry<NamespacedKey, PropertyKey> PROPERTY_REGISTRY = new SimpleRegistry();
+    public static final Set<TypeSafeTransform> TRANSFORM_REGISTRY = new HashSet<>();
+    public static final Set<Pair<Predicate<TypeSafeCraftType>, String>> VALIDATOR_REGISTRY = new HashSet<>();
 
     protected final Function<String, TypeSafeCraftType> typeRetriever;
     private final String name;
@@ -282,4 +279,5 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         }
         return true;
     }
+
 }
