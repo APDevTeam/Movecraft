@@ -118,18 +118,18 @@ final public class CraftType extends TypeSafeCraftType {
     public static final NamespacedKey PER_WORLD_MIN_HEIGHT_LIMIT = PropertyKeys.MIN_HEIGHT_LIMIT.key();
     private static final NamespacedKey CRUISE_SPEED = PropertyKeys.CRUISE_SPEED.key();
         // Private key used to calculate CRUISE_TICK_COOLDOWN
-    private static final NamespacedKey CRUISE_TICK_COOLDOWN = PropertyKeys.TICK_COOLDOWN.key();
+    private static final NamespacedKey CRUISE_TICK_COOLDOWN = PropertyKeys.CRUISE_TICK_COOLDOWN.key();
         // Private key used as default for PER_WORLD_CRUISE_TICK_COOLDOWN
     private static final NamespacedKey PER_WORLD_CRUISE_SPEED = PropertyKeys.CRUISE_SPEED.key();
         // Private key used to calculate PER_WORLD_CRUISE_TICK_COOLDOWN
-    public static final NamespacedKey PER_WORLD_CRUISE_TICK_COOLDOWN = PropertyKeys.TICK_COOLDOWN.key();
+    public static final NamespacedKey PER_WORLD_CRUISE_TICK_COOLDOWN = PropertyKeys.CRUISE_TICK_COOLDOWN.key();
     private static final NamespacedKey VERT_CRUISE_SPEED = PropertyKeys.VERT_CRUISE_SPEED.key();
         // Private key used to calculate VERT_CRUISE_TICK_COOLDOWN
-    private static final NamespacedKey VERT_CRUISE_TICK_COOLDOWN = PropertyKeys.VERT_TICK_COOLDOWN.key();
+    private static final NamespacedKey VERT_CRUISE_TICK_COOLDOWN = PropertyKeys.VERT_CRUISE_TICK_COOLDOWN.key();
         // Private key used as default for PER_WORLD_VERT_CRUISE_TICK_COOLDOWN
     private static final NamespacedKey PER_WORLD_VERT_CRUISE_SPEED = PropertyKeys.VERT_CRUISE_SPEED.key();
         // Private key used to calculate PER_WORLD_VERT_CRUISE_SPEED
-    public static final NamespacedKey PER_WORLD_VERT_CRUISE_TICK_COOLDOWN = PropertyKeys.VERT_TICK_COOLDOWN.key();
+    public static final NamespacedKey PER_WORLD_VERT_CRUISE_TICK_COOLDOWN = PropertyKeys.VERT_CRUISE_TICK_COOLDOWN.key();
     private static final NamespacedKey MAX_HEIGHT_LIMIT = PropertyKeys.MAX_HEIGHT_LIMIT.key();
         // Private key used as default for PER_WORLD_MAX_HEIGHT_LIMIT
     public static final NamespacedKey PER_WORLD_MAX_HEIGHT_LIMIT = PropertyKeys.MAX_HEIGHT_LIMIT.key();

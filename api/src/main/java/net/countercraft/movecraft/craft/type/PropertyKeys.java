@@ -18,13 +18,13 @@ public class PropertyKeys {
      * Use TypeSafeCraftType#getName() instead
      */
     public static final PropertyKey<String> NAME =
-            register(PropertyKeyTypes.stringPropertyKey(key("name"), t -> t.getName()).immutable());
+            register(PropertyKeyTypes.stringPropertyKey(key("general/name"), t -> t.getName()).immutable());
     public static final PropertyKey<Integer> MAX_SIZE =
-            register(PropertyKeyTypes.intPropertyKey(key("max_size")).immutable());
+            register(PropertyKeyTypes.intPropertyKey(key("constraints/size/max")).immutable());
     public static final PropertyKey<Integer> MIN_SIZE =
-            register(PropertyKeyTypes.intPropertyKey(key("min_size")).immutable());
+            register(PropertyKeyTypes.intPropertyKey(key("constraints/size/min")).immutable());
     public static final PropertyKey<BlockSetProperty> ALLOWED_BLOCKS =
-            register(PropertyKeyTypes.blockSetPropertyKey(key("allowed_blocks")).immutable());
+            register(PropertyKeyTypes.blockSetPropertyKey(key("general/block/allowed")).immutable());
     public static final PropertyKey<PerWorldData<Double>> SPEED =
             register(PropertyKeyTypes.doublePropertyKey(key("speed")).perWorld().immutable());
     // endregion required base settings
@@ -32,27 +32,27 @@ public class PropertyKeys {
     // region block constraints
     public static final PropertyKey<Set<RequiredBlockEntry>> FLY_BLOCKS =
             register(PropertyKeyTypes.requiredBlockEntrySetKey(
-                    key("flyblocks"), t -> new HashSet<>()
+                    key("constraints/block/flyblocks"), t -> new HashSet<>()
             ).immutable());
     public static final PropertyKey<Set<RequiredBlockEntry>> DETECTION_BLOCKS =
             register(PropertyKeyTypes.requiredBlockEntrySetKey(
-                    key("detection_blocks"), t -> new HashSet<>()
+                    key("constraints/block/detection_blocks"), t -> new HashSet<>()
             ).immutable());
     public static final PropertyKey<Set<RequiredBlockEntry>> MOVE_BLOCKS =
             register(PropertyKeyTypes.requiredBlockEntrySetKey(
-                    key("move_blocks"), t -> new HashSet<>()
+                    key("constraints/block/move_blocks"), t -> new HashSet<>()
             ).immutable());
     // endregion block constraints
 
     // region block sets
     public static final PropertyKey<BlockSetProperty> DIRECTIONAL_DEPENDENT_MATERIALS =
-            register(PropertyKeyTypes.blockSetPropertyKey(key("directional_dependent_materials")).immutable());
+            register(PropertyKeyTypes.blockSetPropertyKey(key("general/block/directional")).immutable());
     public static final PropertyKey<BlockSetProperty> FORBIDDEN_BLOCKS =
-            register(PropertyKeyTypes.blockSetPropertyKey(key("forbidden_blocks")).immutable());
+            register(PropertyKeyTypes.blockSetPropertyKey(key("general/block/forbidden")).immutable());
     public static final PropertyKey<BlockSetProperty> HARVEST_BLOCKS =
-            register(PropertyKeyTypes.blockSetPropertyKey(key("harvest_blocks")).immutable());
+            register(PropertyKeyTypes.blockSetPropertyKey(key("harvester/breakable_blocks")).immutable());
     public static final PropertyKey<BlockSetProperty> HARVESTER_BLADE_BLOCKS =
-            register(PropertyKeyTypes.blockSetPropertyKey(key("harvester_blade_blocks")).immutable());
+            register(PropertyKeyTypes.blockSetPropertyKey(key("harvester/harvester_blocks")).immutable());
     public static final PropertyKey<BlockSetProperty> PASSTHROUGH_BLOCKS =
             register(PropertyKeyTypes.blockSetPropertyKey(key("passthrough_blocks")).immutable());
     public static final PropertyKey<BlockSetProperty> FORBIDDEN_HOVER_OVER_BLOCKS =
@@ -74,9 +74,15 @@ public class PropertyKeys {
             register(PropertyKeyTypes.boolPropertyKey(key("blocked_by_water")).immutable());
     public static final PropertyKey<PerWorldData<Integer>> TICK_COOLDOWN =
             register(PropertyKeyTypes.intPropertyKey(key("tick_cooldown")).perWorld().immutable());
+    public static final PropertyKey<PerWorldData<Integer>> CRUISE_TICK_COOLDOWN =
+            register(PropertyKeyTypes.intPropertyKey(key("cruise_tick_cooldown")).perWorld().immutable());
     public static final PropertyKey<PerWorldData<Integer>> VERT_TICK_COOLDOWN =
             register(PropertyKeyTypes.intPropertyKey(
                     key("vert_tick_cooldown"), t -> t.get(PropertyKeys.TICK_COOLDOWN).get() * 2
+            ).perWorld().immutable());
+    public static final PropertyKey<PerWorldData<Integer>> VERT_CRUISE_TICK_COOLDOWN =
+            register(PropertyKeyTypes.intPropertyKey(
+                    key("vert_cruise_tick_cooldown"), t -> t.get(PropertyKeys.CRUISE_TICK_COOLDOWN).get() * 2
             ).perWorld().immutable());
     public static final PropertyKey<Boolean> REQUIRE_WATER_CONTACT =
             register(PropertyKeyTypes.boolPropertyKey(key("require_water_contact")).immutable());

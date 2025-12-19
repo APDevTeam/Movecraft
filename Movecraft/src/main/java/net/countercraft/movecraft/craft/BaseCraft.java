@@ -369,10 +369,10 @@ public abstract class BaseCraft implements Craft {
 
         // Ascent or Descent
         if (cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN)
-            return (getCraftProperties().get(PropertyKeys.VERT_TICK_COOLDOWN, w) + chestPenalty) * (getCraftProperties().get(PropertyKeys.GEAR_SHIFT_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
+            return (getCraftProperties().get(PropertyKeys.VERT_CRUISE_TICK_COOLDOWN, w) + chestPenalty) * (getCraftProperties().get(PropertyKeys.GEAR_SHIFT_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
 
         // Dynamic Fly Block Speed
-        int cruiseTickCooldown = getCraftProperties().get(PropertyKeys.TICK_COOLDOWN, w);
+        int cruiseTickCooldown = getCraftProperties().get(PropertyKeys.CRUISE_TICK_COOLDOWN, w);
         if (
             !materials.isEmpty() 
             && getCraftProperties().get(PropertyKeys.SPEED_MODIFIER_BLOCKS) != null
