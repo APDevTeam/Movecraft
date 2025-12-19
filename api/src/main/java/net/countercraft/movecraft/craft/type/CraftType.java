@@ -670,42 +670,6 @@ final public class CraftType extends TypeSafeCraftType {
         this.backing = backing;
     }
 
-    public CraftType(File f) {
-        this.backing = null;
-        TypeData data = TypeData.loadConfiguration(f);
-
-        // Transform craft type
-        for(var transform : transforms) {
-            if(transform instanceof StringTransform)
-                stringPropertyMap = ((StringTransform) transform).transform(stringPropertyMap, this);
-            else if(transform instanceof IntegerTransform)
-                intPropertyMap = ((IntegerTransform) transform).transform(intPropertyMap, this);
-            else if(transform instanceof BooleanTransform)
-                boolPropertyMap = ((BooleanTransform) transform).transform(boolPropertyMap, this);
-            else if(transform instanceof FloatTransform)
-                floatPropertyMap = ((FloatTransform) transform).transform(floatPropertyMap, this);
-            else if(transform instanceof DoubleTransform)
-                doublePropertyMap = ((DoubleTransform) transform).transform(doublePropertyMap, this);
-            else if(transform instanceof ObjectTransform)
-                objectPropertyMap = ((ObjectTransform) transform).transform(objectPropertyMap, this);
-            else if(transform instanceof MaterialSetTransform)
-                materialSetPropertyMap = ((MaterialSetTransform) transform).transform(materialSetPropertyMap,
-                        this);
-            else if(transform instanceof PerWorldTransform)
-                perWorldPropertyMap = ((PerWorldTransform) transform).transform(perWorldPropertyMap,
-                        this);
-            else if(transform instanceof RequiredBlockTransform)
-                requiredBlockPropertyMap = ((RequiredBlockTransform) transform).transform(requiredBlockPropertyMap,
-                        this);
-        }
-
-        // Validate craft type
-        for(var validator : validators) {
-            if(!validator.getLeft().test(this))
-                throw new IllegalArgumentException(validator.getRight());
-        }
-    }
-
     public static class TypeNotFoundException extends RuntimeException {
         public TypeNotFoundException(String s) {
             super(s);

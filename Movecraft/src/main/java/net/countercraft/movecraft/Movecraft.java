@@ -212,7 +212,7 @@ public class Movecraft extends JavaPlugin {
         // Moved to compat section!
         //getServer().getPluginManager().registerEvents(new SignListener(), this);
 
-        MovecraftSignRegistry.INSTANCE.registerCraftPilotSigns(CraftManager.getInstance().getCraftTypes(), CraftPilotSign::new);
+        MovecraftSignRegistry.INSTANCE.registerCraftPilotSigns(CraftManager.getInstance().getTypesafeCraftTypes(), CraftPilotSign::new);
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
