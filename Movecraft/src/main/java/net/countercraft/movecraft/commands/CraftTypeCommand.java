@@ -2,7 +2,7 @@ package net.countercraft.movecraft.commands;
 
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.TopicPaginator;
 import org.bukkit.command.Command;
@@ -13,7 +13,6 @@ import org.bukkit.util.ChatPaginator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,20 +23,12 @@ import java.util.OptionalInt;
 // Or use the new dialogues for this
 public class CraftTypeCommand implements TabExecutor {
 
-    private static final Field[] craftTypeFields;
-    static {
-        craftTypeFields = CraftType.class.getDeclaredFields();
-        for(var field : craftTypeFields){
-            field.setAccessible(true);
-        }
-    }
-
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        CraftType type;
+        TypeSafeCraftType type;
         int page;
         if(args.length == 0 || (args.length == 1 && MathUtils.parseInt(args[0]).isPresent())) {
-            Optional<CraftType> typeQuery = tryGetCraftFromPlayer(commandSender);
+            Optional<TypeSafeCraftType> typeQuery = tryGetCraftFromPlayer(commandSender);
             if(typeQuery.isEmpty()){
                 commandSender.sendMessage("You must supply a craft type!");
                 return true;
@@ -67,7 +58,7 @@ public class CraftTypeCommand implements TabExecutor {
             commandSender.sendMessage("You must supply a craft type!");
             return true;
         }
-        if(!commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot")) {
+        if(!commandSender.hasPermission("movecraft." + type.getName().toLowerCase() + ".pilot")) {
             commandSender.sendMessage("You don't have permission for that craft type!");
             return true;
         }
@@ -81,9 +72,9 @@ public class CraftTypeCommand implements TabExecutor {
         if(strings.length !=1 || !commandSender.hasPermission("movecraft.commands") || !commandSender.hasPermission("movecraft.commands.crafttype"))
             return Collections.emptyList();
         List<String> completions = new ArrayList<>();
-        for(CraftType type : CraftManager.getInstance().getCraftTypes())
-            if(commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot"))
-                completions.add(type.getStringProperty(CraftType.NAME));
+        for(TypeSafeCraftType type : CraftManager.getInstance().getTypesafeCraftTypes())
+            if(commandSender.hasPermission("movecraft." + type.getName().toLowerCase() + ".pilot"))
+                completions.add(type.getName());
         completions.add("list");
         List<String> returnValues = new ArrayList<>();
         for(String completion : completions)
@@ -92,26 +83,21 @@ public class CraftTypeCommand implements TabExecutor {
         return returnValues;
     }
 
-    private void sendTypePage(@NotNull CraftType type, int page, @NotNull  CommandSender commandSender){
+    private void sendTypePage(@NotNull TypeSafeCraftType type, int page, @NotNull  CommandSender commandSender){
         TopicPaginator paginator = new TopicPaginator("Type Info");
-        for(var field : craftTypeFields){
-            if(field.getName().equals("data")){ // don't include the backing data object
-                continue;
-            }
-            Object value;
-            try {
-                value = field.get(type);
-            } catch (IllegalAccessException e) {
-                paginator.addLine(field.getName() + ": failed to access");
-                continue;
-            }
-            var repr = field.getName() + ": " + value;
-            if(repr.length() > ChatPaginator.GUARANTEED_NO_WRAP_CHAT_PAGE_WIDTH){
-                paginator.addLine(field.getName() + ": too long");
-            } else {
-                paginator.addLine(field.getName() + ": " + value);
+
+        for (var property : TypeSafeCraftType.PROPERTY_REGISTRY.getAllValues()) {
+            if (type.hasInSelfOrAnyParent(property)) {
+                var value = type.get(property);
+                var repr = property.key().toString() + ": " + value;
+                if(repr.length() > ChatPaginator.GUARANTEED_NO_WRAP_CHAT_PAGE_WIDTH){
+                    paginator.addLine(property.key().toString() + ": too long");
+                } else {
+                    paginator.addLine(property.key().toString() + ": " + value);
+                }
             }
         }
+
         if(!paginator.isInBounds(page)){
             commandSender.sendMessage(String.format("Page %d is out of bounds.", page));
             return;
@@ -122,8 +108,8 @@ public class CraftTypeCommand implements TabExecutor {
 
     private void sendTypeListPage(int page, @NotNull  CommandSender commandSender){
         TopicPaginator paginator = new TopicPaginator("Type Info");
-        for(var entry : CraftManager.getInstance().getCraftTypes()){
-            paginator.addLine(entry.getStringProperty(CraftType.NAME));
+        for(var entry : CraftManager.getInstance().getTypesafeCraftTypes()){
+            paginator.addLine(entry.getName());
         }
         if(!paginator.isInBounds(page)){
             commandSender.sendMessage(String.format("Page %d is out of bounds.", page));
@@ -134,7 +120,7 @@ public class CraftTypeCommand implements TabExecutor {
     }
 
     @NotNull
-    private Optional<CraftType> tryGetCraftFromPlayer(CommandSender commandSender){
+    private Optional<TypeSafeCraftType> tryGetCraftFromPlayer(CommandSender commandSender){
         if (!(commandSender instanceof Player)) {
             return Optional.empty();
         }
@@ -142,6 +128,6 @@ public class CraftTypeCommand implements TabExecutor {
         if(c == null){
             return Optional.empty();
         }
-        return Optional.of(c.getType());
+        return Optional.of(c.getCraftProperties());
     }
 }
