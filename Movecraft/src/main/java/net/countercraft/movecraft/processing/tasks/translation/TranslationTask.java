@@ -4,7 +4,6 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
@@ -31,7 +30,6 @@ import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.data.BlockData;
@@ -44,7 +42,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public class TranslationTask implements Supplier<Effect> {
@@ -57,7 +54,7 @@ public class TranslationTask implements Supplier<Effect> {
                         I18nSupport.getInternationalisedString("Translation - Failed Craft Is Disabled"))
                 : Result.succeed()));
     }
-    private static final List<TetradicPredicate<MovecraftLocation, MovecraftWorld, HitBox, CraftType>> translationValidators = new ArrayList<>();
+    private static final List<TetradicPredicate<MovecraftLocation, MovecraftWorld, HitBox, TypeSafeCraftType>> translationValidators = new ArrayList<>();
     static {
         translationValidators.add(new MinHeightValidator());
         translationValidators.add(new MaxHeightValidator());
@@ -148,7 +145,7 @@ public class TranslationTask implements Supplier<Effect> {
             //TODO: Take Fuel
             fuelBurnEffect = () -> Bukkit.getLogger().info("This is where we'd take ur fuel, if we had some");
         }
-        var translationResult = translationValidators.stream().reduce(TetradicPredicate::and).orElseThrow().validate(translation, destinationWorld, destinationLocations, craft.getType());
+        var translationResult = translationValidators.stream().reduce(TetradicPredicate::and).orElseThrow().validate(translation, destinationWorld, destinationLocations, craft.getCraftProperties());
         if(!translationResult.isSucess()){
             return () -> craft.getAudience().sendMessage(Component.text(translationResult.getMessage()));
         }
