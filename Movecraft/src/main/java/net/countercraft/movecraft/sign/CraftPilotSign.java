@@ -73,39 +73,43 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
 
     protected void runDetectTask(MovecraftLocation startPoint, Player player, final SignListener.SignWrapper signWrapper, Craft parentCraft, World world) {
         if (PILOTING.add(startPoint)) {
+            final boolean isCruiseOnPilot = this.craftType.getBoolProperty(CraftType.CRUISE_ON_PILOT);
+
             CraftManager.getInstance().detect(
                     startPoint,
                     craftType, (type, w, p, parents) -> {
                         // Assert instructions are not available normally, also this is checked in beforehand sort of
                         assert p != null; // Note: This only passes in a non-null player.
+                        Craft result = null;
                         if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
                             if (parents.size() > 1)
                                 return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
                                         "Detection - Failed - Already commanding a craft")), null);
                             if (parents.size() == 1) {
                                 Craft parent = parents.iterator().next();
-                                return new Pair<>(Result.succeed(),
-                                        new CruiseOnPilotSubCraft(type, world, p, parent));
+                                result = new CruiseOnPilotSubCraft(type, world, p, parent);
                             }
 
-                            return new Pair<>(Result.succeed(),
-                                    new CruiseOnPilotCraft(type, world, p));
+                            result = new CruiseOnPilotCraft(type, world, p);
                         }
                         else {
                             if (parents.size() > 0)
                                 return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
                                         "Detection - Failed - Already commanding a craft")), null);
 
-                            return new Pair<>(Result.succeed(),
-                                    new PlayerCraftImpl(type, w, p));
+                            result = new PlayerCraftImpl(type, w, p);
                         }
+
+                        if (result != null) {
+                            if (!isCruiseOnPilot) {
+                                NameSign.tryApplyName(result, signWrapper);
+                            }
+                            return new Pair<>(Result.succeed(), result);
+                        }
+                        throw new IllegalStateException("No craft created during detection!");
                     },
                     world, player, player,
                     craft -> () -> {
-                        final boolean isCruiseOnPilot = craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT);
-                        if (!isCruiseOnPilot) {
-                            NameSign.tryApplyName(craft, signWrapper);
-                        }
                         Bukkit.getServer().getPluginManager().callEvent(new CraftPilotEvent(craft, CraftPilotEvent.Reason.PLAYER));
                         if (craft instanceof SubCraft) { // Subtract craft from the parent
                             Craft parent = ((SubCraft) craft).getParent();
