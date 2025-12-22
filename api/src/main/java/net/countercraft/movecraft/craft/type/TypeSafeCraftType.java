@@ -12,11 +12,10 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -37,20 +36,13 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
     private final String name;
 
     protected String parentName = null;
-    protected final LazyLoadField<BiFunction<PropertyKey<?>, TypeSafeCraftType, Object>> parentRetrievalFunction = new LazyLoadField<>(this::computeParentFunction);
+    protected final LazyLoadField<TypeSafeCraftType> parentInstance = new LazyLoadField<>(this::computeParent);
 
-    private BiFunction<PropertyKey<?>, TypeSafeCraftType, Object> computeParentFunction() {
-        final BiFunction<PropertyKey<?>, TypeSafeCraftType, Object> defaultValue = (key, type) -> key.getDefault(type);
+    protected final TypeSafeCraftType computeParent() {
         if (this.parentName == null || this.parentName.isEmpty()) {
-            return defaultValue;
-        } else {
-            final TypeSafeCraftType parentType = this.typeRetriever.apply(this.parentName);
-            if (parentType != null) {
-                return parentType::get;
-            } else {
-                return defaultValue;
-            }
+            return null;
         }
+        return this.typeRetriever.apply(this.parentName);
     }
 
     @NotNull
@@ -240,6 +232,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         return null;
     }
 
+    // TODO: This implementation is not ideal for perworlddata! It does not fully merge with parent types
     public <T> T get(@NotNull PropertyKey<PerWorldData<T>> key, MovecraftWorld world) {
         return this.get(key, world.getName());
     }
@@ -260,9 +253,17 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
 
     // Internal retrieval function, do not override unless you know what you are doing
     protected <T> T get(@NotNull PropertyKey<T> key, TypeSafeCraftType type) {
-        final TypeSafeCraftType self = this;
-        T result = super.get(key, (k) -> (T)this.parentRetrievalFunction.get().apply(k, self));
-        return result;
+        T result = this.getOrDefault(key, null);
+        if (result != null) {
+            return result;
+        } else if (this.parentInstance.get() != null) {
+            result = this.parentInstance.get().get(key, type);
+            if (result != null) {
+                return result;
+            }
+        }
+        // If nothing was found, return the default value!
+        return key.getDefault(type);
     }
 
     public CraftProperties createCraftProperties(final Craft craft) {
@@ -278,6 +279,11 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
             return this.get(key, this) != null;
         }
         return true;
+    }
+
+    @Nullable
+    public TypeSafeCraftType getParent() {
+        return this.parentInstance.get();
     }
 
 }
