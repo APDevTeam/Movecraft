@@ -31,6 +31,29 @@ public class TypedContainer<K extends TypedKey<?>> {
         }
     }
 
+    protected <T> @Nullable T getOrDefault(@NotNull TypedKey<T> key, T defaultValue) {
+        Object stored = this.backing.getOrDefault((K) key, defaultValue);
+        try {
+            //noinspection unchecked
+            return (T) stored;
+        } catch (ClassCastException cce) {
+            throw new IllegalStateException(String.format("The provided key %s has an invalid value type.", key), cce);
+        }
+    }
+
+    protected <T> @Nullable T get(@NotNull TypedKey<T> key) {
+        Object stored = this.backing.get((K) key);
+        if (stored == null) {
+            return null;
+        }
+        try {
+            //noinspection unchecked
+            return (T) stored;
+        } catch (ClassCastException cce) {
+            throw new IllegalStateException(String.format("The provided key %s has an invalid value type.", key), cce);
+        }
+    }
+
     protected <T> void set(@NotNull TypedKey<T> tagKey, @NotNull T value) {
         this.backing.put((K) tagKey, value);
     }
