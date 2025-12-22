@@ -208,6 +208,7 @@ final public class CraftType extends TypeSafeCraftType {
      *
      * @param property property to register
      */
+    @Deprecated(forRemoval = true)
     public static void registerProperty(Property<?> property) {
         //properties.put(property.getNamespacedKey(), property);
         PropertyKey<?> propertyKey = property.asTypeSafeKey();
@@ -223,6 +224,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param key Key of the string property
      * @return value of the string property
      */
+    @Deprecated(forRemoval = true)
     public String getStringProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
@@ -243,6 +245,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param key Key of the integer property
      * @return value of the integer property
      */
+    @Deprecated(forRemoval = true)
     public int getIntProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
@@ -263,6 +266,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param key Key of the boolean property
      * @return value of the boolean property
      */
+    @Deprecated(forRemoval = true)
     public boolean getBoolProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
@@ -283,6 +287,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param key Key of the float property
      * @return value of the float property
      */
+    @Deprecated(forRemoval = true)
     public float getFloatProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
@@ -303,6 +308,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param key Key of the double property
      * @return value of the double property
      */
+    @Deprecated(forRemoval = true)
     public double getDoubleProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
@@ -324,6 +330,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param key Key of the object property
      * @return value of the object property
      */
+    @Deprecated(forRemoval = true)
     @Nullable
     public Object getObjectProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
@@ -345,6 +352,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param key Key of the material set property
      * @return value of the material set property
      */
+    @Deprecated(forRemoval = true)
     public EnumSet<Material> getMaterialSetProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
@@ -374,6 +382,7 @@ final public class CraftType extends TypeSafeCraftType {
     }
 
     Map<NamespacedKey, Pair<Map<String, Object>, BiFunction<CraftType, String, Object>>> perWorldPropertyMap;
+    @Deprecated(forRemoval = true)
     private Object getPerWorldProperty(NamespacedKey key, String worldName) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
@@ -396,6 +405,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param world the world to check
      * @return value of the per world property
      */
+    @Deprecated(forRemoval = true)
     public Object getPerWorldProperty(NamespacedKey key, @NotNull World world) {
         return getPerWorldProperty(key, world.getName());
     }
@@ -406,6 +416,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param world the world to check
      * @return value of the per world property
      */
+    @Deprecated(forRemoval = true)
     public Object getPerWorldProperty(NamespacedKey key, @NotNull MovecraftWorld world) {
         return getPerWorldProperty(key, world.getName());
     }
@@ -417,6 +428,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param key Key of the required block property
      * @return value of the required block property
      */
+    @Deprecated(forRemoval = true)
     public Set<RequiredBlockEntry> getRequiredBlockProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
@@ -439,6 +451,7 @@ final public class CraftType extends TypeSafeCraftType {
      *
      * @param transform transform to modify the craft type
      */
+    @Deprecated(forRemoval = true)
     public static void registerTypeTransform(Transform<?> transform) {
         transforms.add(transform);
     }
@@ -453,6 +466,7 @@ final public class CraftType extends TypeSafeCraftType {
      * @param validator validator to parse the craft type
      * @param errorMessage message to throw on failure
      */
+    @Deprecated(forRemoval = true)
     public static void registerTypeValidator(final Predicate<CraftType> validator, String errorMessage) {
         Predicate<TypeSafeCraftType> typeSafeCraftTypePredicate = (typeSafe) -> {
             if (typeSafe instanceof CraftType craftType) {
