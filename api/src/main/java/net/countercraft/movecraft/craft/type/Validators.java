@@ -13,8 +13,27 @@ public class Validators {
         return validator;
     }
 
-    static void registerAll() {
+    static void register(Predicate<TypeSafeCraftType> predicate, String errorMessage) {
+        register(new Pair<>(predicate, errorMessage));
+    }
 
+    static void registerAll() {
+        // Validator to avoid parent recursions!
+        register(
+                type -> {
+                    TypeSafeCraftType tmp = type;
+                    if (tmp.getParent() != null) {
+                        do {
+                            tmp = tmp.getParent();
+                            if (tmp == type) {
+                                return false;
+                            }
+                        } while(tmp != null);
+                    }
+                    return true;
+                },
+                "Type must not be used as parent in its own parent hierarchy!"
+        );
     }
 
 }
