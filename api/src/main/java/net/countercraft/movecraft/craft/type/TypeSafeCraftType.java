@@ -88,11 +88,9 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         // Structure: Simple map per namespace inside the file
         // Helps to differentiate things
 
-        Map<String, Map<String, Object>> namespaces = new HashMap<>();
-
-        Set<Map.Entry<NamespacedKey, PropertyKey>> entries = PROPERTY_REGISTRY.entries();
-
         // No longer necessary. Through the parentloading it will end up at the property level if not set and retrieve the default from there
+//        Set<Map.Entry<NamespacedKey, PropertyKey>> entries = PROPERTY_REGISTRY.entries();
+//        Map<String, Map<String, Object>> namespaces = new HashMap<>();
 //        // Step 1: Set all default values
 //        for (Map.Entry<NamespacedKey, PropertyKey> entry : entries) {
 //            namespaces.computeIfAbsent(entry.getKey().getNamespace(), k -> new HashMap<>()).putIfAbsent(entry.getKey().getKey(), entry.getValue().getDefault(result));
@@ -111,7 +109,14 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
 //                namespaces.putIfAbsent(namespace, yamlMapping);
 //            }
 //        }
+//
+//        // Try to read every key we have instead
+//        // Step 3: Read from the parsed namespaces and apply it
+//        for (Map.Entry<String, Map<String, Object>> entry : namespaces.entrySet()) {
+//            readNamespace(entry.getKey(), entry.getValue(), result);
+//        }
         // DONE: Add support for sorting => dashes in the ID separate to own sections!
+        // Simplified loading strategy => Simply attempt to load all properties that have been registered
         PROPERTY_REGISTRY.getAllValues().forEach(
                 prop -> {
                     if (!readProperty(prop, yamlMapping, result)) {
@@ -119,11 +124,6 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
                     }
                 }
         );
-        // Try to read every key we have instead
-        // Step 3: Read from the parsed namespaces and apply it
-        for (Map.Entry<String, Map<String, Object>> entry : namespaces.entrySet()) {
-            readNamespace(entry.getKey(), entry.getValue(), result);
-        }
 
         // Step 4: Apply transforms
         for (TypeSafeTransform<?> transform : TRANSFORM_REGISTRY) {
