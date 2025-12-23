@@ -143,10 +143,12 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
     // Run transformer, if anything was changed, merge
     static <T> void runTransformer(TypeSafeTransform<T> transform, final TypeSafeCraftType typeSafeCraftType) {
         Map<PropertyKey<T>, T> output = new HashMap<>();
-        if (transform.transform(typeSafeCraftType::getWithoutParent, output)) {
+        Set<PropertyKey<T>> toDelete = new HashSet<>();
+        if (transform.transform(typeSafeCraftType::getWithoutParent, output, toDelete)) {
             output.entrySet().forEach(entry -> {
                 typeSafeCraftType.set(entry.getKey(), entry.getValue());
             });
+            toDelete.forEach(typeSafeCraftType::delete);
         }
     }
 

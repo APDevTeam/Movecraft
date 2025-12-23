@@ -3,10 +3,11 @@ package net.countercraft.movecraft.craft.type.transform;
 import net.countercraft.movecraft.craft.type.PropertyKey;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 @FunctionalInterface
 public interface TypeSafeTransform<T> {
 
-    boolean transform(Function<PropertyKey<T>, T> valueRetrieverFunction, Map<PropertyKey<T>, T> transformedOutput);
+    boolean transform(Function<PropertyKey<T>, T> valueRetrieverFunction, Map<PropertyKey<T>, T> transformedOutput, Set<PropertyKey<T>> toDelete);
 }
