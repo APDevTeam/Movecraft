@@ -23,6 +23,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
 
     // Initialization
     static {
+        // TODO: Replace with event
         PropertyKeys.registerAll();
         Transformers.registerAll();
         Validators.registerAll();
