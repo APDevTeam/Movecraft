@@ -29,11 +29,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -601,82 +599,6 @@ final public class CraftType extends TypeSafeCraftType {
             data.remove(PER_WORLD_VERT_CRUISE_SPEED);
             return data;
         });
-
-        /* Craft type validators */
-        registerTypeValidator(
-                type -> type.getIntProperty(MIN_HEIGHT_LIMIT) <= type.getIntProperty(MAX_HEIGHT_LIMIT),
-                "minHeightLimit must be less than or equal to maxHeightLimit"
-        );
-        registerTypeValidator(
-                type -> type.getIntProperty(HOVER_LIMIT) >= 0,
-                "hoverLimit must be greater than or equal to zero"
-        );
-        registerTypeValidator(
-                type -> type.getIntProperty(GEAR_SHIFTS) >= 1,
-                "gearShifts must be greater than or equal to one"
-        );
-        registerTypeValidator(
-                type -> {
-                    for (var i : type.perWorldPropertyMap.get(PER_WORLD_MIN_HEIGHT_LIMIT).getLeft().entrySet()) {
-                        var a = i.getValue();
-                        if(!(a instanceof Integer))
-                            throw new IllegalStateException(
-                                    "PER_WORLD_MIN_HEIGHT_LIMIT must have values of type Integer");
-                        int value = (int) a;
-                        var w = Bukkit.getWorld(i.getKey());
-                        if(w == null)
-                            throw new IllegalArgumentException("World '" + i.getKey() + "' does not exist.");
-                        if(value < w.getMinHeight() || value > w.getMaxHeight())
-                            return false;
-                    }
-                    return true;
-                },
-                "perWorldMinHeightLimit must be within the world height limits"
-        );
-        registerTypeValidator(
-                type -> {
-                    for (var i : type.perWorldPropertyMap.get(PER_WORLD_MAX_HEIGHT_LIMIT).getLeft().entrySet()) {
-                        var a = i.getValue();
-                        if(!(a instanceof Integer))
-                            throw new IllegalStateException(
-                                    "PER_WORLD_MAX_HEIGHT_LIMIT must have values of type Integer");
-                        var value = (int) a;
-                        var w = Bukkit.getWorld(i.getKey());
-                        if(w == null)
-                            throw new IllegalArgumentException("World '" + i.getKey() + "' does not exist.");
-                        if(value < w.getMinHeight() || value > w.getMaxHeight())
-                            return false;
-                    }
-                    return true;
-                },
-                "perWorldMaxHeightLimit must be within the world height limits"
-        );
-        registerTypeValidator(
-                type -> {
-                    var max = type.perWorldPropertyMap.get(PER_WORLD_MAX_HEIGHT_LIMIT).getLeft();
-                    var min = type.perWorldPropertyMap.get(PER_WORLD_MIN_HEIGHT_LIMIT).getLeft();
-                    var worlds = new HashSet<String>();
-                    worlds.addAll(max.keySet());
-                    worlds.addAll(min.keySet());
-                    for (var world : worlds) {
-                        if(!max.containsKey(world) || !min.containsKey(world))
-                            continue; // Only worry about worlds which have both a max and a min
-
-                        var worldMax = max.get(world);
-                        var worldMin = min.get(world);
-                        if (!(worldMax instanceof Integer) || !(worldMin instanceof Integer))
-                            throw new IllegalStateException("PER_WORLD_MIN_HEIGHT_LIMIT and PER_WORLD_MAX_HEIGHT_LIMIT"
-                                    + " must have values of type Integer");
-
-                        int worldMaxInt = (int) worldMax;
-                        int worldMinInt = (int) worldMin;
-                        if (worldMaxInt < worldMinInt)
-                            return false;
-                    }
-                    return true;
-                },
-                "perWorldMaxHeightLimit must be more than perWorldMinHeightLimit"
-        );
     }
 
     public CraftType(final TypeSafeCraftType backing) {

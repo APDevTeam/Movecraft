@@ -62,6 +62,10 @@ public class PerWorldData<T> {
         return get(world.getName());
     }
 
+    T getDefaultFallback() {
+        return this.defaultFallback;
+    }
+
     public boolean set(T value) {
         return this.set(value, null);
     }
