@@ -18,6 +18,7 @@ import java.util.function.Function;
 // T: The parsed type
 
 // TODO: Rework to return the same type as it parses as => its cleaner that way! Also make generic type required to implement Cloneable for non primitives!
+// TODO: Rework creation to use a builder pattern
 public class PropertyKey<T> extends TypedKey<T> {
 
     public static interface ImmutableKey {
