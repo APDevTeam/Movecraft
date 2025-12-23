@@ -58,6 +58,10 @@ public class TypedContainer<K extends TypedKey<?>> {
         this.backing.put((K) tagKey, value);
     }
 
+    protected <T> void delete(@NotNull TypedKey<T> key) {
+        this.backing.remove(key);
+    }
+
     public boolean has(@NotNull K tagKey) {
         return this.backing.containsKey(tagKey);
     }
