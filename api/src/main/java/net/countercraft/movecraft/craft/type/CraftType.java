@@ -22,7 +22,6 @@ import net.countercraft.movecraft.craft.type.property.*;
 import net.countercraft.movecraft.craft.type.transform.*;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Pair;
-import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.registration.TypedKey;
 import org.bukkit.*;
 import org.jetbrains.annotations.Contract;
@@ -474,131 +473,6 @@ final public class CraftType extends TypeSafeCraftType {
             }
         };
         TypeSafeCraftType.VALIDATOR_REGISTRY.add(new Pair<>(typeSafeCraftTypePredicate, errorMessage));
-    }
-
-
-
-    static {
-        /* Craft type transforms */
-        // Convert speed to TICK_COOLDOWN
-        registerTypeTransform((IntegerTransform) (data, type) -> {
-            int tickCooldown = (int) Math.ceil(20 / type.getDoubleProperty(SPEED));
-            data.put(TICK_COOLDOWN, tickCooldown);
-            return data;
-        });
-        // Convert canFly to blockedByWater and remove canFly
-        registerTypeTransform((BooleanTransform) (data, type) -> {
-            data.put(BLOCKED_BY_WATER, data.get(CAN_FLY));
-            data.remove(CAN_FLY);
-            return data;
-        });
-        // Convert cruiseSpeed to CRUISE_TICK_COOLDOWN
-        registerTypeTransform((IntegerTransform) (data, type) -> {
-            data.put(CRUISE_TICK_COOLDOWN,
-                    (int) Math.round((1.0 + data.get(CRUISE_SKIP_BLOCKS))
-                            * 20.0 / type.getDoubleProperty(CRUISE_SPEED))
-            );
-            return data;
-        });
-        // Convert vertCruiseSpeed to VERT_CRUISE_TICK_COOLDOWN
-        registerTypeTransform((IntegerTransform) (data, type) -> {
-            data.put(VERT_CRUISE_TICK_COOLDOWN,
-                    (int) Math.round((1.0 + data.get(VERT_CRUISE_SKIP_BLOCKS))
-                            * 20.0 / type.getDoubleProperty(VERT_CRUISE_SPEED))
-            );
-            return data;
-        });
-        // Fix gravityDropDistance to be negative
-        registerTypeTransform((IntegerTransform) (data, type) -> {
-            int dropDist = data.get(GRAVITY_DROP_DISTANCE);
-            data.put(GRAVITY_DROP_DISTANCE, dropDist > 0 ? -dropDist : dropDist);
-            return data;
-        });
-        // Add WATER to PASSTHROUGH_BLOCKS if not BLOCKED_BY_WATER
-        registerTypeTransform((MaterialSetTransform) (data, type) -> {
-            if(type.getBoolProperty(BLOCKED_BY_WATER))
-                return data;
-
-            var passthroughBlocks = data.get(PASSTHROUGH_BLOCKS);
-            passthroughBlocks.addAll(Tags.WATER);
-            data.put(PASSTHROUGH_BLOCKS, passthroughBlocks);
-            return data;
-        });
-        // Add WATER to FORBIDDEN_HOVER_OVER_BLOCKS if not canHoverOverWater
-        registerTypeTransform((MaterialSetTransform) (data, type) -> {
-            if(type.getBoolProperty(CAN_HOVER_OVER_WATER))
-                return data;
-
-            var forbiddenHoverOverBlocks = data.get(FORBIDDEN_HOVER_OVER_BLOCKS);
-            forbiddenHoverOverBlocks.addAll(Tags.WATER);
-            data.put(FORBIDDEN_HOVER_OVER_BLOCKS, forbiddenHoverOverBlocks);
-            return data;
-        });
-        // Convert perWorldSpeed to PER_WORLD_TICK_COOLDOWN
-        registerTypeTransform((PerWorldTransform) (data, type) -> {
-            var map = data.get(PER_WORLD_SPEED).getLeft();
-            Map<String, Object> resultMap = new HashMap<>();
-            for(var i : map.entrySet()) {
-                var value = i.getValue();
-                if(!(value instanceof Double))
-                    throw new IllegalStateException("PER_WORLD_SPEED must be of type Double");
-                resultMap.put(i.getKey(), (int) Math.ceil(20 / (double) value));
-            }
-            var defaultProvider = (BiFunction<CraftType, String, Object>)
-                    (craftType, worldName) -> craftType.getIntProperty(TICK_COOLDOWN);
-            data.put(PER_WORLD_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
-            return data;
-        });
-        // Convert perWorldCruiseSpeed to PER_WORLD_CRUISE_TICK_COOLDOWN
-        registerTypeTransform((PerWorldTransform) (data, type) -> {
-            var map = data.get(PER_WORLD_CRUISE_SPEED).getLeft();
-            Map<String, Object> resultMap = new HashMap<>();
-            for(var i : map.entrySet()) {
-                var value = i.getValue();
-                if(!(value instanceof Double))
-                    throw new IllegalStateException("PER_WORLD_CRUISE_SPEED must be of type Double");
-                var world = i.getKey();
-                var skip = type.getPerWorldProperty(PER_WORLD_CRUISE_SKIP_BLOCKS, world);
-                if(!(skip instanceof Integer))
-                    throw new IllegalStateException("PER_WORLD_CRUISE_SKIP_BLOCKS must be of type Integer");
-                resultMap.put(world, (int) Math.round((1.0 + (int) skip) * 20.0 / (double) value));
-            }
-            var defaultProvider = (BiFunction<CraftType, String, Object>)
-                    (craftType, worldName) -> craftType.getIntProperty(CRUISE_TICK_COOLDOWN);
-            data.put(PER_WORLD_CRUISE_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
-            return data;
-        });
-        // Convert perWorldVertCruiseSpeed to PER_WORLD_VERT_CRUISE_TICK_COOLDOWN
-        registerTypeTransform((PerWorldTransform) (data, type) -> {
-            var map = data.get(PER_WORLD_VERT_CRUISE_SPEED).getLeft();
-            Map<String, Object> resultMap = new HashMap<>();
-            for(var i : map.entrySet()) {
-                var value = i.getValue();
-                if(!(value instanceof Double))
-                    throw new IllegalStateException("PER_WORLD_VERT_CRUISE_SPEED must be of type Double");
-                var world = i.getKey();
-                var skip = type.getPerWorldProperty(PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, world);
-                if(!(skip instanceof Integer))
-                    throw new IllegalStateException("PER_WORLD_VERT_CRUISE_SKIP_BLOCKS must be of type Integer");
-                resultMap.put(world, (int) Math.round((1.0 + (int) skip) * 20.0 / (double) value));
-            }
-            var defaultProvider = (BiFunction<CraftType, String, Object>)
-                    (craftType, worldName) -> craftType.getIntProperty(VERT_CRUISE_TICK_COOLDOWN);
-            data.put(PER_WORLD_VERT_CRUISE_TICK_COOLDOWN, new Pair<>(resultMap, defaultProvider));
-            return data;
-        });
-        // Remove speed, sinkSpeed, cruiseSpeed, vertCruiseSpeed, perWorldSpeed, perWorldCruiseSpeed,
-        //   and perWorldVertCruiseSpeed
-        registerTypeTransform((DoubleTransform) (data, type) -> {
-            data.remove(SPEED);
-            data.remove(PER_WORLD_SPEED);
-            data.remove(SINK_SPEED);
-            data.remove(CRUISE_SPEED);
-            data.remove(PER_WORLD_CRUISE_SPEED);
-            data.remove(VERT_CRUISE_SPEED);
-            data.remove(PER_WORLD_VERT_CRUISE_SPEED);
-            return data;
-        });
     }
 
     public CraftType(final TypeSafeCraftType backing) {
