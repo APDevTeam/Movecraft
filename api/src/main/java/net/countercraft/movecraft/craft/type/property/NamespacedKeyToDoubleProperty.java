@@ -55,7 +55,7 @@ public class NamespacedKeyToDoubleProperty implements ConfigurationSerializable 
         for (Map.Entry<String, Object> entry : args.entrySet()) {
             List<String> strings = Arrays.asList(entry.getKey().split(","));
             Set<NamespacedKey> blockKeys = SerializationUtil.deserializeNamespacedKeySet(strings, new HashSet<>(), RegistryKey.BLOCK);
-            Set<NamespacedKey> itemKeys = SerializationUtil.deserializeNamespacedKeySet(strings, new HashSet<>(), RegistryKey.BLOCK);
+            Set<NamespacedKey> itemKeys = SerializationUtil.deserializeNamespacedKeySet(strings, new HashSet<>(), RegistryKey.ITEM);
             Object value = entry.getValue();
             double doubleVal = NumberConversions.toDouble(value);
             for (NamespacedKey keyTmp : blockKeys) {
