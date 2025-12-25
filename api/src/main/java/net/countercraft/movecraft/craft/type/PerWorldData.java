@@ -144,7 +144,12 @@ public class PerWorldData<T> {
                     return new PerWorldData<T>(defaultObj);
                 }
             } else {
-                return new PerWorldData<T>((T)yamlObj);
+                try {
+                    T objTmp = (T)yamlObj;
+                    return new PerWorldData<>(objTmp);
+                } catch(ClassCastException cce) {
+                    throw new IllegalArgumentException("Given data <" + yamlObj.toString() + "> is neither a map or the correct type!");
+                }
             }
         };
     }
