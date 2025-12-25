@@ -30,6 +30,7 @@ public class PropertyKeys {
     // endregion required base settings
 
     // region block constraints
+    // TODO: Rename to something like "keepalive" blocks, that is more fitting
     public static final PropertyKey<Set<RequiredBlockEntry>> FLY_BLOCKS =
             register(PropertyKeyTypes.requiredBlockEntrySetKey(
                     key("constraints/block/flyblocks"), t -> new HashSet<>()
@@ -91,13 +92,13 @@ public class PropertyKeys {
     public static final PropertyKey<Boolean> HALF_SPEED_UNDERWATER =
             register(PropertyKeyTypes.boolPropertyKey(key("half_speed_underwater")).immutable());
     public static final PropertyKey<Double> DYNAMIC_LAG_SPEED_FACTOR =
-            register(PropertyKeyTypes.doublePropertyKey(key("dynamic_lag_speed_factor")).immutable());
+            register(PropertyKeyTypes.doublePropertyKey(key("dynamic_lag/speed_factor")).immutable());
     public static final PropertyKey<Double> DYNAMIC_LAG_POWER_FACTOR =
-            register(PropertyKeyTypes.doublePropertyKey(key("dynamic_lag_power_factor")).immutable());
+            register(PropertyKeyTypes.doublePropertyKey(key("dynamic_lag/power_factor")).immutable());
     public static final PropertyKey<Double> DYNAMIC_LAG_MIN_SPEED =
-            register(PropertyKeyTypes.doublePropertyKey(key("dynamic_lag_min_speed")).immutable());
+            register(PropertyKeyTypes.doublePropertyKey(key("dynamic_lag/min_speed")).immutable());
     public static final PropertyKey<Double> DYNAMIC_FLY_BLOCK_SPEED_FACTOR =
-            register(PropertyKeyTypes.doublePropertyKey(key("dynamic_fly_block_speed_factor")).immutable());
+            register(PropertyKeyTypes.doublePropertyKey(key("dynamic_fly/block_speed_factor")).immutable());
     public static final PropertyKey<Double> CHEST_PENALTY =
             register(PropertyKeyTypes.doublePropertyKey(key("chest_penalty")).immutable());
     // endregion idk if we should keep these
@@ -112,8 +113,10 @@ public class PropertyKeys {
             register(PropertyKeyTypes.boolPropertyKey(key("can_switch_world"), t -> false).immutable());
     public static final PropertyKey<Boolean> CAN_BE_NAMED =
             register(PropertyKeyTypes.boolPropertyKey(key("can_be_named"), t -> true).immutable());
+    // TODO: replace behavior like this by directly specifying the craft class in the type
     public static final PropertyKey<Boolean> CRUISE_ON_PILOT =
             register(PropertyKeyTypes.boolPropertyKey(key("cruise_on_pilot"), t -> false).immutable());
+    // TODO: Replace with vector (left/right, up/down, forward/backward) or something
     public static final PropertyKey<Integer> CRUISE_ON_PILOT_VERT_MOVE =
             register(PropertyKeyTypes.intPropertyKey(key("cruise_on_pilot_vert_move"), t -> 0).immutable());
     public static final PropertyKey<Boolean> ALLOW_VERTICAL_MOVEMENT =
@@ -143,6 +146,7 @@ public class PropertyKeys {
             register(PropertyKeyTypes.intPropertyKey(key("static_water_level"), t -> 0).immutable());
     public static final PropertyKey<PerWorldData<Double>> FUEL_BURN_RATE =
             register(PropertyKeyTypes.doublePropertyKey(key("fuel_burn_rate"), t -> 0D).perWorld().immutable());
+    // TODO: Change to be part of the actual constraints themselves
     public static final PropertyKey<Double> SINK_PERCENT =
             register(PropertyKeyTypes.doublePropertyKey(key("sink_percent"), t -> 0D).immutable());
     public static final PropertyKey<Double> OVERALL_SINK_PERCENT =
@@ -159,28 +163,28 @@ public class PropertyKeys {
             ));
     // TODO: Move to sinkhandler
     public static final PropertyKey<Double> SINK_SPEED =
-            register(PropertyKeyTypes.doublePropertyKey(key("sink_speed"), t -> 1D).immutable());
+            register(PropertyKeyTypes.doublePropertyKey(key("sinking/speed"), t -> 1D).immutable());
     // TODO: Move to sinkhandler
     public static final PropertyKey<Integer> SINK_RATE_TICKS =
             register(PropertyKeyTypes.intPropertyKey(
-            key("sink_rate_ticks"), t -> (int) Math.ceil(20 / t.get(SINK_SPEED))
+            key("sinking/tickrate"), t -> (int) Math.ceil(20 / t.get(SINK_SPEED))
             ).immutable());
     // TODO: Move to sinkhandler
     public static final PropertyKey<Boolean> KEEP_MOVING_ON_SINK =
-            register(PropertyKeyTypes.boolPropertyKey(key("keep_moving_on_sink"), t -> false).immutable());
+            register(PropertyKeyTypes.boolPropertyKey(key("sinking/keep_moving"), t -> false).immutable());
     // TODO: Change to per world
     // TODO: Incorporate into sinkhandler
     public static final PropertyKey<Boolean> SINK_WHEN_OUT_OF_FUEL =
             register(PropertyKeyTypes.boolPropertyKey(
-                    key("sink_when_out_of_fuel")
+                    key("sinking/sink_on_out_of_fuel")
             ).immutable());
     // TODO: Move to sinkhandler
     public static final PropertyKey<Integer> SMOKE_ON_SINK =
-            register(PropertyKeyTypes.intPropertyKey(key("smoke_on_sink"), t -> 0).immutable());
+            register(PropertyKeyTypes.intPropertyKey(key("sinking/smoke"), t -> 0).immutable());
     public static final PropertyKey<Float> EXPLODE_ON_CRASH =
-            register(PropertyKeyTypes.floatPropertyKey(key("explode_on_crash"), t -> 0F).immutable());
+            register(PropertyKeyTypes.floatPropertyKey(key("sinking/explosion/strength"), t -> 0F).immutable());
     public static final PropertyKey<Boolean> INCENDIARY_ON_CRASH =
-            register(PropertyKeyTypes.boolPropertyKey(key("incendiary_on_crash"), t -> false).immutable());
+            register(PropertyKeyTypes.boolPropertyKey(key("sinking/explosion/incendiary"), t -> false).immutable());
     public static final PropertyKey<Float> COLLISION_EXPLOSION =
             register(PropertyKeyTypes.floatPropertyKey(key("collision_explosion"), t -> 0F).immutable());
     public static final PropertyKey<Float> UNDERWATER_COLLISION_EXPLOSION =
@@ -220,6 +224,7 @@ public class PropertyKeys {
             register(PropertyKeyTypes.intPropertyKey(
                     key("hover_limit"), 0
             ).immutable());
+    // TODO: Replace with a "allowed hover over" list or blacklist
     public static final PropertyKey<Boolean> CAN_HOVER_OVER_WATER =
             register(PropertyKeyTypes.boolPropertyKey(
                     key("can_hover_over_water"), t -> true
@@ -228,6 +233,7 @@ public class PropertyKeys {
             register(PropertyKeyTypes.boolPropertyKey(
                     key("can_move_entities"), t -> true
             ).immutable());
+    // TODO: Replace with black/whitelist of entity types
     public static final PropertyKey<Boolean> ONLY_MOVE_PLAYERS =
             register(PropertyKeyTypes.boolPropertyKey(
                     key("only_move_players"), t -> true
@@ -267,18 +273,18 @@ public class PropertyKeys {
     public static final PropertyKey<Integer> TELEPORTATION_COOLDOWN =
             register(PropertyKeyTypes.intPropertyKey(key("teleportation_cooldown")).immutable());
     public static final PropertyKey<Integer> GEAR_SHIFTS =
-            register(PropertyKeyTypes.intPropertyKey(key("gear_shifts"), t -> 1).immutable());
+            register(PropertyKeyTypes.intPropertyKey(key("gear_shifts/count"), t -> 1).immutable());
     public static final PropertyKey<Boolean> GEAR_SHIFT_AFFECT_TICK_COOLDOWN =
             register(PropertyKeyTypes.boolPropertyKey(
-                    key("gear_shift_affect_tick_cooldown"), t -> true
+                    key("gear_shifts/modify/tick_cooldown"), t -> true
             ).immutable());
     public static final PropertyKey<Boolean> GEAR_SHIFT_AFFECT_DIRECT_MOVEMENT =
             register(PropertyKeyTypes.boolPropertyKey(
-                    key("gear_shift_affect_direct_movement"), t -> false
+                    key("gear_shifts/modify/direct_movement"), t -> false
             ).immutable());
     public static final PropertyKey<Boolean> GEAR_SHIFT_AFFECT_AFFECT_CRUISE_SKIP_BLOCKS =
             register(PropertyKeyTypes.boolPropertyKey(
-                    key("gear_shift_affect_cruise_skip_blocks"), t -> false
+                    key("gear_shifts/modify/cruise_skip_blocks"), t -> false
             ).immutable());
     public static final PropertyKey<Integer> RELEASE_TIMEOUT =
             register(PropertyKeyTypes.intPropertyKey(
@@ -304,11 +310,11 @@ public class PropertyKeys {
     // region speed modifier blocks
     public static final PropertyKey<PerWorldData<Double>> SPEED_MODIFIER_MAX_SPEED =
             register(PropertyKeyTypes.doublePropertyKey(
-                    key("speed_modifier_max_speed")
+                    key("speed_modifiers/max_speed")
             ).perWorld().immutable());
     public static final PropertyKey<NamespacedKeyToDoubleProperty> SPEED_MODIFIER_BLOCKS =
             register(PropertyKeyTypes.namespacedKeyToDoublePropertyKey(
-                    key("speed_modifier_blocks")
+                    key("speed_modifiers/blocks")
             ).immutable());
     // endregion speed modifier blocks
 
@@ -316,47 +322,47 @@ public class PropertyKeys {
     // TODO: Replace sinking logic by configuring a sinking handler which creates the task and so on
     public static final PropertyKey<Double> FALL_OUT_OF_WORLD_BLOCK_CHANCE =
             register(PropertyKeyTypes.doublePropertyKey(
-                    key("fall_out_of_world_block_chance")
+                    key("sinking/falling_block_chance")
             ).immutable());
     public static final PropertyKey<Boolean> USE_ALTERNATIVE_SINKING_PROCESS =
             register(PropertyKeyTypes.boolPropertyKey(
-                    key("use_alternative_sinking_process")
+                    key("sinking/pretty/enabled")
             ).immutable());
     public static final PropertyKey<Integer> ALTERNATIVE_SINKING_TIME_BEFORE_DISINITEGRATION =
             register(PropertyKeyTypes.intPropertyKey(
-                    key("alternative_sinking_time_before_disintegration")
+                    key("sinking/pretty/disintegration/delay")
             ).immutable());
     public static final PropertyKey<Double> ALTERNATIVE_SINKING_EXPLOSION_CHANCE =
             register(PropertyKeyTypes.doublePropertyKey(
-                    key("alternative_sinking_explosion_chance")
+                    key("sinking/pretty/explosion/chance")
             ).immutable());
     public static final PropertyKey<Integer> ALTERNATIVE_SINKING_MIN_EXPLOSIONS =
             register(PropertyKeyTypes.intPropertyKey(
-                    key("alternative_sinking_min_explosions"), 1
+                    key("sinking/pretty/explosion/min"), 1
             ).immutable());
     public static final PropertyKey<Integer> ALTERNATIVE_SINKING_MAX_EXPLOSIONS =
             register(PropertyKeyTypes.intPropertyKey(
-                    key("alternative_sinking_max_explosions"), 4
+                    key("sinking/pretty/explosion/max"), 4
             ).immutable());
     public static final PropertyKey<Double> ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE =
             register(PropertyKeyTypes.doublePropertyKey(
-                    key("alternative_sinking_disintegration_chance"), 0.5D
+                    key("sinking/pretty/disintegration/chance"), 0.5D
             ).immutable());
     public static final PropertyKey<Integer> ALTERNATIVE_SINKING_MIN_DISINTEGRATE_BLOCKS =
             register(PropertyKeyTypes.intPropertyKey(
-                    key("alternative_sinking_min_disintegrate_blocks"), 25
+                    key("sinking/pretty/disintegration/min"), 25
             ).immutable());
     public static final PropertyKey<Integer> ALTERNATIVE_SINKING_MAX_DISINTEGRATE_BLOCKS =
             register(PropertyKeyTypes.intPropertyKey(
-                    key("alternative_sinking_max_disintegrate_blocks"), 100
+                    key("sinking/pretty/disintegration/max"), 100
             ).immutable());
     public static final PropertyKey<String> ALTERNATIVE_SINKING_DISINTEGRATION_SOUND =
             register(PropertyKeyTypes.stringPropertyKey(
-                    key("alternative_sinking_disintegration_sound"), ""
+                    key("sinking/pretty/disintegration/sound"), ""
             ).immutable());
     public static final PropertyKey<Double> ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE =
             register(PropertyKeyTypes.doublePropertyKey(
-                    key("alternative_sinking_sink_max_remaining_percentage"), 0.25D
+                    key("sinking/pretty/max_remaining_percentage"), 0.25D
             ).immutable());
     // endregion Alternative sinking process
 
