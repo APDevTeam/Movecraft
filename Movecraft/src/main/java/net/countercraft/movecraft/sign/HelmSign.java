@@ -5,42 +5,23 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
+import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.jetbrains.annotations.NotNull;
 
 public class HelmSign extends AbstractCraftSign {
 
-    public static final String[] PRETTY_LINES = new String[] {
-            "\\  ||  /",
-            "\\  ||  /",
-            "/  ||  \\"
-    };
-    public static final String PRETTY_HEADER = PRETTY_LINES[0];
+     public static final String PRETTY_HEADER = "\\  ||  /";
+    public static final Component[] PRETTY_LINES = new Component[] {
+            Component.text(PRETTY_HEADER),
+            Component.text("==      =="),
+            Component.text("/  ||  \\")
+    };   
 
     public HelmSign() {
         super(false);
-    }
-
-    @EventHandler
-    public void onSignChange(SignChangeEvent event){
-        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
-            return;
-        }
-        for (int i = 0; i < PRETTY_LINES.length && i < event.getLines().length; i++) {
-            event.setLine(i, PRETTY_LINES[i]);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onSignClick(@NotNull PlayerInteractEvent event) {
-
-
     }
 
     @Override
@@ -64,9 +45,9 @@ public class HelmSign extends AbstractCraftSign {
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
             return true;
         }
-        event.setLine(0, "\\  ||  /");
-        event.setLine(1, "==      ==");
-        event.setLine(2, "/  ||  \\");
+        for (int i = 0; i < PRETTY_LINES.length && i < event.getLines().length; i++) {
+            event.line(i, PRETTY_LINES[i]);
+        }
         return true;
     }
 

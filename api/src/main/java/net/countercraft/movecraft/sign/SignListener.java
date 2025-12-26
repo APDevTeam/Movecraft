@@ -187,6 +187,32 @@ public class SignListener implements Listener {
         return createFromSide(sign, signSide, side);
     }
 
+    protected final SignWrapper createForEditEvent(final Sign sign, final SignChangeEvent event) {
+        BlockData blockData = sign.getBlock().getBlockData();
+        BlockFace face;
+        if (blockData instanceof Directional directional) {
+            face = directional.getFacing();
+        } else if (blockData instanceof Rotatable rotatable) {
+            face = rotatable.getRotation();
+        }
+        else {
+            face = BlockFace.SELF;
+        }
+
+        if (event.getSide() == Side.BACK) {
+            face = face.getOppositeFace();
+        }
+        SignWrapper wrapper = new SignWrapper(
+                sign,
+                sign.getSide(event.getSide()),
+                event::line,
+                event.lines(),
+                event::line,
+                face
+        );
+        return wrapper;
+    }
+
     protected final SignWrapper createFromSide(final Sign sign, final SignSide signSide, Side side) {
         BlockData blockData = sign.getBlock().getBlockData();
         BlockFace face;
@@ -276,7 +302,7 @@ public class SignListener implements Listener {
 
         for (MovecraftLocation location : craft.getHitBox()) {
             Block block = location.toBukkit(craft.getWorld()).getBlock();
-            if(!Tag.SIGNS.isTagged(block.getType())){
+            if(!Tag.ALL_SIGNS.isTagged(block.getType())){
                 continue;
             }
             BlockState state = block.getState();
@@ -361,42 +387,24 @@ public class SignListener implements Listener {
         Block block = event.getBlock();
         BlockState state = block.getState();
         if (state instanceof Sign sign) {
-            SignWrapper signWrapper = this.getSignWrapper(sign, event.getPlayer());
-            SignWrapper wrapper = this.getSignWrapper(sign, event);
+            // Create the wrapper from the event, not the side! Otherwise the line() methods from the wrapper or the event won't really do anything
+            SignWrapper wrapper = this.createForEditEvent(sign, event);
 
             boolean onCraft = MathUtils.getCraftByPersistentBlockData(sign.getLocation()) != null;
 
-            AbstractMovecraftSign.EventType eventType = signWrapper.isEmpty() ? AbstractMovecraftSign.EventType.SIGN_CREATION : AbstractMovecraftSign.EventType.SIGN_EDIT;
+            AbstractMovecraftSign.EventType eventType = wrapper.isEmpty() ? AbstractMovecraftSign.EventType.SIGN_CREATION : AbstractMovecraftSign.EventType.SIGN_EDIT;
             if (eventType == AbstractMovecraftSign.EventType.SIGN_EDIT && onCraft) {
                 eventType = AbstractMovecraftSign.EventType.SIGN_EDIT_ON_CRAFT;
             }
             final AbstractMovecraftSign.EventType eventTypeTmp = eventType;
-            AbstractMovecraftSign ams = null;
 
-            // If the side is empty, we should try a different side, like, the next side that is not empty and which has a signHandler
+
+            // If the side is empty, which means the sign was cleared, we do not need to search for a different side!
             if (wrapper.isEmpty()) {
-                SignWrapper[] wrapps = this.getSignWrappers(sign, true);
-                if (wrapps == null || wrapps.length == 0) {
-                    // Nothing found
-                    if (onCraft) {
-                        event.setCancelled(true);
-                    }
-                    return;
-                } else {
-                    for (SignWrapper swTmp : wrapps) {
-                        AbstractMovecraftSign amsTmp = MovecraftSignRegistry.INSTANCE.get(swTmp.line(0));
-                        if (amsTmp != null) {
-                            wrapper = swTmp;
-                            ams = amsTmp;
-                            break;
-                        }
-                    }
-                }
+                return;
             }
 
-            if (ams == null) {
-                ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
-            }
+            final AbstractMovecraftSign ams = MovecraftSignRegistry.INSTANCE.get(wrapper.line(0));
 
             // Would be one more readable line if using Optionals but Nullables were wanted
             if (ams != null) {
@@ -424,6 +432,9 @@ public class SignListener implements Listener {
     public void onSignClick(PlayerInteractEvent event) {
         Block block = event.getClickedBlock();
         if (block == null) {
+            return;
+        }
+        if (!Tag.ALL_SIGNS.isTagged(block.getType())) {
             return;
         }
         BlockState state = block.getState();
@@ -521,17 +532,18 @@ public class SignListener implements Listener {
         craft.getHitBox().forEach(
                 (mloc) -> {
                     Block block = mloc.toBukkit(world).getBlock();
-                    BlockState state = block.getState();
-                    if (state instanceof Sign sign) {
-                        for (SignWrapper wrapper : this.getSignWrappers(sign)) {
-                            AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(wrapper.line(0));
-                            if (acs != null) {
-                                functionToRun.accept(acs, wrapper);
+                    if (Tag.ALL_SIGNS.isTagged(block.getType())) {
+                        BlockState state = block.getState();
+                        if (state instanceof Sign sign) {
+                            for (SignWrapper wrapper : this.getSignWrappers(sign)) {
+                                AbstractCraftSign acs = MovecraftSignRegistry.INSTANCE.getCraftSign(wrapper.line(0));
+                                if (acs != null) {
+                                    functionToRun.accept(acs, wrapper);
+                                }
                             }
                         }
                     }
                 }
         );
     }
-
 }

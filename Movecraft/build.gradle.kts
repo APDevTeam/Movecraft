@@ -1,17 +1,19 @@
 plugins {
     `maven-publish`
     id("buildlogic.java-conventions")
-    id("io.github.goooler.shadow") version "8.1.7"
-    id("io.papermc.hangar-publish-plugin") version "0.1.2"
+    id("com.gradleup.shadow") version "8.3.6"
+    id("io.papermc.hangar-publish-plugin") version "0.1.3"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 dependencies {
-    runtimeOnly(project(":movecraft-v1_20", "reobf"))
-    runtimeOnly(project(":movecraft-v1_21", "reobf"))
+    runtimeOnly(project(":movecraft-v1_20_6", "reobf"))
     runtimeOnly(project(":movecraft-v1_21_1", "reobf"))
-	runtimeOnly(project(":movecraft-v1_21_4", "reobf"))
+    runtimeOnly(project(":movecraft-v1_21_4", "reobf"))
+    runtimeOnly(project(":movecraft-v1_21_5", "reobf"))
+    runtimeOnly(project(":movecraft-v1_21_8", "reobf"))
+    runtimeOnly(project(":movecraft-v1_21_10", "reobf"))
     implementation(project(":movecraft-api"))
     compileOnly("org.yaml:snakeyaml:2.0")
 }
@@ -23,10 +25,12 @@ tasks.shadowJar {
 
     dependencies {
         include(project(":movecraft-api"))
-        include(project(":movecraft-v1_20"))
-        include(project(":movecraft-v1_21"))
+        include(project(":movecraft-v1_20_6"))
         include(project(":movecraft-v1_21_1"))
-		include(project(":movecraft-v1_21_4"))
+        include(project(":movecraft-v1_21_4"))
+        include(project(":movecraft-v1_21_5"))
+        include(project(":movecraft-v1_21_8"))
+        include(project(":movecraft-v1_21_10"))
     }
 }
 
@@ -70,9 +74,7 @@ hangarPublish {
         platforms {
             register(io.papermc.hangarpublishplugin.model.Platforms.PAPER) {
                 jar.set(tasks.shadowJar.flatMap { it.archiveFile })
-
-                platformVersions.set(listOf("1.20.6", "1.21.1", "1.21.4", "1.21.5"))
-
+                platformVersions.set(listOf("1.20.6", "1.21.1", "1.21.4", "1.21.5", "1.21.8", "1.21.10"))
             }
         }
     }

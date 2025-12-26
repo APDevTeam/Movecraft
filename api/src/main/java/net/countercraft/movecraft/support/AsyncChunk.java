@@ -18,7 +18,6 @@ public abstract class AsyncChunk<T extends Chunk> {
     static {
         Constructor<?> temp = null;
         try {
-            Class.forName("net.countercraft.movecraft.support.v1_20.IAsyncChunk");
             String lastPackageName = "";
             for (String packageName : WorldHandler.getPackageNames(Bukkit.getServer().getMinecraftVersion())) {
                 lastPackageName = packageName;

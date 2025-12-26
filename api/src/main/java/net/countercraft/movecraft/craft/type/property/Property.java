@@ -20,4 +20,5 @@ public interface Property<Type> {
     public default PropertyKey<Type> asTypeSafeKey() {
         return null;
     }
+
 }

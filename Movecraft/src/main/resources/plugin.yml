@@ -1,9 +1,9 @@
 name: Movecraft
 version: ${projectVersion}
 api-version: 1.16
-description: The original flight and movement plugin for minecraft.
-authors: [cccm5, BaccaYarro, TylerS1066, eirik1996, drfiveminusmint, HumorousFool]
-website: https://github.com/APDevTeam/Movecraft
+description: Custom fork of movecraft for the ToTheEnd server. Use outside TTE only allowed if discussed with me personally prior!
+authors: [DerToaster, original work made by the APDevTeam]
+website: https://github.com/TTE-DevTeam/Movecraft
 main: net.countercraft.movecraft.Movecraft
 database: false
 commands:

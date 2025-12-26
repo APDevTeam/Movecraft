@@ -1,22 +1,29 @@
 package net.countercraft.movecraft.events;
 
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public class CraftCollisionExplosionEvent extends CraftEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
     @NotNull private final World world;
     @NotNull private final Location location;
+    @NotNull private final Location collider;
     private boolean cancelled;
+    private Collection<UpdateCommand> updatesToRun = new ArrayList<>();
 
-    public CraftCollisionExplosionEvent(@NotNull Craft craft, @NotNull Location location, @NotNull World world) {
+    public CraftCollisionExplosionEvent(@NotNull Craft craft, @NotNull Location location, @NotNull Location collider, @NotNull World world) {
         super(craft);
         this.world = world;
         this.location = location;
+        this.collider = collider;
         cancelled = false;
     }
 
@@ -36,6 +43,9 @@ public class CraftCollisionExplosionEvent extends CraftEvent implements Cancella
     }
 
     @NotNull
+    public Location getColliderLocation() {return collider;}
+
+    @NotNull
     public World getWorld() {
         return world;
     }
@@ -49,4 +59,9 @@ public class CraftCollisionExplosionEvent extends CraftEvent implements Cancella
     public static HandlerList getHandlerList() {
         return HANDLERS;
     }
+
+    public Collection<UpdateCommand> getUpdatesToRun() {
+        return this.updatesToRun;
+    }
+
 }

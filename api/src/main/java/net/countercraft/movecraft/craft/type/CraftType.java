@@ -189,6 +189,10 @@ final public class CraftType extends TypeSafeCraftType {
     public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_SOUND = PropertyKeys.ALTERNATIVE_SINKING_DISINTEGRATION_SOUND.key();
     public static final NamespacedKey ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE = PropertyKeys.ALTERNATIVE_SINKING_DISINTEGRATION_CHANCE.key();
     public static final NamespacedKey ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE = PropertyKeys.ALTERNATIVE_SINKING_SINK_MAX_REMAINING_PERCENTAGE.key();
+
+    public static final NamespacedKey ALLOW_BLOCK_BREAKING_WHEN_DISABLED = buildKey("allow_block_breaking_when_disabled");
+    public static final NamespacedKey REQUIRE_DISABLED_TO_BREAK_BLOCKS = buildKey("require_disabled_to_break_blocks");
+    public static final NamespacedKey CAN_BE_UN_DISABLED = buildKey("can_be_un_disabled");
     //endregion
 
     @Contract("_ -> new")
@@ -198,7 +202,7 @@ final public class CraftType extends TypeSafeCraftType {
 
 
 
-    static final Map<NamespacedKey, Property<?>> properties = new HashMap<>();
+    private static final List<Property<?>> properties = new ArrayList<>();
 
     /**
      * Register a property with Movecraft

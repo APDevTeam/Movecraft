@@ -11,12 +11,7 @@ import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import net.countercraft.movecraft.events.*;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
-import net.countercraft.movecraft.mapUpdater.update.CraftTranslateCommand;
-import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.ItemDropUpdateCommand;
-import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
+import net.countercraft.movecraft.mapUpdater.update.*;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.NamespacedIDUtil;
 import net.countercraft.movecraft.util.Tags;
@@ -51,6 +46,9 @@ import java.util.logging.Logger;
 
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
 
+// TODO: Refactor this into it's own task for Sinking
+// TODO: Different fuel usage for harvest blocks
+// TODO: Ability to toggle harvesters on and off
 public class TranslationTask extends AsyncTask {
     private World world;
     private int dx, dy, dz;
@@ -305,10 +303,11 @@ public class TranslationTask extends AsyncTask {
                 Location newLocation = location.toBukkit(world);
                 if (!oldLocation.getBlock().getType().isAir()) {
                     CraftCollisionExplosionEvent e = new CraftCollisionExplosionEvent(craft,
-                            newLocation, craft.getWorld());
+                            newLocation, oldLocation, craft.getWorld());
+                    e.getUpdatesToRun().add(new ExplosionUpdateCommand(newLocation, explosionForce, incendiary));
                     Bukkit.getServer().getPluginManager().callEvent(e);
                     if (!e.isCancelled()) {
-                        updates.add(new ExplosionUpdateCommand(newLocation, explosionForce, incendiary));
+                        updates.addAll(e.getUpdatesToRun());
                         collisionExplosion = true;
                     }
                 }
@@ -343,6 +342,8 @@ public class TranslationTask extends AsyncTask {
         captureYield(harvestedBlocks);
     }
 
+    // TODO: Rename, this just moves the entities
+    // TODO: Add type whitelist or tag to crafttypes
     private void preventsTorpedoRocketsPilots() {
         if (!craft.getCraftProperties().get(PropertyKeys.CAN_MOVE_ENTITIES) ||
                 (craft instanceof SinkingCraft
@@ -668,6 +669,7 @@ public class TranslationTask extends AsyncTask {
         return result;
     }
 
+    // Used by harvest blocks
     private void captureYield(@NotNull List<MovecraftLocation> harvestedBlocks) {
         if (harvestedBlocks.isEmpty()) {
             return;
@@ -804,6 +806,7 @@ public class TranslationTask extends AsyncTask {
 
     }
 
+    // Used by harvest blocks
     private ItemStack putInToChests(ItemStack stack, ArrayList<Inventory> inventories) {
         if (stack == null)
             return null;

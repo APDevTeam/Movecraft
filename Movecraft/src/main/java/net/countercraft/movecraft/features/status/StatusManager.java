@@ -88,6 +88,12 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
             Counter<RequiredBlockEntry> flyblocks = new Counter<>();
             Counter<RequiredBlockEntry> moveblocks = new Counter<>();
+
+            // Pre-fill the moveblocks counter to avoid ignoring moveblocks
+            for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
+                moveblocks.add(entry, 0);
+            }
+
             for(Material material : materials.getKeySet()) {
                 for(RequiredBlockEntry entry : craft.getCraftProperties().get(PropertyKeys.FLY_BLOCKS)) {
                     if(entry.contains(material)) {
@@ -139,9 +145,12 @@ public class StatusManager extends BukkitRunnable implements Listener {
             if(!entry.check(flyBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
                 sinking = true;
         }
-        for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
-            if (!entry.check(moveBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
-                disabled = true;
+        // If the craft has MOveblocks defined, then validate them, if there are any aboard
+        if (craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS).size() > 0) {
+            for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
+                if (!entry.check(moveBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
+                    disabled = true;
+            }
         }
 
         // And check the OverallSinkPercent
@@ -164,9 +173,15 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
         // If the craft is disabled, play a sound and disable it.
         if (disabled != craft.getDisabled()) {
-            craft.setDisabled(disabled);
             if (disabled) {
-                craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
+                craft.setDisabled(disabled);
+                if (disabled) {
+                    craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
+                }
+            }
+            else if (craft.getType().getBoolProperty(CraftType.CAN_BE_UN_DISABLED)) {
+                craft.setDisabled(disabled);
+                // TODO: Play sound
             }
         }
 

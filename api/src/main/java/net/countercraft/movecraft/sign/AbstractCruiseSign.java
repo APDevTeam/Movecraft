@@ -41,13 +41,14 @@ public abstract class AbstractCruiseSign extends AbstractToggleSign {
     }
 
     @Override
-    protected void onBeforeToggle(Craft craft, SignListener.SignWrapper signWrapper, Player player, boolean willBeOn) {
+    protected boolean onBeforeToggle(Craft craft, SignListener.SignWrapper signWrapper, Player player, boolean willBeOn) {
         if (willBeOn) {
             CruiseDirection cruiseDirection = this.getCruiseDirection(signWrapper);
             this.setCraftCruising(player, cruiseDirection, craft);
         } else {
             craft.setCruising(false, CraftStopCruiseEvent.Reason.SIGN_INTERACTION);
         }
+        return true;
     }
 
     // Should call the craft's relevant methods to start cruising

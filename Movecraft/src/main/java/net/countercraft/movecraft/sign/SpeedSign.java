@@ -29,9 +29,18 @@ public class SpeedSign extends AbstractInformationSign {
                     new TextComponent(I18nSupport.getInternationalisedString("Gearshift - Disabled for craft type")));
             return false;
         }
-        currentGear++;
-        if (currentGear > gearShifts)
+
+        if (clickType.isRightClick()) {
+            currentGear++;
+        } else {
+            currentGear--;
+        }
+
+        if (currentGear <= 1) {
             currentGear = 1;
+        }
+        if (currentGear > gearShifts)
+            currentGear = gearShifts;
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
                 new TextComponent(I18nSupport.getInternationalisedString("Gearshift - Gear changed")
                         + " " + currentGear + " / " + gearShifts));

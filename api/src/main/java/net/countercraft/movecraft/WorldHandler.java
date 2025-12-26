@@ -18,8 +18,6 @@ public abstract class WorldHandler {
 
     public static @NotNull String[] getPackageNames(@NotNull String minecraftVersion) {
         String[] parts = minecraftVersion.split("\\.");
-        if (parts.length < 2)
-            throw new IllegalArgumentException();
         return new String[] {
                 "v1_" + parts[1] + "_" + parts[2],
                 "v1_" + parts[1]

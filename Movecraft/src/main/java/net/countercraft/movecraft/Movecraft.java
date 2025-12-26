@@ -149,6 +149,8 @@ public class Movecraft extends JavaPlugin {
         // Startup procedure
         boolean datapackInitialized = isDatapackEnabled() || initializeDatapack();
         asyncManager = new AsyncManager();
+        // Register the listener first, otherwise our tasks wont work!
+        getServer().getPluginManager().registerEvents(new RunnableRegistrationListener(), this);
         asyncManager.runTaskTimer(this, 0, 1);
         MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
 
