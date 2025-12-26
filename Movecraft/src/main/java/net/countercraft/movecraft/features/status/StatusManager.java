@@ -146,7 +146,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 sinking = true;
         }
         // If the craft has MOveblocks defined, then validate them, if there are any aboard
-        if (craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS).size() > 0) {
+        if (craft.getCraftProperties().get(PropertyKeys.MOVE_BLOCKS).size() > 0) {
             for (RequiredBlockEntry entry : moveBlocks.getKeySet()) {
                 if (!entry.check(moveBlocks.get(entry), nonNegligibleBlocks, sinkPercent))
                     disabled = true;

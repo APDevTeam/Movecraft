@@ -10,7 +10,7 @@ import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.FuelBurnEvent;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Bukkit;
@@ -50,7 +50,7 @@ public class FuelBurnRunnable implements Runnable {
 
     static void burnFuel(final Craft craft) {
         boolean isBurningFuel = false;
-        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
+        double fuelBurnRate = craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, craft.getWorld());
 
         // Different fuel burn rate depending on gear and if the craft is moving
         boolean craftIsMoving = craft.getCruising();
@@ -138,7 +138,7 @@ public class FuelBurnRunnable implements Runnable {
         if (craft instanceof SubCraft) {
             return false;
         }
-        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getMovecraftWorld());
+        double fuelBurnRate = craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, craft.getMovecraftWorld());
         return fuelBurnRate > 0.0D;
     }
 }
