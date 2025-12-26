@@ -54,7 +54,9 @@ public interface Craft {
     CraftDataTagKey<List<UUID>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
     CraftDataTagKey<Double> FUEL = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
     // TODO: Use NamespacedKeys!
+    @Deprecated(forRemoval = true)
     CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
+    CraftDataTagKey<Counter<NamespacedKey>> BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "blocks"), craft -> new Counter<>());
     CraftDataTagKey<Counter<RequiredBlockEntry>> FLYBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "flyblocks"), craft -> new Counter<>());
     CraftDataTagKey<Counter<RequiredBlockEntry>> MOVEBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "moveblocks"), craft -> new Counter<>());
     CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);

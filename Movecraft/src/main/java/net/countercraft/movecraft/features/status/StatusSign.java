@@ -12,6 +12,7 @@ import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -105,17 +106,18 @@ public class StatusSign extends AbstractInformationSign {
 
         int totalNonNegligibleBlocks = 0;
         int totalNonNegligibleWaterBlocks = 0;
-        Counter<Material> materials = craft.getDataTag(Craft.MATERIALS);
+        Counter<NamespacedKey> materials = craft.getDataTag(Craft.BLOCKS);
         if (materials.isEmpty()) {
             return;
         }
-        for (Material material : materials.getKeySet()) {
-            if (material.equals(Material.FIRE) || material.isAir())
+        for (NamespacedKey namespacedKey : materials.getKeySet()) {
+            Material material = Material.matchMaterial(namespacedKey.toString());
+            if (material != null && (material.equals(Material.FIRE) || material.isAir()))
                 continue;
 
-            int add = materials.get(material);
+            int add = materials.get(namespacedKey);
             totalNonNegligibleBlocks += add;
-            if (!Tags.WATER.contains(material)) {
+            if (material != null && !Tags.WATER.contains(material)) {
                 totalNonNegligibleWaterBlocks += add;
             }
         }

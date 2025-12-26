@@ -17,12 +17,14 @@ import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.sign.SignListener;
 import net.countercraft.movecraft.util.Counter;
+import net.countercraft.movecraft.util.NamespacedIDUtil;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -60,14 +62,16 @@ public class StatusManager extends BukkitRunnable implements Listener {
 
         @Override
         public @NotNull Effect get() {
-            Counter<Material> materials = new Counter<>();
+            Counter<NamespacedKey> materials = new Counter<>();
             int nonNegligibleBlocks = 0;
             int nonNegligibleSolidBlocks = 0;
             double fuel = 0;
             
             for (MovecraftLocation l : craft.getHitBox()) {
-                Material type = craft.getMovecraftWorld().getMaterial(l);
-                materials.add(type);
+                BlockData data = craft.getMovecraftWorld().getData(l);
+                Material type = data.getMaterial();
+                NamespacedKey namespacedKey = NamespacedIDUtil.getBlockID(data);
+                materials.add(namespacedKey);
 
                 if (type != Material.FIRE && !type.isAir()) {
                     nonNegligibleBlocks++;
@@ -94,7 +98,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
                 moveblocks.add(entry, 0);
             }
 
-            for(Material material : materials.getKeySet()) {
+            for(NamespacedKey material : materials.getKeySet()) {
                 for(RequiredBlockEntry entry : craft.getCraftProperties().get(PropertyKeys.FLY_BLOCKS)) {
                     if(entry.contains(material)) {
                         flyblocks.add(entry, materials.get(material) );
@@ -109,7 +113,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
             }
 
             craft.setDataTag(Craft.FUEL, fuel);
-            craft.setDataTag(Craft.MATERIALS, materials);
+            craft.setDataTag(Craft.BLOCKS, materials);
             craft.setDataTag(Craft.FLYBLOCKS, flyblocks);
             craft.setDataTag(Craft.MOVEBLOCKS, moveblocks);
             craft.setDataTag(Craft.NON_NEGLIGIBLE_BLOCKS, nonNegligibleBlocks);
