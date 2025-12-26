@@ -10,6 +10,8 @@ import net.countercraft.movecraft.util.registration.TypedContainer;
 import net.countercraft.movecraft.util.registration.TypedKey;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +61,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         }
         try(input) {
             FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-            return buildType(name, typeRetriever, yaml.getValues(false));
+            return buildType(name, typeRetriever, yaml);
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -77,9 +79,9 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         this.typeRetriever = typeRetriever;
     }
 
-    private static TypeSafeCraftType buildType(String name, Function<String, TypeSafeCraftType> typeRetriever, final Map<String, Object> yamlMapping) {
+    private static TypeSafeCraftType buildType(String name, Function<String, TypeSafeCraftType> typeRetriever, final ConfigurationSection yamlMapping) {
         TypeSafeCraftType result = new TypeSafeCraftType(name, typeRetriever);
-        Object parentObj = yamlMapping.getOrDefault("parent", null);
+        Object parentObj = yamlMapping.get("parent", null);
         if (parentObj != null) {
             String parentStr = String.valueOf(parentObj);
             if (parentStr != "null" && !parentStr.isEmpty()) {
@@ -155,22 +157,16 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
 
     // Returns false if nothing was read or if it failed
     // Returns true if something was parsed successfully
-    private static <T> boolean readProperty(final PropertyKey<T> key, final Map<String, Object> yamlData, final TypeSafeCraftType type) {
+    private static <T> boolean readProperty(final PropertyKey<T> key, final ConfigurationSection yamlData, final TypeSafeCraftType type) {
         NamespacedKey namespacedKey = key.key();
-        Object namespaceValues = yamlData.getOrDefault(namespacedKey.getNamespace(), null);
-        if (namespaceValues != null && (namespaceValues instanceof Map namespaceMappingRaw)) {
-            Map<String, Object> namespaceMapping;
-            try {
-                namespaceMapping = (Map<String, Object>) namespaceMappingRaw;
-            } catch(ClassCastException cce) {
-                // TODO: Print message
-                return false;
-            }
+        Object namespaceValues = yamlData.get(namespacedKey.getNamespace(), null);
+        if (namespaceValues != null && (namespaceValues instanceof ConfigurationSection namespaceMappingRaw)) {
             String[] valueArr = namespacedKey.value().split("/");
+            ConfigurationSection sectionTmp = namespaceMappingRaw;
             T value = null;
             for (int i = 0; i < valueArr.length; i++) {
                 String workingPath = valueArr[i];
-                Object objTmp = namespaceMapping.getOrDefault(workingPath, null);
+                Object objTmp = sectionTmp.get(workingPath, null);
                 if (objTmp == null) {
                     break;
                 } else {
@@ -183,12 +179,15 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
                         }
                     } else {
                         try {
-                            namespaceMapping = (Map<String, Object>) namespaceMappingRaw;
+                            sectionTmp = sectionTmp.getConfigurationSection(workingPath);
                         } catch(ClassCastException cce) {
                             // TODO: Print message
                             break;
                         }
                     }
+                }
+                if (sectionTmp == null) {
+                    break;
                 }
             }
             if (value != null) {
