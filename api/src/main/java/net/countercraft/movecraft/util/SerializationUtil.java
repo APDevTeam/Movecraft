@@ -39,7 +39,7 @@ public class SerializationUtil {
             if (workingString.startsWith("#")) {
                 collectorTag.add(NamespacedKey.fromString(workingString.substring(1)));
             } else {
-                collectorNormal.add(NamespacedKey.fromString(workingString.substring(1)));
+                collectorNormal.add(NamespacedKey.fromString(workingString));
             }
         }
     }
