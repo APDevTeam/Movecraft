@@ -105,7 +105,11 @@ public class PropertyKeyTypes {
     }
 
     public static PropertyKey<NamespacedKeyToDoubleProperty> namespacedKeyToDoublePropertyKey(NamespacedKey key, Map<NamespacedKey, Double> defaultValue) {
-        return namespacedKeyToDoublePropertyKey(key, t -> new NamespacedKeyToDoubleProperty(defaultValue));
+        return namespacedKeyToDoublePropertyKey(key, t -> {
+            NamespacedKeyToDoubleProperty result = new NamespacedKeyToDoubleProperty();
+            result.fill(defaultValue);
+            return result;
+        });
     }
 
     public static PropertyKey<Integer> intPropertyKey(NamespacedKey key, Function<TypeSafeCraftType, Integer> defaultProvider) {

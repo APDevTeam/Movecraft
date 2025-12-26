@@ -17,22 +17,29 @@ public class NamespacedKeyToDoubleProperty implements ConfigurationSerializable 
     private final Map<NamespacedKey, Double> mapping = new HashMap<>();
 
     public NamespacedKeyToDoubleProperty(NamespacedKeyToDoubleProperty toClone) {
-        this(toClone.mapping);
+        this.copy();
     }
 
     public NamespacedKeyToDoubleProperty() {
         super();
     }
 
-    public NamespacedKeyToDoubleProperty(Map<NamespacedKey, Double> copyFrom) {
-        this();
-        for (Map.Entry<NamespacedKey, Double> entry : copyFrom.entrySet()) {
-            this.put(entry.getKey(), entry.getValue());
+    public NamespacedKeyToDoubleProperty copy() {
+        NamespacedKeyToDoubleProperty result = new NamespacedKeyToDoubleProperty();
+        for (Map.Entry<NamespacedKey, Double> entry : this.entrySet()) {
+            result.put(entry.getKey(), entry.getValue());
         }
+        return result;
     }
 
     protected double put(NamespacedKey key, double value) {
         return this.mapping.put(key, value);
+    }
+
+    public void fill(Map<NamespacedKey, Double> values) {
+        if (this.mapping.isEmpty()) {
+            this.mapping.putAll(values);
+        }
     }
 
     @Nullable
@@ -93,10 +100,6 @@ public class NamespacedKeyToDoubleProperty implements ConfigurationSerializable 
     public static class Mutable extends NamespacedKeyToDoubleProperty {
         public Mutable() {
             super();
-        }
-
-        public Mutable(Map<NamespacedKey, Double> copyFrom) {
-            super(copyFrom);
         }
 
         @Override
