@@ -105,7 +105,16 @@ public class CraftManager implements Iterable<Craft>{
     private void loadCraftTypeSettings() throws IOException {
         this.craftTypeMap.clear();
         File craftFileFolder = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
-        Set<Path> files = Files.find(craftFileFolder.toPath(), Integer.MAX_VALUE, (path, attribute) -> attribute.isRegularFile() && path.endsWith(".crafttype")).collect(Collectors.toSet());
+        Set<Path> files = Files.find(
+                craftFileFolder.toPath(),
+                Integer.MAX_VALUE,
+                (path, attribute) -> {
+                    if (Files.isDirectory(path) || !Files.isReadable(path)) {
+                        return false;
+                    }
+                    return path.getFileName().toString().endsWith(".crafttype");
+                }
+        ).collect(Collectors.toSet());
         for (Path path : files) {
             File file = path.toFile();
             final String name = file.getName().substring(0, file.getName().lastIndexOf('.')).toUpperCase();
