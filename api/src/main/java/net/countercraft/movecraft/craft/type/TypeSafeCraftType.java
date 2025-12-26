@@ -21,6 +21,10 @@ import java.util.function.Predicate;
 
 public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
 
+    public static final SimpleRegistry<NamespacedKey, PropertyKey> PROPERTY_REGISTRY = new SimpleRegistry();
+    public static final Set<TypeSafeTransform> TRANSFORM_REGISTRY = new HashSet<>();
+    public static final Set<Pair<Predicate<TypeSafeCraftType>, String>> VALIDATOR_REGISTRY = new HashSet<>();
+
     // Initialization
     static {
         // TODO: Replace with event
@@ -28,10 +32,6 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         Transformers.registerAll();
         Validators.registerAll();
     }
-
-    public static final SimpleRegistry<NamespacedKey, PropertyKey> PROPERTY_REGISTRY = new SimpleRegistry();
-    public static final Set<TypeSafeTransform> TRANSFORM_REGISTRY = new HashSet<>();
-    public static final Set<Pair<Predicate<TypeSafeCraftType>, String>> VALIDATOR_REGISTRY = new HashSet<>();
 
     protected final Function<String, TypeSafeCraftType> typeRetriever;
     private final String name;
