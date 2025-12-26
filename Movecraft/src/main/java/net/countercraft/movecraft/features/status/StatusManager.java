@@ -90,7 +90,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
             Counter<RequiredBlockEntry> moveblocks = new Counter<>();
 
             // Pre-fill the moveblocks counter to avoid ignoring moveblocks
-            for(RequiredBlockEntry entry : craft.getType().getRequiredBlockProperty(CraftType.MOVE_BLOCKS)) {
+            for(RequiredBlockEntry entry : craft.getCraftProperties().get(PropertyKeys.MOVE_BLOCKS)) {
                 moveblocks.add(entry, 0);
             }
 
@@ -179,7 +179,7 @@ public class StatusManager extends BukkitRunnable implements Listener {
                     craft.getAudience().playSound(Sound.sound(Key.key("entity.iron_golem.death"), Sound.Source.NEUTRAL, 5.0f, 5.0f));
                 }
             }
-            else if (craft.getType().getBoolProperty(CraftType.CAN_BE_UN_DISABLED)) {
+            else if (craft.getCraftProperties().get(PropertyKeys.CAN_BE_UN_DISABLED)) {
                 craft.setDisabled(disabled);
                 // TODO: Play sound
             }

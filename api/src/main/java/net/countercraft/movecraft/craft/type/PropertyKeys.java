@@ -366,6 +366,21 @@ public class PropertyKeys {
             ).immutable());
     // endregion Alternative sinking process
 
+    // region disabled stuff
+    public static final PropertyKey<Boolean> ALLOW_BLOCK_BREAKING_WHEN_DISABLED =
+            register(PropertyKeyTypes.boolPropertyKey(
+                    key("allow_block_breaking_when_disabled"), true
+            ).immutable());
+    public static final PropertyKey<Boolean> REQUIRE_DISABLED_TO_BREAK_BLOCKS =
+            register(PropertyKeyTypes.boolPropertyKey(
+                    key("require_disabled_to_break_blocks"), true
+            ).immutable());
+    public static final PropertyKey<Boolean> CAN_BE_UN_DISABLED =
+            register(PropertyKeyTypes.boolPropertyKey(
+                    key("can_be_un_disabled"), true
+            ).immutable());
+    // endregion disabled stuff
+
     public static <T> PropertyKey<T> register(PropertyKey<T> propertyKey) {
         return TypeSafeCraftType.PROPERTY_REGISTRY.register(propertyKey.key(), propertyKey);
     }
