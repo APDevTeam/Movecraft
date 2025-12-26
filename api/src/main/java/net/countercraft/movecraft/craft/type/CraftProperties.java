@@ -43,6 +43,11 @@ public class CraftProperties extends TypeSafeCraftType{
     }
 
     @Override
+    public String getName() {
+        return this.craftTypeReference.getName();
+    }
+
+    @Override
     public CraftProperties createCraftProperties(final Craft craft) {
         return this;
     }
