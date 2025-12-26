@@ -305,7 +305,7 @@ public class CraftManager implements Iterable<Craft>{
     //endregion
 
     public Set<TypeSafeCraftType> getTypesafeCraftTypes() {
-        return (Set<TypeSafeCraftType>) this.craftTypeMap.values().stream().collect(Collectors.toUnmodifiableList());
+        return this.craftTypeMap.values().stream().collect(Collectors.toUnmodifiableSet());
     }
 
     public TypeSafeCraftType getCraftTypeByName(String ident) {
