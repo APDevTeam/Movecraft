@@ -98,7 +98,7 @@ public class Validators {
 
         @Override
         public boolean test(TypeSafeCraftType typeSafeCraftType) {
-            if (typeSafeCraftType.hasInSelfOrAnyParent(minKey()) != typeSafeCraftType.hasInSelfOrAnyParent(maxKey())) {
+            if (!(typeSafeCraftType.hasInSelfOrAnyParent(minKey()) && typeSafeCraftType.hasInSelfOrAnyParent(maxKey()))) {
                 return false;
             }
             T min = typeSafeCraftType.get(minKey());
