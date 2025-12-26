@@ -103,7 +103,7 @@ public class Validators {
             }
             T min = typeSafeCraftType.get(minKey());
             T max = typeSafeCraftType.get(maxKey());
-            return min.doubleValue() < max.doubleValue();
+            return min.doubleValue() <= max.doubleValue();
         }
     }
 
