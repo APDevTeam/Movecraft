@@ -94,7 +94,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         // DONE: Add support for sorting => dashes in the ID separate to own sections!
         // Simplified loading strategy => Simply attempt to load all properties that have been registered
         for (PropertyKey<?> propertyKey : PROPERTY_REGISTRY.getAllValues()) {
-            if (!readProperty(propertyKey, yamlMapping, result)) {
+            if (readProperty(propertyKey, yamlMapping, result) > 1) {
                 System.err.println("FAILED to read propertykey <" + propertyKey.key().toString() +"> from type <" + result.getName() +">!");
             }
         }
@@ -125,9 +125,11 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         }
     }
 
-    // Returns false if nothing was read or if it failed
-    // Returns true if something was parsed successfully
-    private static <T> boolean readProperty(final PropertyKey<T> key, final ConfigurationSection yamlData, final TypeSafeCraftType type) {
+    // Returns:
+    // 0: Something was found and read successfully
+    // 1: No key found
+    // 2: Something was found but not read
+    private static <T> byte readProperty(final PropertyKey<T> key, final ConfigurationSection yamlData, final TypeSafeCraftType type) {
         NamespacedKey namespacedKey = key.key();
         Object namespaceValues = yamlData.get(namespacedKey.getNamespace(), null);
         if (namespaceValues != null && (namespaceValues instanceof ConfigurationSection namespaceMappingRaw)) {
@@ -145,7 +147,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
                             value = key.read(objTmp, type);
                         } catch (Exception exception) {
                             // TODO: Log warning
-                            return false;
+                            return 2;
                         }
                     } else {
                         try {
@@ -162,10 +164,10 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
             }
             if (value != null) {
                 type.set(key, value);
-                return true;
+                return 0;
             }
         }
-        return false;
+        return 1;
     }
 
     @Override
