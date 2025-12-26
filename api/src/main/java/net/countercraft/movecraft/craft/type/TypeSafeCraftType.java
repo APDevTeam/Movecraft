@@ -10,6 +10,7 @@ import net.countercraft.movecraft.util.registration.TypedContainer;
 import net.countercraft.movecraft.util.registration.TypedKey;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -57,7 +58,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
             return new TypeSafeCraftType(name, typeRetriever);
         }
         try(input) {
-            YamlConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+            FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
             return buildType(name, typeRetriever, yaml.getValues(false));
         }
         catch (IOException e) {
