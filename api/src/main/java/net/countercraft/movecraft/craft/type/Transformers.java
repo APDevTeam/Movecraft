@@ -84,7 +84,10 @@ public class Transformers {
         });
         // Fix gravityDropDistance to be negative
         register((getter, setter, deleter) -> {
-            int dropDist = getter.getWithoutParent(PropertyKeys.GRAVITY_DROP_DISTANCE);
+            Integer dropDist = getter.getWithoutParent(PropertyKeys.GRAVITY_DROP_DISTANCE);
+            if (dropDist == null) {
+                return false;
+            }
             if (dropDist > 0) {
                 setter.accept(PropertyKeys.GRAVITY_DROP_DISTANCE, -dropDist);
                 return true;
