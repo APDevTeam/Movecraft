@@ -11,7 +11,6 @@ import net.countercraft.movecraft.util.registration.TypedKey;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -92,42 +91,13 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         // Structure: Simple map per namespace inside the file
         // Helps to differentiate things
 
-        // No longer necessary. Through the parentloading it will end up at the property level if not set and retrieve the default from there
-//        Set<Map.Entry<NamespacedKey, PropertyKey>> entries = PROPERTY_REGISTRY.entries();
-//        Map<String, Map<String, Object>> namespaces = new HashMap<>();
-//        // Step 1: Set all default values
-//        for (Map.Entry<NamespacedKey, PropertyKey> entry : entries) {
-//            namespaces.computeIfAbsent(entry.getKey().getNamespace(), k -> new HashMap<>()).putIfAbsent(entry.getKey().getKey(), entry.getValue().getDefault(result));
-//        }
-//        // Step 2: Load the values from the file
-//        for (Map.Entry<String, Object> entry : yamlMapping.entrySet()) {
-//            String namespace = "movecraft";
-//            if (entry.getValue() instanceof Map) {
-//                namespace = entry.getKey();
-//                try {
-//                    namespaces.put(namespace, (Map<String, Object>) entry.getValue());
-//                } catch(ClassCastException cce) {
-//                    // TODO: log error
-//                }
-//            } else {
-//                namespaces.putIfAbsent(namespace, yamlMapping);
-//            }
-//        }
-//
-//        // Try to read every key we have instead
-//        // Step 3: Read from the parsed namespaces and apply it
-//        for (Map.Entry<String, Map<String, Object>> entry : namespaces.entrySet()) {
-//            readNamespace(entry.getKey(), entry.getValue(), result);
-//        }
         // DONE: Add support for sorting => dashes in the ID separate to own sections!
         // Simplified loading strategy => Simply attempt to load all properties that have been registered
-        PROPERTY_REGISTRY.getAllValues().forEach(
-                prop -> {
-                    if (!readProperty(prop, yamlMapping, result)) {
-                        // TODO: Log warning
-                    }
-                }
-        );
+        for (PropertyKey<?> propertyKey : PROPERTY_REGISTRY.getAllValues()) {
+            if (!readProperty(propertyKey, yamlMapping, result)) {
+                System.err.println("FAILED to read propertykey <" + propertyKey.key().toString() +"> from type <" + result.getName() +">!");
+            }
+        }
 
         // Step 4: Apply transforms
         for (TypeSafeTransform transform : TRANSFORM_REGISTRY) {
@@ -196,28 +166,6 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
             }
         }
         return false;
-    }
-
-    private static <T> void readNamespace(final String namespace, final Map<String, Object> data, final TypeSafeCraftType type) {
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
-            NamespacedKey key = new NamespacedKey(namespace, entry.getKey());
-            PropertyKey<T> propertyKey = PROPERTY_REGISTRY.get(key);
-            if (propertyKey == null) {
-                // TODO: Log => unknown property!
-
-                continue;
-            }
-
-            try {
-                T value = propertyKey.read(entry.getValue(), type);
-                if (value == null) {
-                    continue;
-                }
-                type.set(propertyKey, value);
-            } catch(ClassCastException cce) {
-                // TODO: Log error
-            }
-        }
     }
 
     @Override
