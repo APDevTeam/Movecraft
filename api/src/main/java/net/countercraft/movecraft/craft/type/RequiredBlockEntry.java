@@ -23,7 +23,7 @@ import java.util.*;
  * A numeric limit represents a configured static limit (regardless of size), ex: "N10" for 10 blocks.<br>
  * A percentage limit represents a limit which scales with craft size, ex: 10 for 10%.
  */
-@SerializableAs("RequiredBlockEntry")
+@SerializableAs("Movecraft_RequiredBlockEntry")
 public class RequiredBlockEntry implements ConfigurationSerializable {
     private final BlockSetProperty materials;
     private String name;

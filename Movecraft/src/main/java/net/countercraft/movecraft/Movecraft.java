@@ -76,9 +76,9 @@ public class Movecraft extends JavaPlugin {
     @Override
     public void onEnable() {
         // FIRST: Register config serialization!
-        ConfigurationSerialization.registerClass(ConfiguredSound.class);
-        ConfigurationSerialization.registerClass(RequiredBlockEntry.class);
-        ConfigurationSerialization.registerClass(NamespacedKeyToDoubleProperty.class);
+        ConfigurationSerialization.registerClass(ConfiguredSound.class, "Movecraft_ConfiguredSound");
+        ConfigurationSerialization.registerClass(RequiredBlockEntry.class, "Movecraft_RequiredBlockEntry");
+        ConfigurationSerialization.registerClass(NamespacedKeyToDoubleProperty.class, "Movecraft_NamespacedKeyToDoubleProperty");
 
         // Read in config
         Settings.LOCALE = getConfig().getString("Locale");

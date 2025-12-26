@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-@SerializableAs("ConfiguredSound")
+@SerializableAs("Movecraft_ConfiguredSound")
 public record ConfiguredSound(
         String sound,
         SoundCategory category,

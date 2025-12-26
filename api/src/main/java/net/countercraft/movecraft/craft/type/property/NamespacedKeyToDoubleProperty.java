@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-@SerializableAs("NamespacedKeyToDoubleProperty")
+@SerializableAs("Movecraft_NamespacedKeyToDoubleProperty")
 public class NamespacedKeyToDoubleProperty implements ConfigurationSerializable {
 
     private final Map<NamespacedKey, Double> mapping = new HashMap<>();
