@@ -74,7 +74,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
 
     protected void runDetectTask(MovecraftLocation startPoint, Player player, final SignListener.SignWrapper signWrapper, Craft parentCraft, World world) {
         if (PILOTING.add(startPoint)) {
-            final boolean isCruiseOnPilot = this.craftType.getBoolProperty(CraftType.CRUISE_ON_PILOT);
+            final boolean isCruiseOnPilot = this.craftType.get(PropertyKeys.CRUISE_ON_PILOT);
 
             CraftManager.getInstance().detect(
                     startPoint,
