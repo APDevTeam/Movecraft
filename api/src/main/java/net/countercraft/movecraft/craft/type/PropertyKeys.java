@@ -296,15 +296,15 @@ public class PropertyKeys {
             ).immutable());
     public static final PropertyKey<Integer> CRUISE_ON_PILOT_LIFETIME =
             register(PropertyKeyTypes.intPropertyKey(
-                    key("release_timeout"), t -> 15*20
+                    key("cruise_on_pilot_lifetime"), t -> 15*20
             ).immutable());
     public static final PropertyKey<Integer> EXPLOSION_ARMING_TIME =
             register(PropertyKeyTypes.intPropertyKey(
-                    key("release_timeout"), t -> 1000
+                    key("explosion_arming_time"), t -> 1000
             ).immutable());
     public static final PropertyKey<Boolean> ALLOW_INTERNAL_EXPLOSION =
             register(PropertyKeyTypes.boolPropertyKey(
-                    key("merge_piston_extensions"), t -> false
+                    key("allow_internal_explosion"), t -> false
             ).immutable());
 
     // region speed modifier blocks
