@@ -26,7 +26,8 @@ public class Transformers {
             for (Map.Entry<String, Double> entry : speedData.getOverrides().entrySet()) {
                 mapping.put(entry.getKey(), (int) Math.ceil(20 / entry.getValue()));
             }
-            PerWorldData<Integer> tickCooldown = new PerWorldData<>((int) Math.ceil(20 / speedData.getDefaultFallback()), mapping);
+            int defaultValue = (int) Math.ceil(20 / speedData.getDefaultFallback());
+            PerWorldData<Integer> tickCooldown = new PerWorldData<>(defaultValue, mapping);
             setter.accept(PropertyKeys.TICK_COOLDOWN, tickCooldown);
             deleter.add(PropertyKeys.SPEED);
             return true;
