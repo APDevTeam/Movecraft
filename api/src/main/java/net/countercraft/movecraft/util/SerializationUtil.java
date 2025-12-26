@@ -36,10 +36,17 @@ public class SerializationUtil {
             workingString = string;
         }
         if (workingString != null) {
+            NamespacedKey namespacedKey = null;
+            Set<NamespacedKey> collection = null;
             if (workingString.startsWith("#")) {
-                collectorTag.add(NamespacedKey.fromString(workingString.substring(1)));
+                collection = collectorTag;
+                namespacedKey = NamespacedKey.fromString(workingString.substring(1));
             } else {
-                collectorNormal.add(NamespacedKey.fromString(workingString));
+                collection = collectorNormal;
+                namespacedKey = NamespacedKey.fromString(workingString);
+            }
+            if (namespacedKey != null && collection != null) {
+                collection.add(namespacedKey);
             }
         }
     }

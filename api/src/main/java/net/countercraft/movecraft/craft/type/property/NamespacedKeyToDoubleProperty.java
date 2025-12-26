@@ -32,7 +32,8 @@ public class NamespacedKeyToDoubleProperty implements ConfigurationSerializable 
         return result;
     }
 
-    protected double put(NamespacedKey key, double value) {
+    @Nullable
+    protected Double put(NamespacedKey key, double value) {
         return this.mapping.put(key, value);
     }
 
@@ -61,15 +62,41 @@ public class NamespacedKeyToDoubleProperty implements ConfigurationSerializable 
 
         for (Map.Entry<String, Object> entry : args.entrySet()) {
             List<String> strings = Arrays.asList(entry.getKey().split(","));
-            Set<NamespacedKey> blockKeys = SerializationUtil.deserializeNamespacedKeySet(strings, new HashSet<>(), RegistryKey.BLOCK);
-            Set<NamespacedKey> itemKeys = SerializationUtil.deserializeNamespacedKeySet(strings, new HashSet<>(), RegistryKey.ITEM);
-            Object value = entry.getValue();
-            double doubleVal = NumberConversions.toDouble(value);
-            for (NamespacedKey keyTmp : blockKeys) {
-                result.put(keyTmp, doubleVal);
+            Set<NamespacedKey> keys = new HashSet<>();
+            try {
+                keys.addAll(SerializationUtil.deserializeNamespacedKeySet(strings, new HashSet<>(), RegistryKey.BLOCK));
+            } catch(IllegalArgumentException ex) {
+                System.err.println(ex.getMessage());
             }
-            for (NamespacedKey keyTmp : itemKeys) {
-                result.put(keyTmp, doubleVal);
+            try {
+                keys.addAll(SerializationUtil.deserializeNamespacedKeySet(strings, new HashSet<>(), RegistryKey.ITEM));
+            } catch(IllegalArgumentException ex) {
+                System.err.println(ex.getMessage());
+            }
+
+            if (keys.isEmpty()) {
+                continue;
+            }
+
+            Double doubleValue = null;
+            Object value = entry.getValue();
+            if (value instanceof Number) {
+                doubleValue = NumberConversions.toDouble(value);
+            } else if (value instanceof String strTmp) {
+                try {
+                    doubleValue = Double.parseDouble(strTmp);
+                } catch(NumberFormatException nfe) {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+            keys.removeIf(Objects::isNull);
+            if (doubleValue != null) {
+                for (NamespacedKey keyTmp : keys) {
+                    result.put(keyTmp, doubleValue);
+                }
             }
         }
 
@@ -103,7 +130,8 @@ public class NamespacedKeyToDoubleProperty implements ConfigurationSerializable 
         }
 
         @Override
-        public double put(NamespacedKey key, double value) {
+        @Nullable
+        public Double put(NamespacedKey key, double value) {
             return super.put(key, value);
         }
     }
