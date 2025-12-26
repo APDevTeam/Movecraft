@@ -23,6 +23,9 @@ import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.type.ConfiguredSound;
+import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
@@ -39,6 +42,7 @@ import net.countercraft.movecraft.util.BukkitTeleport;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -71,6 +75,11 @@ public class Movecraft extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // FIRST: Register config serialization!
+        ConfigurationSerialization.registerClass(ConfiguredSound.class);
+        ConfigurationSerialization.registerClass(RequiredBlockEntry.class);
+        ConfigurationSerialization.registerClass(NamespacedKeyToDoubleProperty.class);
+
         // Read in config
         Settings.LOCALE = getConfig().getString("Locale");
         Settings.Debug = getConfig().getBoolean("Debug", false);
