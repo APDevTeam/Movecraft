@@ -10,6 +10,7 @@ import net.countercraft.movecraft.craft.type.CraftProperties;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
+import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
 import net.countercraft.movecraft.events.CraftSetAudienceEvent;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
@@ -31,7 +32,6 @@ import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -354,12 +354,12 @@ public abstract class BaseCraft implements Craft {
             return getCraftProperties().get(PropertyKeys.SINK_RATE_TICKS);
 
         // TODO: Use NamespacedKeys!
-        Counter<Material> materials = getDataTag(Craft.MATERIALS);
+        Counter<NamespacedKey> materials = getDataTag(Craft.BLOCKS);
 
         int chestPenalty = 0;
         if (!materials.isEmpty()) {
             for (Material m : Tags.CHESTS) {
-                chestPenalty += materials.get(m);
+                chestPenalty += materials.get(m.getKey());
             }
         }
         chestPenalty *= (int) getCraftProperties().get(PropertyKeys.CHEST_PENALTY).doubleValue();
@@ -383,7 +383,7 @@ public abstract class BaseCraft implements Craft {
             for (Map.Entry<NamespacedKey, Double> entry : mapping.entrySet()) {
                 Double value = entry.getValue();
                 // Value represents speed modifier if the ship is 100% made of that block
-                int blockCount = materials.get(Material.getMaterial(entry.getKey().toString()));
+                int blockCount = materials.get(entry.getKey());
                 // TODO: Maybe change it so that the value represents the modifier value per single block? That would be more intuitive but also enforce a minimum size for max speed
                 double effectiveModifier = value * (((double)blockCount) / shipSize);
 
@@ -413,9 +413,9 @@ public abstract class BaseCraft implements Craft {
                 return (getCraftProperties().get(PropertyKeys.TICK_COOLDOWN, w) + chestPenalty) * (getCraftProperties().get(PropertyKeys.GEAR_SHIFT_AFFECT_TICK_COOLDOWN) ? currentGear : 1);
             }
             // TODO: Use NamespacedKeys!
-            EnumSet<Material> flyBlockMaterials = getCraftProperties().get(PropertyKeys.DYNAMIC_FLY_BLOCKS).get();
+            BlockSetProperty flyBlockMaterials = getCraftProperties().get(PropertyKeys.DYNAMIC_FLY_BLOCKS);
             double count = 0;
-            for (Material m : flyBlockMaterials) {
+            for (NamespacedKey m : flyBlockMaterials) {
                 count += materials.get(m);
             }
             // Percentual amount of blocks of the craft
