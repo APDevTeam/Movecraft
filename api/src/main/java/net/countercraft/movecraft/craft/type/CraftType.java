@@ -204,8 +204,8 @@ final public class CraftType {
      */
     @Deprecated(forRemoval = true)
     public static void registerProperty(Property<?> property) {
-        //properties.put(property.getNamespacedKey(), property);
-        PropertyKey<?> propertyKey = property.asTypeSafeKey();
+        // Legacy support is ALWAYS read only!
+        PropertyKey<?> propertyKey = property.asTypeSafeKey().immutable();
         TypeSafeCraftType.PROPERTY_REGISTRY.register(propertyKey.key(), propertyKey, false);
     }
 
