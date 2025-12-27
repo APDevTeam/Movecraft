@@ -1,16 +1,10 @@
 package net.countercraft.movecraft.craft.type;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.property.*;
-import net.countercraft.movecraft.util.registration.TypedContainer;
 import net.countercraft.movecraft.util.registration.TypedKey;
-import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
 
 // Represents the runtime crafttype of a craft. Will copy each value of the crafttype when needed
 public class CraftProperties extends TypeSafeCraftType{
@@ -38,8 +32,6 @@ public class CraftProperties extends TypeSafeCraftType{
     @Override
     public <T> T get(@NotNull PropertyKey<T> key) {
         if (key instanceof PropertyKey.ImmutableKey) {
-            return this.craftTypeReference.get(key);
-        } else if (!this.hasInSelfOrAnyParent(key)) {
             return this.craftTypeReference.get(key);
         }
         return super.get(key);
