@@ -25,6 +25,7 @@ import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.type.ConfiguredSound;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
@@ -324,6 +325,8 @@ public class Movecraft extends JavaPlugin {
         instance = this;
         logger = getLogger();
         saveDefaultConfig();
+
+        TypeSafeCraftType.init();
     }
 
     private boolean initializeDatapack() {
