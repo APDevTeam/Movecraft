@@ -28,7 +28,7 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
     public static final Set<Pair<Predicate<TypeSafeCraftType>, String>> VALIDATOR_REGISTRY = new HashSet<>();
 
     // Initialization
-    static {
+    public static void init() {
         // TODO: Replace with event
         PropertyKeys.registerAll();
         Transformers.registerAll();
@@ -228,6 +228,9 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
     }
 
     public <T> boolean hasInSelfOrAnyParent(PropertyKey<T> key) {
+        if (key == null) {
+            return false;
+        }
         if (!this.has(key)) {
             return this.get(key, this) != null;
         }

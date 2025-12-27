@@ -63,6 +63,9 @@ public class TypedContainer<K extends TypedKey<?>> {
     }
 
     public boolean has(@NotNull K tagKey) {
+        if (tagKey == null) {
+            return false;
+        }
         return this.backing.containsKey(tagKey);
     }
 
