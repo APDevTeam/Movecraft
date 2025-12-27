@@ -190,24 +190,17 @@ public class PropertyKeyTypes {
         };
     }
 
+    /*Use blockSetPropertyKey!*/
+    @Deprecated(forRemoval = true)
     public static PropertyKey<EnumSet<Material>> materialSetKey(NamespacedKey key, Function<TypeSafeCraftType, EnumSet<Material>> defaultProvider) {
         return new PropertyKey<EnumSet<Material>>(key, defaultProvider, (obj, type) -> {
-            EnumSet<Material> returnList = EnumSet.noneOf(Material.class);
-            if(!(obj instanceof ArrayList))
-                throw new TypeData.InvalidValueException("key " + key + " must be a list of materials.");
-            for(Object object : (ArrayList<?>) obj){
-                if (!(object instanceof String)) {
-                    if(object == null)
-                        throw new TypeData.InvalidValueException("Entry " + key + " has a null value. This usually indicates you've attempted to use a tag that is not surrounded by quotes");
-                    throw new TypeData.InvalidValueException("Entry " + object + " must be a material for key " + key);
-                }
-                String materialName = (String) object;
-                EnumSet<Material> materials = Tags.parseMaterials(materialName);
-                if(materials.isEmpty())
-                    throw new TypeData.InvalidValueException("Entry " + object + " describes an empty or non-existent Tag for key " + key);
-                returnList.addAll(materials);
+            BlockSetProperty result = new BlockSetProperty();
+            Set<NamespacedKey> namespacedKeys = SerializationUtil.deserializeNamespacedKeySet(obj, new HashSet<>(), RegistryKey.BLOCK);
+            result.addAll(namespacedKeys);
+            if (result.isEmpty()) {
+                return defaultProvider.apply(type);
             }
-            return returnList;
+            return result.get();
         }, (s) -> s, EnumSet::copyOf);
     }
 
@@ -216,6 +209,9 @@ public class PropertyKeyTypes {
             BlockSetProperty result = new BlockSetProperty();
             Set<NamespacedKey> namespacedKeys = SerializationUtil.deserializeNamespacedKeySet(obj, new HashSet<>(), RegistryKey.BLOCK);
             result.addAll(namespacedKeys);
+            if (result.isEmpty()) {
+                return defaultProvider.apply(type);
+            }
             return result;
         }, (s) -> s, BlockSetProperty::new);
     }
