@@ -221,7 +221,8 @@ final public class CraftType {
     public String getStringProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
-                String result = this.backing.get((PropertyKey<String>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                PropertyKey<String> propertyKey = (PropertyKey<String>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key);
+                String result = this.backing.get(propertyKey);
                 return result;
             } catch(Exception exception) {
                 throw new IllegalStateException("Property <" + key + "> is not a string property!");
