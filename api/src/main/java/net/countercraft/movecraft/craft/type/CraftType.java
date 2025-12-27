@@ -17,12 +17,10 @@
 
 package net.countercraft.movecraft.craft.type;
 
-import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.property.*;
 import net.countercraft.movecraft.craft.type.transform.*;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Pair;
-import net.countercraft.movecraft.util.registration.TypedKey;
 import org.bukkit.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +36,7 @@ import java.util.function.Predicate;
 
 // Use TypeSafeCraftType and CraftProperties instead!
 @Deprecated(forRemoval = true)
-final public class CraftType extends TypeSafeCraftType {
+final public class CraftType {
     //region Property Keys
     public static final NamespacedKey NAME = PropertyKeys.NAME.key();
     public static final NamespacedKey MAX_SIZE = PropertyKeys.MAX_SIZE.key();
@@ -199,10 +197,6 @@ final public class CraftType extends TypeSafeCraftType {
         return new NamespacedKey("movecraft", key);
     }
 
-
-
-    private static final List<Property<?>> properties = new ArrayList<>();
-
     /**
      * Register a property with Movecraft
      *
@@ -217,7 +211,6 @@ final public class CraftType extends TypeSafeCraftType {
 
     private final TypeSafeCraftType backing;
 
-    private Map<NamespacedKey, String> stringPropertyMap;
     /**
      * Get a string property of this CraftType
      *
@@ -238,7 +231,6 @@ final public class CraftType extends TypeSafeCraftType {
         }
     }
 
-    private Map<NamespacedKey, Integer> intPropertyMap;
     /**
      * Get an integer property of this CraftType
      *
@@ -249,7 +241,8 @@ final public class CraftType extends TypeSafeCraftType {
     public int getIntProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
-                Integer result = this.backing.get((PropertyKey<Integer>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                PropertyKey<Integer> propertyKey = (PropertyKey<Integer>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key);
+                Integer result = this.backing.get(propertyKey);
                 return result;
             } catch(Exception exception) {
                 throw new IllegalStateException("Property <" + key + "> is not a int property!");
@@ -259,7 +252,6 @@ final public class CraftType extends TypeSafeCraftType {
         }
     }
 
-    private Map<NamespacedKey, Boolean> boolPropertyMap;
     /**
      * Get a boolean property of this CraftType
      *
@@ -270,7 +262,8 @@ final public class CraftType extends TypeSafeCraftType {
     public boolean getBoolProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
-                Boolean result = this.backing.get((PropertyKey<Boolean>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                PropertyKey<Boolean> propertyKey = (PropertyKey<Boolean>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key);
+                Boolean result = this.backing.get(propertyKey);
                 return result;
             } catch(Exception exception) {
                 throw new IllegalStateException("Property <" + key + "> is not a boolean property!");
@@ -280,7 +273,6 @@ final public class CraftType extends TypeSafeCraftType {
         }
     }
 
-    private Map<NamespacedKey, Float> floatPropertyMap;
     /**
      * Get a float property of this CraftType
      *
@@ -291,7 +283,8 @@ final public class CraftType extends TypeSafeCraftType {
     public float getFloatProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
-                Float result = this.backing.get((PropertyKey<Float>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                PropertyKey<Float> propertyKey = (PropertyKey<Float>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key);
+                Float result = this.backing.get(propertyKey);
                 return result;
             } catch(Exception exception) {
                 throw new IllegalStateException("Property <" + key + "> is not a float property!");
@@ -301,7 +294,6 @@ final public class CraftType extends TypeSafeCraftType {
         }
     }
 
-    private Map<NamespacedKey, Double> doublePropertyMap;
     /**
      * Get a double property of this CraftType
      *
@@ -312,7 +304,8 @@ final public class CraftType extends TypeSafeCraftType {
     public double getDoubleProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
-                Double result = this.backing.get((PropertyKey<Double>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                PropertyKey<Double> propertyKey = (PropertyKey<Double>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key);
+                Double result = this.backing.get(propertyKey);
                 return result;
             } catch(Exception exception) {
                 throw new IllegalStateException("Property <" + key + "> is not a double property!");
@@ -322,7 +315,6 @@ final public class CraftType extends TypeSafeCraftType {
         }
     }
 
-    private Map<NamespacedKey, Object> objectPropertyMap;
     /**
      * Get an object property of this CraftType
      * Note: Object properties have no type safety, it is expected that the addon developer handle type safety
@@ -335,7 +327,8 @@ final public class CraftType extends TypeSafeCraftType {
     public Object getObjectProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
-                Object result = this.backing.get((PropertyKey<? extends Object>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                PropertyKey<? extends Object> propertyKey = (PropertyKey<? extends Object>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key);
+                Object result = this.backing.get(propertyKey);
                 return result;
             } catch(Exception exception) {
                 throw new IllegalStateException("Property <" + key + "> is not a object property!");
@@ -345,7 +338,6 @@ final public class CraftType extends TypeSafeCraftType {
         }
     }
 
-    private Map<NamespacedKey, EnumSet<Material>> materialSetPropertyMap;
     /**
      * Get a material set property of this CraftType
      *
@@ -356,7 +348,8 @@ final public class CraftType extends TypeSafeCraftType {
     public EnumSet<Material> getMaterialSetProperty(NamespacedKey key) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
-                Object result = this.backing.get((PropertyKey<? extends Object>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                PropertyKey<? extends Object> propertyKey = (PropertyKey<? extends Object>)TypeSafeCraftType.PROPERTY_REGISTRY.get(key);
+                Object result = this.backing.get(propertyKey);
                 if (result != null) {
                     if (result instanceof BlockSetProperty blockSetProperty) {
                         return blockSetProperty.get();
@@ -381,12 +374,12 @@ final public class CraftType extends TypeSafeCraftType {
         }
     }
 
-    Map<NamespacedKey, Pair<Map<String, Object>, BiFunction<CraftType, String, Object>>> perWorldPropertyMap;
     @Deprecated(forRemoval = true)
     private Object getPerWorldProperty(NamespacedKey key, String worldName) {
         if (TypeSafeCraftType.PROPERTY_REGISTRY.isRegistered(key)) {
             try {
-                Object returnData = this.backing.get(TypeSafeCraftType.PROPERTY_REGISTRY.get(key));
+                PropertyKey propertyKey = TypeSafeCraftType.PROPERTY_REGISTRY.get(key);
+                Object returnData = this.backing.get(propertyKey);
                 if (returnData instanceof PerWorldData<? extends Object> pwd) {
                     returnData = pwd.get(worldName);
                 }
@@ -421,7 +414,6 @@ final public class CraftType extends TypeSafeCraftType {
         return getPerWorldProperty(key, world.getName());
     }
 
-    private Map<NamespacedKey, Set<RequiredBlockEntry>> requiredBlockPropertyMap;
     /**
      * Get a required block property of this CraftType
      *
@@ -456,10 +448,6 @@ final public class CraftType extends TypeSafeCraftType {
         transforms.add(transform);
     }
 
-
-
-    private static final List<Pair<Predicate<CraftType>, String>> validators = new ArrayList<>();
-
     /**
      * Register a craft type validator
      *
@@ -469,17 +457,12 @@ final public class CraftType extends TypeSafeCraftType {
     @Deprecated(forRemoval = true)
     public static void registerTypeValidator(final Predicate<CraftType> validator, String errorMessage) {
         Predicate<TypeSafeCraftType> typeSafeCraftTypePredicate = (typeSafe) -> {
-            if (typeSafe instanceof CraftType craftType) {
-                return validator.test(craftType);
-            } else {
-                return validator.test(new CraftType(typeSafe));
-            }
+            return validator.test(new CraftType(typeSafe));
         };
         TypeSafeCraftType.VALIDATOR_REGISTRY.add(new Pair<>(typeSafeCraftTypePredicate, errorMessage));
     }
 
     public CraftType(final TypeSafeCraftType backing) {
-        super(backing.getName(), backing.typeRetriever);
         this.backing = backing;
     }
 
@@ -489,43 +472,4 @@ final public class CraftType extends TypeSafeCraftType {
         }
     }
 
-    @Override
-    protected <T> void set(@NotNull TypedKey<T> tagKey, @NotNull T value) {
-        this.backing.set(tagKey, value);
-    }
-
-    @Override
-    protected <T> T getWithoutParent(@NotNull PropertyKey<T> key) {
-        return this.backing.getWithoutParent(key);
-    }
-
-    @Override
-    public <T> T get(@NotNull PropertyKey<T> key) {
-        return this.backing.get(key);
-    }
-
-    @Override
-    protected <T> T get(@NotNull PropertyKey<T> key, TypeSafeCraftType type) {
-        return this.backing.get(key, type);
-    }
-
-    @Override
-    public CraftProperties createCraftProperties(final Craft craft) {
-        return this.backing.createCraftProperties(craft);
-    }
-
-    @Override
-    Set<Map.Entry<PropertyKey<?>, Object>> entrySet() {
-        return this.backing.entrySet();
-    }
-
-    @Override
-    public <T> boolean hasInSelfOrAnyParent(PropertyKey<T> key) {
-        return this.backing.hasInSelfOrAnyParent(key);
-    }
-
-    @Override
-    public String getName() {
-        return this.backing.getName();
-    }
 }
