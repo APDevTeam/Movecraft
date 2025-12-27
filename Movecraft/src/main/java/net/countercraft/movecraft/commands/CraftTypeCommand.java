@@ -52,7 +52,7 @@ public class CraftTypeCommand implements TabExecutor {
                 sendTypeListPage(page, commandSender);
                 return true;
             }
-            type = CraftManager.getInstance().getCraftTypeFromString(args[0]);
+            type = CraftManager.getInstance().getCraftTypeByName(args[0]);
         }
         if(type == null) {
             commandSender.sendMessage("You must supply a craft type!");
