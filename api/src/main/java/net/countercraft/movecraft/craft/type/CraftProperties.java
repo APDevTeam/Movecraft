@@ -19,7 +19,8 @@ public class CraftProperties extends TypeSafeCraftType{
     private final WeakReference<Craft> craftWeakReference;
 
     public CraftProperties(final TypeSafeCraftType craftType, final Craft craft) {
-        super(craftType.parentName, craftType.typeRetriever);
+        // Change typeretriever to directly reroute back to the backing type for this case!
+        super(craftType.parentName, (s) -> craftType);
 
         this.craftTypeReference = craftType;
         this.craftWeakReference = new WeakReference<>(craft);
@@ -37,6 +38,8 @@ public class CraftProperties extends TypeSafeCraftType{
     @Override
     public <T> T get(@NotNull PropertyKey<T> key) {
         if (key instanceof PropertyKey.ImmutableKey) {
+            return this.craftTypeReference.get(key);
+        } else if (!this.hasInSelfOrAnyParent(key)) {
             return this.craftTypeReference.get(key);
         }
         return super.get(key);
