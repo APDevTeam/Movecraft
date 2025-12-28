@@ -197,9 +197,6 @@ public class PropertyKeyTypes {
             BlockSetProperty result = new BlockSetProperty();
             Set<NamespacedKey> namespacedKeys = SerializationUtil.deserializeNamespacedKeySet(obj, new HashSet<>(), RegistryKey.BLOCK);
             result.addAll(namespacedKeys);
-            if (result.isEmpty()) {
-                return defaultProvider.apply(type);
-            }
             return result.get();
         }, (s) -> s, EnumSet::copyOf);
     }
@@ -209,9 +206,6 @@ public class PropertyKeyTypes {
             BlockSetProperty result = new BlockSetProperty();
             Set<NamespacedKey> namespacedKeys = SerializationUtil.deserializeNamespacedKeySet(obj, new HashSet<>(), RegistryKey.BLOCK);
             result.addAll(namespacedKeys);
-            if (result.isEmpty()) {
-                return defaultProvider.apply(type);
-            }
             return result;
         }, (s) -> s, BlockSetProperty::new);
     }
