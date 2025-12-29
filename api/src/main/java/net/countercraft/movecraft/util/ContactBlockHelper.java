@@ -6,7 +6,10 @@ import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.CraftProperties;
+import net.countercraft.movecraft.craft.type.PropertyKey;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
+import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftPreTranslateEvent;
@@ -15,7 +18,6 @@ import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 
@@ -29,8 +31,8 @@ public class ContactBlockHelper {
     static final NamespacedKey TOUCHED_BLOCK_LOCATIONS = new NamespacedKey("movecraft", "blocks-touched-by-craft");
     static final NamespacedKey REQUIRED_CONTACT_BLOCK_LOCATIONS_OUTSIDE = new NamespacedKey("movecraft", "required-contact-blocks-outside");
 
-    static List<MovecraftLocation> genericGetList(final Craft craft, final NamespacedKey blockTypeKey, final NamespacedKey trackingKey, final BiConsumer<Craft, EnumSet<Material>> calculationFunction) {
-        EnumSet<Material> blockTypes = craft.getType().getMaterialSetProperty(blockTypeKey);
+    static List<MovecraftLocation> genericGetList(final Craft craft, final PropertyKey<BlockSetProperty> blockTypeKey, final NamespacedKey trackingKey, final BiConsumer<Craft, BlockSetProperty> calculationFunction) {
+        BlockSetProperty blockTypes = craft.getCraftProperties().get(blockTypeKey);
         if (blockTypes == null || blockTypes.isEmpty()) {
             return new ArrayList<>();
         }
@@ -49,14 +51,14 @@ public class ContactBlockHelper {
     }
 
     static List<MovecraftLocation> getTractionBlocksOf(final Craft craft) {
-        return genericGetList(craft, CraftType.TRACTION_BLOCKS, TRACTION_BLOCK_LOCATIONS, ContactBlockHelper::calculateTractionBlocks);
+        return genericGetList(craft, PropertyKeys.TRACTION_BLOCKS, TRACTION_BLOCK_LOCATIONS, ContactBlockHelper::calculateTractionBlocks);
     }
 
     static List<MovecraftLocation> getBlocksCraftIsTouching(final Craft craft) {
-        return genericGetList(craft, CraftType.REQUIRED_CONTACT_BLOCKS, TOUCHED_BLOCK_LOCATIONS, ContactBlockHelper::calculateTouchingBlocks);
+        return genericGetList(craft, PropertyKeys.REQUIRED_CONTACT_BLOCKS, TOUCHED_BLOCK_LOCATIONS, ContactBlockHelper::calculateTouchingBlocks);
     }
 
-    static void calculateTractionBlocks(final Craft craft, final EnumSet<Material> tractionBlockTypes) {
+    static void calculateTractionBlocks(final Craft craft, final BlockSetProperty tractionBlockTypes) {
         Set<TrackedLocation> trackedLocations = craft.getTrackedLocations().computeIfAbsent(TRACTION_BLOCK_LOCATIONS, k -> new HashSet<>());
         List<MovecraftLocation> result = new ArrayList<>();
 
@@ -64,7 +66,7 @@ public class ContactBlockHelper {
             // Nothing calculated yet! => calculate
             for (MovecraftLocation movecraftLocation : craft.getHitBox()) {
                 Location bukkitLocation = movecraftLocation.toBukkit(craft.getWorld());
-                if (tractionBlockTypes.contains(bukkitLocation.getBlock().getType())) {
+                if (tractionBlockTypes.contains(NamespacedIDUtil.getBlockID(bukkitLocation.getBlock()))) {
                     trackedLocations.add(new TrackedLocation(craft, movecraftLocation));
                     result.add(movecraftLocation);
                 }
@@ -75,7 +77,7 @@ public class ContactBlockHelper {
             for (TrackedLocation trackedLocation : trackedLocations) {
                 MovecraftLocation absoluteLocation = trackedLocation.getAbsoluteLocation();
                 Location bukkitLocation = absoluteLocation.toBukkit(craft.getWorld());
-                if (tractionBlockTypes.contains(bukkitLocation.getBlock().getType())) {
+                if (tractionBlockTypes.contains(NamespacedIDUtil.getBlockID(bukkitLocation.getBlock()))) {
                     result.add(absoluteLocation);
                 } else {
                     toRemove.add(trackedLocation);
@@ -88,7 +90,7 @@ public class ContactBlockHelper {
     static final BlockFace CHECK_DIRECTIONS[] = new BlockFace[] {BlockFace.UP, BlockFace.DOWN, BlockFace.EAST, BlockFace.WEST, BlockFace.SOUTH, BlockFace.NORTH};
     static final MovecraftLocation DELTA = new MovecraftLocation(1, 1,1);
 
-    static void calculateTouchingBlocks(final Craft craft, final EnumSet<Material> requiredContactBlockTypes) {
+    static void calculateTouchingBlocks(final Craft craft, final BlockSetProperty requiredContactBlockTypes) {
         HitBox hitBox = craft.getHitBox();
         HitBox outerBoundingBox = new SolidHitBox(new MovecraftLocation(hitBox.getMinX(), hitBox.getMinY(), hitBox.getMinZ()).subtract(DELTA), new MovecraftLocation(hitBox.getMaxX(), hitBox.getMaxY(), hitBox.getMaxZ()).add(DELTA));
         for (BlockFace face : CHECK_DIRECTIONS) {
@@ -110,7 +112,7 @@ public class ContactBlockHelper {
         trackedRequiredContact.clear();
         for (MovecraftLocation movecraftLocation : outerBoundingBox) {
             // Attention: We need two separate instances! Otherwise we will touch them twice on rotation or transfer!
-            Material material = craft.getMovecraftWorld().getMaterial(movecraftLocation);
+            NamespacedKey material = NamespacedIDUtil.getBlockID(craft.getMovecraftWorld().getData(movecraftLocation));
             if (requiredContactBlockTypes.contains(material)) {
                 trackedRequiredContact.add(new TrackedLocation(craft, movecraftLocation));
             }
@@ -120,7 +122,7 @@ public class ContactBlockHelper {
 
     public static void validateTractionBlocks(Craft craft, List<MovecraftLocation> tractionBlocks) {
         // Check all the traction blocks!
-        EnumSet<Material> requiredContactBlockTypes = craft.getType().getMaterialSetProperty(CraftType.REQUIRED_CONTACT_BLOCKS);
+        BlockSetProperty requiredContactBlockTypes = craft.getCraftProperties().get(PropertyKeys.REQUIRED_CONTACT_BLOCKS);
         if (requiredContactBlockTypes == null || requiredContactBlockTypes.isEmpty()) {
             return;
         }
@@ -129,7 +131,7 @@ public class ContactBlockHelper {
 
     public static void validateRequiredContactBlocks(Craft craft) {
         // Scan for the required contact blocks!
-        EnumSet<Material> requiredContactBlockTypes = craft.getType().getMaterialSetProperty(CraftType.REQUIRED_CONTACT_BLOCKS);
+        BlockSetProperty requiredContactBlockTypes = craft.getCraftProperties().get(PropertyKeys.REQUIRED_CONTACT_BLOCKS);
         if (requiredContactBlockTypes == null || requiredContactBlockTypes.isEmpty()) {
             return;
         }
@@ -140,12 +142,12 @@ public class ContactBlockHelper {
         onCraftUpdate(event.getCraft());
     }
 
-    static void performSingleUpdate(final Craft craft, NamespacedKey trackingKey, NamespacedKey materialSetKey, BiConsumer<Craft, EnumSet<Material>> calculationFunction) {
+    static void performSingleUpdate(final Craft craft, NamespacedKey trackingKey, PropertyKey<BlockSetProperty> materialSetKey, BiConsumer<Craft, BlockSetProperty> calculationFunction) {
         Set<TrackedLocation> trackedLocations = craft.getTrackedLocations().getOrDefault(trackingKey, null);
         if (trackedLocations != null && !trackedLocations.isEmpty()) {
             trackedLocations.clear();
         }
-        EnumSet<Material> blockTypes = craft.getType().getMaterialSetProperty(materialSetKey);
+        BlockSetProperty blockTypes = craft.getCraftProperties().get(materialSetKey);
         if (blockTypes == null || blockTypes.isEmpty()) {
             craft.getTrackedLocations().put(trackingKey, new HashSet<>());
         } else {
@@ -179,8 +181,8 @@ public class ContactBlockHelper {
 
     public static void onCraftUpdate(Craft craft) {
         // Refresh traction block locations
-        performSingleUpdate(craft, TRACTION_BLOCK_LOCATIONS, CraftType.TRACTION_BLOCKS, ContactBlockHelper::calculateTractionBlocks);
-        performSingleUpdate(craft, TOUCHED_BLOCK_LOCATIONS, CraftType.REQUIRED_CONTACT_BLOCKS, ContactBlockHelper::calculateTouchingBlocks);
+        performSingleUpdate(craft, TRACTION_BLOCK_LOCATIONS, PropertyKeys.TRACTION_BLOCKS, ContactBlockHelper::calculateTractionBlocks);
+        performSingleUpdate(craft, TOUCHED_BLOCK_LOCATIONS, PropertyKeys.REQUIRED_CONTACT_BLOCKS, ContactBlockHelper::calculateTouchingBlocks);
     }
 
     static boolean isValid(final Craft craft, Consumer<String> failureMessageSetter, final HitBox hitBox, MovecraftRotation rotation) {
@@ -216,10 +218,10 @@ public class ContactBlockHelper {
         if (craft instanceof SinkingCraft || !(craft instanceof PilotedCraft)) {
             return true;
         }
-        final CraftType craftType = craft.getType();
+        final CraftProperties craftType = craft.getCraftProperties();
 
-        EnumSet<Material> tractionBlockSet = craftType.getMaterialSetProperty(CraftType.TRACTION_BLOCKS);
-        EnumSet<Material> requiredContactBlockSet = craftType.getMaterialSetProperty(CraftType.REQUIRED_CONTACT_BLOCKS);
+        BlockSetProperty tractionBlockSet = craftType.get(PropertyKeys.TRACTION_BLOCKS);
+        BlockSetProperty requiredContactBlockSet = craftType.get(PropertyKeys.REQUIRED_CONTACT_BLOCKS);
 
         boolean tractionBlocksConfigured = tractionBlockSet != null && !tractionBlockSet.isEmpty();
         boolean contactBlocksCongirued = requiredContactBlockSet != null && !requiredContactBlockSet.isEmpty();
@@ -251,11 +253,11 @@ public class ContactBlockHelper {
                         continue;
                     }
                     foundAtLeastOneTouchingOutSide = true;
-                    Material checkForContactBlock = craft.getMovecraftWorld().getMaterial(checkLocation);
+                    NamespacedKey checkForContactBlock = NamespacedIDUtil.getBlockID(craft.getMovecraftWorld().getData(checkLocation));
                     if (contactBlocksCongirued) {
                         foundAtLeastOneBlock = requiredContactBlockSet.contains(checkForContactBlock);
                     } else {
-                        foundAtLeastOneBlock = !checkForContactBlock.isAir();
+                        foundAtLeastOneBlock = !craft.getMovecraftWorld().getMaterial(checkLocation).isAir();
                     }
                 }
                 // If we dont touch any outside block we can just continue as in this case the block isnt a "wheel"

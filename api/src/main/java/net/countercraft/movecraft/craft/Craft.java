@@ -23,6 +23,7 @@ import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
+import net.countercraft.movecraft.craft.type.CraftProperties;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
@@ -52,7 +53,10 @@ public interface Craft {
     // TODO: Unify with RECENT_CONTACTS tag and use a object to also store distance and direction
     CraftDataTagKey<List<UUID>> CONTACTS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "contacts"), craft -> new ArrayList<>(0));
     CraftDataTagKey<Double> FUEL = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "fuel"), craft -> 0D);
+    // TODO: Use NamespacedKeys!
+    @Deprecated(forRemoval = true)
     CraftDataTagKey<Counter<Material>> MATERIALS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "materials"), craft -> new Counter<>());
+    CraftDataTagKey<Counter<NamespacedKey>> BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "blocks"), craft -> new Counter<>());
     CraftDataTagKey<Counter<RequiredBlockEntry>> FLYBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "flyblocks"), craft -> new Counter<>());
     CraftDataTagKey<Counter<RequiredBlockEntry>> MOVEBLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "moveblocks"), craft -> new Counter<>());
     CraftDataTagKey<Integer> NON_NEGLIGIBLE_BLOCKS = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey("movecraft", "non-negligible-blocks"), Craft::getOrigBlockCount);
@@ -98,6 +102,8 @@ public interface Craft {
      * @return the Craft's CraftType
      */
     @NotNull
+    @Deprecated(forRemoval = true)
+    // Use getCraftProperties() instead!
     CraftType getType();
 
     @Deprecated(forRemoval = true) @NotNull
@@ -328,4 +334,6 @@ public interface Craft {
     public default MovecraftLocation getCraftOrigin() {
         return this.getDataTag(CRAFT_ORIGIN);
     }
+
+    public CraftProperties getCraftProperties();
 }

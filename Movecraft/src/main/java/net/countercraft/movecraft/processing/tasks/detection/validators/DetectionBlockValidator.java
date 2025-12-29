@@ -1,7 +1,8 @@
 package net.countercraft.movecraft.processing.tasks.detection.validators;
 
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,8 +10,8 @@ import java.util.Collection;
 
 public class DetectionBlockValidator extends AbstractBlockConstraintValidator {
     @Override
-    protected Collection<RequiredBlockEntry> getRelevantConstraintSet(CraftType type) {
-        return type.getRequiredBlockProperty(CraftType.DETECTION_BLOCKS);
+    protected Collection<RequiredBlockEntry> getRelevantConstraintSet(TypeSafeCraftType type) {
+        return type.get(PropertyKeys.DETECTION_BLOCKS);
     }
 
     @Override

@@ -24,7 +24,7 @@ import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.async.AsyncTask;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.*;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.CraftRotateEvent;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
@@ -33,14 +33,13 @@ import net.countercraft.movecraft.mapUpdater.update.CraftRotateCommand;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.util.MathUtils;
+import net.countercraft.movecraft.util.NamespacedIDUtil;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.util.Vector;
 
@@ -96,7 +95,7 @@ public class RotationTask extends AsyncTask {
         if (!checkFuel()) {
             failMessage = I18nSupport.getInternationalisedString("Translation - Failed Craft out of fuel");
             failed = true;
-            if (craft.getType().getBoolProperty(CraftType.SINK_WHEN_OUT_OF_FUEL)) {
+            if (craft.getCraftProperties().get(PropertyKeys.SINK_WHEN_OUT_OF_FUEL)) {
                 craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
                 CraftManager.getInstance().sink(craft);
             }
@@ -130,8 +129,10 @@ public class RotationTask extends AsyncTask {
                 return;
             }
 
-            Material newMaterial = newLocation.toBukkit(w).getBlock().getType();
-            if (newMaterial.isAir() || (newMaterial == Material.PISTON_HEAD) || craft.getType().getMaterialSetProperty(CraftType.PASSTHROUGH_BLOCKS).contains(newMaterial))
+            final Block newBlock = newLocation.toBukkit(w).getBlock();
+            Material newMaterial = newBlock.getType();
+            NamespacedKey newID = NamespacedIDUtil.getBlockID(newBlock);
+            if (newMaterial.isAir() || (newMaterial == Material.PISTON_HEAD) || craft.getCraftProperties().get(PropertyKeys.PASSTHROUGH_BLOCKS).contains(newID))
                 continue;
 
             if (!oldHitBox.contains(newLocation)) {
@@ -222,12 +223,12 @@ public class RotationTask extends AsyncTask {
             //newHitBox.addAll(CollectionUtils.filter(craft.getHitBox(),newHitBox));
             //craft.setHitBox(newHitBox);
             if (Settings.Debug) {
-                Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty(CraftType.NAME), newHitBox.size(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size()));
+                Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getCraftProperties().getName(), newHitBox.size(), craft.getCraftProperties().getName(), craft.getHitBox().size()));
             }
             craft.setHitBox(craft.getHitBox().difference(oldHitBox).union(newHitBox));
             if (Settings.Debug){
-                Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getType().getStringProperty(CraftType.NAME), craft.getType().getStringProperty(CraftType.NAME)));
-                Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getType().getStringProperty(CraftType.NAME), newHitBox.size(), craft.getType().getStringProperty(CraftType.NAME), craft.getHitBox().size()));
+                Bukkit.broadcastMessage(String.format("Hitbox of craft %s intersects hitbox of craft %s", this.craft.getCraftProperties().getName(), craft.getCraftProperties().getName()));
+                Bukkit.broadcastMessage(String.format("Size of %s hitbox: %d, Size of %s hitbox: %d", this.craft.getCraftProperties().getName(), newHitBox.size(), craft.getCraftProperties().getName(), craft.getHitBox().size()));
             }
             break;
         }
@@ -251,9 +252,9 @@ public class RotationTask extends AsyncTask {
     }
 
     private void rotateEntitiesOnCraft(Location tOP) {
-        if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)
+        if (!craft.getCraftProperties().get(PropertyKeys.CAN_MOVE_ENTITIES)
                 || (craft instanceof SinkingCraft
-                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))) {
+                && craft.getCraftProperties().get(PropertyKeys.ONLY_MOVE_PLAYERS))) {
             return;
         }
 
@@ -269,7 +270,7 @@ public class RotationTask extends AsyncTask {
                 oldHitBox.getYLength() / 2.0 + 2,
                 oldHitBox.getZLength() / 2.0 + 1)) {
 
-            if (craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
+            if (craft.getCraftProperties().get(PropertyKeys.ONLY_MOVE_PLAYERS)
                     && (!entityList.contains(entity.getType())
                     || craft instanceof SinkingCraft)) {
                 continue;

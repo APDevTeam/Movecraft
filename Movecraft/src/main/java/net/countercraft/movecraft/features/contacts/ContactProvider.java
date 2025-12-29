@@ -4,7 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.SubCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.kyori.adventure.text.Component;
@@ -48,11 +48,11 @@ public interface ContactProvider {
             int distanceSquared = baseCenter.distanceSquared(targetCenter);
             double detectionMultiplier;
             if (targetCenter.getY() > 65) { // TODO: fix the water line
-                detectionMultiplier = (double) target.getType().getPerWorldProperty(
-                        CraftType.PER_WORLD_DETECTION_MULTIPLIER, target.getMovecraftWorld());
+                detectionMultiplier = target.getCraftProperties().get(
+                        PropertyKeys.DETECTION_MULTIPLIER, target.getMovecraftWorld());
             } else {
-                detectionMultiplier = (double) target.getType().getPerWorldProperty(
-                        CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, target.getMovecraftWorld());
+                detectionMultiplier = target.getCraftProperties().get(
+                        PropertyKeys.UNDERWATER_DETECTION_MULTIPLIER, target.getMovecraftWorld());
             }
             int detectionRange = (int) (target.getOrigBlockCount() * detectionMultiplier);
             detectionRange = detectionRange * 10;

@@ -4,7 +4,6 @@ import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PilotedCraft;
 import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.ChatUtils;
 import net.countercraft.movecraft.util.ComponentPaginator;
@@ -58,7 +57,7 @@ public class CraftReportCommand implements CommandExecutor {
         for (Craft craft : CraftManager.getInstance()) {
             HitBox hitBox = craft.getHitBox();
             Component line = Component.empty();
-            Component name = Component.text(craft.getType().getStringProperty(CraftType.NAME));
+            Component name = Component.text(craft.getCraftProperties().getName());
             if (craft instanceof SinkingCraft)
                 name = name.color(NamedTextColor.RED);
             else if (craft.getDisabled())

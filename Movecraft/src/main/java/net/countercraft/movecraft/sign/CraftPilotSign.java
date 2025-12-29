@@ -5,7 +5,8 @@ import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.*;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
@@ -30,14 +31,14 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
 
     static final Set<MovecraftLocation> PILOTING = Collections.synchronizedSet(new HashSet<>());
 
-    public CraftPilotSign(CraftType craftType) {
+    public CraftPilotSign(TypeSafeCraftType craftType) {
         super(craftType);
     }
 
     @Override
     protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
         String header = sign.getRaw(0).trim();
-        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(header);
+        TypeSafeCraftType craftType = CraftManager.getInstance().getCraftTypeByName(header);
         if (craftType != this.craftType) {
             return false;
         }
@@ -51,7 +52,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
 
     @Override
     protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, @javax.annotation.Nullable Craft craft) {
-        if (this.craftType.getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && craft == null) {
+        if (this.craftType.get(PropertyKeys.MUST_BE_SUBCRAFT) && craft == null) {
             return false;
         }
         World world = sign.block().getWorld();
@@ -73,7 +74,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
 
     protected void runDetectTask(MovecraftLocation startPoint, Player player, final SignListener.SignWrapper signWrapper, Craft parentCraft, World world) {
         if (PILOTING.add(startPoint)) {
-            final boolean isCruiseOnPilot = this.craftType.getBoolProperty(CraftType.CRUISE_ON_PILOT);
+            final boolean isCruiseOnPilot = this.craftType.get(PropertyKeys.CRUISE_ON_PILOT);
 
             CraftManager.getInstance().detect(
                     startPoint,
@@ -81,7 +82,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
                         // Assert instructions are not available normally, also this is checked in beforehand sort of
                         assert p != null; // Note: This only passes in a non-null player.
                         Craft result = null;
-                        if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
+                        if (type.get(PropertyKeys.CRUISE_ON_PILOT)) {
                             if (parents.size() > 1)
                                 return new Pair<>(Result.failWithMessage(I18nSupport.getInternationalisedString(
                                         "Detection - Failed - Already commanding a craft")), null);
@@ -134,7 +135,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
                                     craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
                                     CraftManager.getInstance().sink(craft);
                                 }
-                            }.runTaskLater(Movecraft.getInstance(), (craftType.getIntProperty(CraftType.CRUISE_ON_PILOT_LIFETIME)));
+                            }.runTaskLater(Movecraft.getInstance(), (craftType.get(PropertyKeys.CRUISE_ON_PILOT_LIFETIME)));
                         }
                         else {
                             // Release old craft if it exists
@@ -161,7 +162,7 @@ public class CraftPilotSign extends AbstractCraftPilotSign {
     @Override
     public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
         String header = sign.getRaw(0).trim();
-        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(header);
+        TypeSafeCraftType craftType = CraftManager.getInstance().getCraftTypeByName(header);
         if (craftType != this.craftType) {
             return false;
         }

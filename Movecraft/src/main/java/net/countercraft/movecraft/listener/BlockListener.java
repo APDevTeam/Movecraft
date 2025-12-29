@@ -22,7 +22,7 @@ import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PilotedCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
@@ -54,10 +54,6 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
-import java.util.List;
-
-import static net.countercraft.movecraft.craft.type.CraftType.REQUIRE_DISABLED_TO_BREAK_BLOCKS;
-
 public class BlockListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockBreak(@NotNull BlockBreakEvent e) {
@@ -70,7 +66,7 @@ public class BlockListener implements Listener {
         MovecraftLocation loc = MathUtils.bukkit2MovecraftLoc(location);
         for (Craft craft : MathUtils.craftsNearLocFast(CraftManager.getInstance().getCrafts(), location)) {
             // TODO: check against flag in crafttype
-            boolean craftAllowsBlockBreaking = !craft.getType().getBoolProperty(REQUIRE_DISABLED_TO_BREAK_BLOCKS) || (craft.getType().getBoolProperty(CraftType.ALLOW_BLOCK_BREAKING_WHEN_DISABLED) && craft.getDisabled());
+            boolean craftAllowsBlockBreaking = !craft.getCraftProperties().get(PropertyKeys.REQUIRE_DISABLED_TO_BREAK_BLOCKS) || (craft.getCraftProperties().get(PropertyKeys.ALLOW_BLOCK_BREAKING_WHEN_DISABLED) && craft.getDisabled());
             if (craftAllowsBlockBreaking || !craft.getHitBox().contains(loc))
                 continue;
 
@@ -152,7 +148,7 @@ public class BlockListener implements Listener {
            if (!craft.isNotProcessing())
                e.setCancelled(true); // prevent pistons on cruising crafts           
             // merge piston extensions to craft if the property is true
-           if (!craft.getType().getBoolProperty(CraftType.MERGE_PISTON_EXTENSIONS))
+           if (!craft.getCraftProperties().get(PropertyKeys.MERGE_PISTON_EXTENSIONS))
                 continue;
 
            BitmapHitBox hitBox = new BitmapHitBox();

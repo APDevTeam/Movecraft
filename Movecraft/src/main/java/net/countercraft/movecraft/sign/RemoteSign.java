@@ -1,10 +1,9 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Tag;
@@ -149,7 +148,7 @@ public class RemoteSign extends AbstractCraftSign {
 
     @Override
     protected boolean canPlayerUseSignOn(Player player, @Nullable Craft craft) {
-        if (!craft.getType().getBoolProperty(CraftType.ALLOW_REMOTE_SIGN)) {
+        if (!craft.getCraftProperties().get(PropertyKeys.ALLOW_REMOTE_SIGN)) {
             player.sendMessage(ERROR_PREFIX + I18nSupport.getInternationalisedString("Remote Sign - Not allowed on this craft"));
             return false;
         }

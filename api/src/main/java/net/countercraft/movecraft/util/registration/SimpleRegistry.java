@@ -1,8 +1,11 @@
-package net.countercraft.movecraft.util;
+package net.countercraft.movecraft.util.registration;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -41,6 +44,18 @@ public class SimpleRegistry<K, T> {
      */
     public @NotNull Iterable<@NotNull K> getAllKeys(){
         return _register.keySet().stream().toList();
+    }
+
+    public @NotNull Iterable<@NotNull T> getAllValues(){
+        return _register.values().stream().toList();
+    }
+
+    public Set<Map.Entry<K, T>> entries() {
+        return new HashSet<>(this._register.entrySet());
+    }
+
+    public int size() {
+        return _register.size();
     }
 
 }

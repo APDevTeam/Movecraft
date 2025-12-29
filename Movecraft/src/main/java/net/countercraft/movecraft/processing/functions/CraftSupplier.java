@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.processing.functions;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.util.Pair;
 import net.countercraft.movecraft.util.functions.QuadFunction;
 import org.bukkit.World;
@@ -16,7 +16,7 @@ import java.util.Set;
  * @see QuadFunction
  */
 @FunctionalInterface
-public interface CraftSupplier extends QuadFunction<CraftType, World, Player, Set<Craft>, Pair<Result, Craft>> {
+public interface CraftSupplier extends QuadFunction<TypeSafeCraftType, World, Player, Set<Craft>, Pair<Result, Craft>> {
     /**
      * Applies this function to the given arguments.
      *
@@ -27,5 +27,5 @@ public interface CraftSupplier extends QuadFunction<CraftType, World, Player, Se
      * @return the result of construction and possibly a craft
      */
     @NotNull
-    Pair<@NotNull Result, @Nullable Craft> apply(@NotNull CraftType type, @NotNull World w, @Nullable Player player, @NotNull Set<Craft> parents);
+    Pair<@NotNull Result, @Nullable Craft> apply(@NotNull TypeSafeCraftType type, @NotNull World w, @Nullable Player player, @NotNull Set<Craft> parents);
 }

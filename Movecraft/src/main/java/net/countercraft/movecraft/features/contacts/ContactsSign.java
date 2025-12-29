@@ -2,7 +2,6 @@ package net.countercraft.movecraft.features.contacts;
 
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.sign.AbstractInformationSign;
 import net.countercraft.movecraft.sign.SignListener;
 import net.kyori.adventure.text.Component;
@@ -34,7 +33,7 @@ public class ContactsSign extends AbstractInformationSign {
         MovecraftLocation targetCenter = target.getHitBox().getMidPoint();
         int distanceSquared = baseCenter.distanceSquared(targetCenter);
 
-        String craftTypeName = target.getType().getStringProperty(CraftType.NAME);
+        String craftTypeName = target.getCraftProperties().getName();
 
         if (target.getName() != null && !target.getNameRaw().isBlank()) {
             craftTypeName = target.getNameRaw();

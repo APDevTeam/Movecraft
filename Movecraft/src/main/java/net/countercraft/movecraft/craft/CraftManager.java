@@ -20,6 +20,7 @@ package net.countercraft.movecraft.craft;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.events.TypesReloadedEvent;
@@ -45,12 +46,16 @@ import org.yaml.snakeyaml.parser.ParserException;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static net.countercraft.movecraft.util.ChatUtils.ERROR_PREFIX;
 
@@ -83,67 +88,45 @@ public class CraftManager implements Iterable<Craft>{
     /**
      * Set of all craft types on the server.
      */
-    @NotNull private Set<CraftType> craftTypes;
+    private final ConcurrentMap<String, TypeSafeCraftType> craftTypeMap = new ConcurrentHashMap<>();
 
 
     private CraftManager(boolean loadCraftTypes) {
-        if(loadCraftTypes)
-            craftTypes = loadCraftTypes();
-        else
-            craftTypes = new HashSet<>();
-    }
-
-    @NotNull
-    private Set<CraftType> loadCraftTypes() {
-        File craftsFile = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
-
-        if (craftsFile.mkdirs()) {
-            Movecraft.getInstance().saveResource("types/Airship.craft", false);
-            Movecraft.getInstance().saveResource("types/Airskiff.craft", false);
-            Movecraft.getInstance().saveResource("types/BigAirship.craft", false);
-            Movecraft.getInstance().saveResource("types/BigSubAirship.craft", false);
-            Movecraft.getInstance().saveResource("types/Elevator.craft", false);
-            Movecraft.getInstance().saveResource("types/LaunchTorpedo.craft", false);
-            Movecraft.getInstance().saveResource("types/Ship.craft", false);
-            Movecraft.getInstance().saveResource("types/SubAirship.craft", false);
-            Movecraft.getInstance().saveResource("types/Submarine.craft", false);
-            Movecraft.getInstance().saveResource("types/Turret.craft", false);
-        }
-
-        Set<CraftType> craftTypes = new HashSet<>();
-        // TODO: Support subdirectories too
-        File[] files = craftsFile.listFiles();
-        if (files == null) {
-            return craftTypes;
-        }
-
-        for (File file : files) {
-            if (!file.isFile())
-                continue;
-            if (!file.getName().contains(".craft"))
-                continue;
-
+        if(loadCraftTypes) {
             try {
-                CraftType type = new CraftType(file);
-                craftTypes.add(type);
-            }
-            catch (IllegalArgumentException | CraftType.TypeNotFoundException | ParserException | ScannerException e) {
-                Movecraft.getInstance().getLogger().log(Level.SEVERE, "ERROR PARSING CRAFT FILE: '" + file.getName() + "': " + e.getMessage());
-            }
-            catch (Exception e) {
-                Movecraft.getInstance().getLogger().log(Level.SEVERE, "UNHANDLED EXCEPTION PARSING CRAFT FILE: '" + file.getName() + "': " + e.getMessage());
+                loadCraftTypeSettings();
+            } catch(IOException ioException) {
+                ioException.printStackTrace();
+                craftTypeMap.clear();
             }
         }
-        if (craftTypes.isEmpty()) {
-            Movecraft.getInstance().getLogger().log(Level.SEVERE, ERROR_PREFIX + "NO CRAFT FILES FOUND!");
-            return craftTypes;
-        }
-        Movecraft.getInstance().getLogger().log(Level.INFO, "Loaded " + craftTypes.size() + " Craft files");
-        return craftTypes;
     }
 
-    public void reloadCraftTypes() {
-        craftTypes = loadCraftTypes();
+    private void loadCraftTypeSettings() throws IOException {
+        this.craftTypeMap.clear();
+        File craftFileFolder = new File(Movecraft.getInstance().getDataFolder().getAbsolutePath() + "/types");
+        Set<Path> files = Files.find(
+                craftFileFolder.toPath(),
+                Integer.MAX_VALUE,
+                (path, attribute) -> {
+                    if (Files.isDirectory(path) || !Files.isReadable(path)) {
+                        return false;
+                    }
+                    return path.getFileName().toString().endsWith(".crafttype");
+                }
+        ).collect(Collectors.toSet());
+        for (Path path : files) {
+            File file = path.toFile();
+            final String name = file.getName().substring(0, file.getName().lastIndexOf('.')).toUpperCase();
+            TypeSafeCraftType typeSafeCraftType = TypeSafeCraftType.load(file, name, this::getCraftTypeByName);
+            if (this.craftTypeMap.put(name, typeSafeCraftType) != null) {
+                Movecraft.getInstance().getLogger().warning("Overriding crafttype setting with name <" + name + ">! This means there are duplicates!");
+            }
+        }
+    }
+
+    public void reloadCraftTypes() throws IOException {
+        loadCraftTypeSettings();
         Bukkit.getServer().getPluginManager().callEvent(new TypesReloadedEvent());
     }
 
@@ -164,7 +147,7 @@ public class CraftManager implements Iterable<Craft>{
      *   Note: This is where you can perform any post-detection actions, such as starting a torpedo cruising.
      */
     public void detect(@NotNull MovecraftLocation startPoint,
-                        @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                        @NotNull TypeSafeCraftType type, @NotNull CraftSupplier supplier,
                         @NotNull World world, @Nullable Player player,
                         @NotNull Audience audience,
                         @NotNull Function<Craft, Effect> postDetection) {
@@ -178,7 +161,7 @@ public class CraftManager implements Iterable<Craft>{
     }
 
     public void detect(@NotNull MovecraftLocation startPoint,
-                       @NotNull CraftType type, @NotNull CraftSupplier supplier,
+                       @NotNull TypeSafeCraftType type, @NotNull CraftSupplier supplier,
                        @NotNull World world, @Nullable Player player,
                        @NotNull Audience audience,
                        @NotNull Function<Craft, Effect> postDetection,
@@ -245,7 +228,7 @@ public class CraftManager implements Iterable<Craft>{
                 Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString(
                         "Release - Player has released a craft console"),
                         ((PilotedCraft) craft).getPilot() == null ? ((PilotedCraft) craft).getPilotUUID().toString() : ((PilotedCraft) craft).getPilot().getName(),
-                        craft.getType().getStringProperty(CraftType.NAME),
+                        craft.getCraftProperties().getName(),
                         craft.getHitBox().size(),
                         craft.getHitBox().getMinX(),
                         craft.getHitBox().getMinZ())
@@ -253,7 +236,7 @@ public class CraftManager implements Iterable<Craft>{
             else
                 Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString(
                         "Release - Null Craft Release Console"),
-                        craft.getType().getStringProperty(CraftType.NAME),
+                        craft.getCraftProperties().getName(),
                         craft.getHitBox().size(),
                         craft.getHitBox().getMinX(),
                         craft.getHitBox().getMinZ())
@@ -310,20 +293,33 @@ public class CraftManager implements Iterable<Craft>{
 
     //region Type management
     @NotNull
+    @Deprecated(forRemoval = true)
     public Set<CraftType> getCraftTypes() {
-        return Collections.unmodifiableSet(craftTypes);
+        Set<CraftType> result = new HashSet(this.craftTypeMap.values().size());
+        for (TypeSafeCraftType typeSafeCraftType : this.craftTypeMap.values()) {
+            result.add(new CraftType(typeSafeCraftType));
+        }
+        return Collections.unmodifiableSet(result);
     }
 
     @Nullable
+    @Deprecated(forRemoval = true)
     public CraftType getCraftTypeFromString(String s) {
-        for (CraftType t : craftTypes) {
-            if (s.equalsIgnoreCase(t.getStringProperty(CraftType.NAME))) {
-                return t;
-            }
+        TypeSafeCraftType typeSafeCraftType = this.getCraftTypeByName(s);
+        if (typeSafeCraftType == null) {
+            return null;
         }
-        return null;
+        return new CraftType(typeSafeCraftType);
     }
     //endregion
+
+    public Set<TypeSafeCraftType> getTypesafeCraftTypes() {
+        return this.craftTypeMap.values().stream().collect(Collectors.toUnmodifiableSet());
+    }
+
+    public TypeSafeCraftType getCraftTypeByName(String ident) {
+        return craftTypeMap.getOrDefault(ident.toUpperCase(), null);
+    }
 
     //region Craft set management
     @NotNull

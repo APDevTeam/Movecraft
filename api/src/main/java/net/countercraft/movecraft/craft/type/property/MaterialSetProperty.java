@@ -1,6 +1,8 @@
 package net.countercraft.movecraft.craft.type.property;
 
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeyTypes;
+import net.countercraft.movecraft.craft.type.PropertyKey;
 import net.countercraft.movecraft.craft.type.TypeData;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -80,4 +82,12 @@ public class MaterialSetProperty implements Property<EnumSet<Material>> {
     public NamespacedKey getNamespacedKey() {
         return namespacedKey;
     }
+
+    @Override
+    public PropertyKey<EnumSet<Material>> asTypeSafeKey() {
+        return PropertyKeyTypes.materialSetKey(this.namespacedKey, (typesafe) -> {
+            return this.defaultProvider.apply(new CraftType(typesafe));
+        });
+    }
+
 }

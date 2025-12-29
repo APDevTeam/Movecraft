@@ -1,0 +1,245 @@
+package net.countercraft.movecraft.craft.type;
+
+import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.type.transform.TypeSafeTransform;
+import net.countercraft.movecraft.processing.MovecraftWorld;
+import net.countercraft.movecraft.util.LazyLoadField;
+import net.countercraft.movecraft.util.Pair;
+import net.countercraft.movecraft.util.registration.SimpleRegistry;
+import net.countercraft.movecraft.util.registration.TypedContainer;
+import net.countercraft.movecraft.util.registration.TypedKey;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.*;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
+
+    public static final SimpleRegistry<NamespacedKey, PropertyKey> PROPERTY_REGISTRY = new SimpleRegistry();
+    public static final Set<TypeSafeTransform> TRANSFORM_REGISTRY = new HashSet<>();
+    public static final Set<Pair<Predicate<TypeSafeCraftType>, String>> VALIDATOR_REGISTRY = new HashSet<>();
+
+    // Initialization
+    public static void init() {
+        // TODO: Replace with event
+        PropertyKeys.registerAll();
+        Transformers.registerAll();
+        Validators.registerAll();
+    }
+
+    protected final Function<String, TypeSafeCraftType> typeRetriever;
+    private final String name;
+
+    protected String parentName = null;
+    protected final LazyLoadField<TypeSafeCraftType> parentInstance = new LazyLoadField<>(this::computeParent);
+
+    protected final TypeSafeCraftType computeParent() {
+        if (this.parentName == null || this.parentName.isEmpty()) {
+            return null;
+        }
+        return this.typeRetriever.apply(this.parentName);
+    }
+
+    @NotNull
+    public static TypeSafeCraftType load(@NotNull File file, String name, Function<String, TypeSafeCraftType> typeRetriever) {
+        final InputStream input;
+        try {
+            input = new FileInputStream(file);
+        }
+        catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return new TypeSafeCraftType(name, typeRetriever);
+        }
+        try(input) {
+            FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+            return buildType(name, typeRetriever, yaml);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return new TypeSafeCraftType(name, typeRetriever);
+        }
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    protected TypeSafeCraftType(final String name, Function<String, TypeSafeCraftType> typeRetriever) {
+        super();
+        this.name = name;
+        this.typeRetriever = typeRetriever;
+    }
+
+    private static TypeSafeCraftType buildType(String name, Function<String, TypeSafeCraftType> typeRetriever, final ConfigurationSection yamlMapping) {
+        TypeSafeCraftType result = new TypeSafeCraftType(name, typeRetriever);
+        Object parentObj = yamlMapping.get("parent", null);
+        if (parentObj != null) {
+            String parentStr = String.valueOf(parentObj);
+            if (parentStr != "null" && !parentStr.isEmpty()) {
+                result.parentName = parentStr;
+            }
+        }
+
+        // Structure: Simple map per namespace inside the file
+        // Helps to differentiate things
+
+        // DONE: Add support for sorting => dashes in the ID separate to own sections!
+        // Simplified loading strategy => Simply attempt to load all properties that have been registered
+        for (PropertyKey<?> propertyKey : PROPERTY_REGISTRY.getAllValues()) {
+            if (readProperty(propertyKey, yamlMapping, result) > 1) {
+                System.err.println("FAILED to read propertykey <" + propertyKey.key().toString() +"> from type <" + result.getName() +">!");
+            }
+        }
+
+        // Step 4: Apply transforms
+        for (TypeSafeTransform transform : TRANSFORM_REGISTRY) {
+            runTransformer(transform, result);
+        }
+        // Step 5: Validate!
+        for (Pair<Predicate<TypeSafeCraftType>, String> validator : VALIDATOR_REGISTRY) {
+            if (!validator.getLeft().test(result)) {
+                throw new IllegalArgumentException(validator.getRight());
+            }
+        }
+
+        return result;
+    }
+
+    // Run transformer, if anything was changed, merge
+    static void runTransformer(TypeSafeTransform transform, final TypeSafeCraftType typeSafeCraftType) {
+        Map<PropertyKey, Object> output = new HashMap<>();
+        Set<PropertyKey> toDelete = new HashSet<>();
+        if (transform.transform(typeSafeCraftType, output::put, toDelete)) {
+            output.entrySet().forEach(entry -> {
+                typeSafeCraftType.set(entry.getKey(), entry.getValue());
+            });
+            toDelete.forEach(typeSafeCraftType::delete);
+        }
+    }
+
+    // Returns:
+    // 0: Something was found and read successfully
+    // 1: No key found
+    // 2: Something was found but not read
+    private static <T> byte readProperty(final PropertyKey<T> key, final ConfigurationSection yamlData, final TypeSafeCraftType type) {
+        NamespacedKey namespacedKey = key.key();
+        Object namespaceValues = yamlData.get(namespacedKey.getNamespace(), null);
+        if (namespaceValues != null && (namespaceValues instanceof ConfigurationSection namespaceMappingRaw)) {
+            String[] valueArr = namespacedKey.value().split("/");
+            ConfigurationSection sectionTmp = namespaceMappingRaw;
+            T value = null;
+            for (int i = 0; i < valueArr.length; i++) {
+                String workingPath = valueArr[i];
+                Object objTmp = sectionTmp.get(workingPath, null);
+                if (objTmp == null) {
+                    break;
+                } else {
+                    if (i == valueArr.length - 1) {
+                        try {
+                            value = key.read(objTmp, type);
+                        } catch (Exception exception) {
+                            // TODO: Log warning
+                            return 2;
+                        }
+                    } else {
+                        try {
+                            sectionTmp = sectionTmp.getConfigurationSection(workingPath);
+                        } catch(ClassCastException cce) {
+                            // TODO: Print message
+                            break;
+                        }
+                    }
+                }
+                if (sectionTmp == null) {
+                    break;
+                }
+            }
+            if (value != null) {
+                type.set(key, value);
+                return 0;
+            }
+        }
+        return 1;
+    }
+
+    @Override
+    protected <T> void set(@NotNull TypedKey<T> tagKey, @NotNull T value) {
+        if (!(tagKey instanceof PropertyKey<T>)) {
+            throw new IllegalStateException("Trying to set value for key that is not a property key!");
+        }
+        super.set(tagKey, value);
+    }
+
+    protected <T> T getWithoutParent(@NotNull PropertyKey<T> key) {
+        if (this.has(key)) {
+            return this.get(key);
+        }
+        return null;
+    }
+
+    // TODO: This implementation is not ideal for perworlddata! It does not fully merge with parent types
+    public <T> T get(@NotNull PropertyKey<PerWorldData<T>> key, MovecraftWorld world) {
+        return this.get(key, world.getName());
+    }
+
+    public <T> T get(@NotNull PropertyKey<PerWorldData<T>> key, World world) {
+        return this.get(key, world.getName());
+    }
+
+    public <T> T get(@NotNull PropertyKey<PerWorldData<T>> key, String world) {
+        final PerWorldData<T> data = this.get(key);
+        return data.get(world);
+    }
+
+    public <T> T get(@NotNull PropertyKey<T> key) {
+        final TypeSafeCraftType self = this;
+        return this.get(key, self);
+    }
+
+    // Internal retrieval function, do not override unless you know what you are doing
+    protected <T> T get(@NotNull PropertyKey<T> key, TypeSafeCraftType type) {
+        T result = this.getOrDefault(key, null);
+        if (result != null) {
+            return result;
+        } else if (this.parentInstance.get() != null) {
+            result = this.parentInstance.get().get(key, type);
+            if (result != null) {
+                return result;
+            }
+        }
+        // If nothing was found, return the default value!
+        return key.getDefault(type);
+    }
+
+    public CraftProperties createCraftProperties(final Craft craft) {
+        return new CraftProperties(this, craft);
+    }
+
+    Set<Map.Entry<PropertyKey<?>, Object>> entrySet() {
+        return this.entries();
+    }
+
+    public <T> boolean hasInSelfOrAnyParent(PropertyKey<T> key) {
+        if (key == null) {
+            return false;
+        }
+        if (!this.has(key)) {
+            return this.get(key, this) != null;
+        }
+        return true;
+    }
+
+    @Nullable
+    public TypeSafeCraftType getParent() {
+        return this.parentInstance.get();
+    }
+
+}

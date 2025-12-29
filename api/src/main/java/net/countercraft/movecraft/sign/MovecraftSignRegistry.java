@@ -1,8 +1,7 @@
 package net.countercraft.movecraft.sign;
 
-import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
-import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.util.SimpleRegistry;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
+import net.countercraft.movecraft.util.registration.SimpleRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.NotNull;
@@ -15,12 +14,12 @@ public class MovecraftSignRegistry extends SimpleRegistry<String, AbstractMovecr
 
     public static final @NotNull MovecraftSignRegistry INSTANCE = new MovecraftSignRegistry();
 
-    public void registerCraftPilotSigns(Set<CraftType> loadedTypes, Function<CraftType, AbstractCraftPilotSign> signFactory) {
+    public void registerCraftPilotSigns(Set<TypeSafeCraftType> loadedTypes, Function<TypeSafeCraftType, AbstractCraftPilotSign> signFactory) {
         _register.entrySet().removeIf(entry ->  entry.getValue() instanceof AbstractCraftPilotSign);
         // Now, add all types...
-        for (CraftType type : loadedTypes) {
+        for (TypeSafeCraftType type : loadedTypes) {
             AbstractCraftPilotSign sign = signFactory.apply(type);
-            register(type.getStringProperty(CraftType.NAME), sign, true);
+            register(type.getName(), sign, true);
         }
     }
 

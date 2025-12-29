@@ -11,7 +11,7 @@ public class CraftTypeListener implements Listener {
 
     @EventHandler
     public void onReload(TypesReloadedEvent event) {
-        AbstractMovecraftSign.registerCraftPilotSigns(CraftManager.getInstance().getCraftTypes(), CraftPilotSign::new);
+        AbstractMovecraftSign.registerCraftPilotSigns(CraftManager.getInstance().getTypesafeCraftTypes(), CraftPilotSign::new);
     }
 
 }

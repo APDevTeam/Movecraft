@@ -33,7 +33,7 @@ public final class TypeData {
 
     private final @NotNull Map<String, Object> backingData;
 
-    private TypeData(Map<String, Object> data) {
+    public TypeData(Map<String, Object> data) {
         this.backingData = Collections.unmodifiableMap(data);
     }
 

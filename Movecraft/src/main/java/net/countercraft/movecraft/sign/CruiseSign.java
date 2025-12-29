@@ -3,7 +3,7 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
@@ -50,7 +50,7 @@ public class CruiseSign extends AbstractCruiseSign {
     protected void onAfterStartingCruise(Craft craft, SignListener.SignWrapper signWrapper, Player player) {
         super.onAfterStartingCruise(craft, signWrapper, player);
         // Left over artifact from manually launched torpedoes
-        if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES)) {
+        if (!craft.getCraftProperties().get(PropertyKeys.CAN_MOVE_ENTITIES)) {
             CraftManager.getInstance().addReleaseTask(craft);
         }
     }
@@ -73,7 +73,7 @@ public class CruiseSign extends AbstractCruiseSign {
     @Override
     protected boolean canPlayerUseSignOn(Player player, @Nullable Craft craft) {
         if (super.canPlayerUseSignOn(player, craft)) {
-            return craft.getType().getBoolProperty(CraftType.CAN_CRUISE);
+            return craft.getCraftProperties().get(PropertyKeys.CAN_CRUISE);
         }
         return false;
     }
