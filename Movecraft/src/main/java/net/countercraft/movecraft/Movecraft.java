@@ -61,6 +61,7 @@ public class Movecraft extends JavaPlugin {
     private Logger logger;
     private boolean shuttingDown;
     private WorldHandler worldHandler;
+    private NMSHelper nmsHelper;
     private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
     private WreckManager wreckManager;
@@ -265,6 +266,16 @@ public class Movecraft extends JavaPlugin {
                                 smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
                                 getLogger().warning("Did not find smooth teleport, falling back to bukkit teleportation provider.");
                             }
+
+                            // General NMS helper
+                            final Class<?> nmsHelperClazz = Class.forName("net.countercraft.movecraft.support." + packageName + ".INMSHelper");
+                            if (NMSHelper.class.isAssignableFrom(nmsHelperClazz)) {
+                                nmsHelper = (NMSHelper) nmsHelperClazz.getConstructor().newInstance();
+                            }
+                            else {
+                                nmsHelper = null;
+                                getLogger().warning("Did not find NMSHelper, some features may not work!.");
+                            }
                         }
                         catch (final ReflectiveOperationException e) {
                             if (Settings.Debug) {
@@ -416,5 +427,9 @@ public class Movecraft extends JavaPlugin {
 
     public @NotNull WreckManager getWreckManager(){
         return wreckManager;
+    }
+
+    public NMSHelper getNMSHelper() {
+        return this.nmsHelper;
     }
 }
