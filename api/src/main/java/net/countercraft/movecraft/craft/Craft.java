@@ -238,6 +238,10 @@ public interface Craft {
 
     void setBurningFuel(double burningFuel);
 
+    void setMaxBurningFuel(double value);
+
+    double getMaxBurningFuel();
+
     int getOrigBlockCount();
 
     void setOrigBlockCount(int origBlockCount);

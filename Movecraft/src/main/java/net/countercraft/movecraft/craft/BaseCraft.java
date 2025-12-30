@@ -69,6 +69,7 @@ public abstract class BaseCraft implements Craft {
     private long lastTeleportTime;
     private int currentGear = 1;
     private double burningFuel;
+    private double maxBurningFuel;
     private int origBlockCount;
     @NotNull
     private Audience audience;
@@ -321,6 +322,16 @@ public abstract class BaseCraft implements Craft {
     @Override
     public void setBurningFuel(double burningFuel) {
         this.burningFuel = burningFuel;
+    }
+
+    @Override
+    public double getMaxBurningFuel() {
+        return maxBurningFuel;
+    }
+
+    @Override
+    public void setMaxBurningFuel(double maxBurningFuel) {
+        this.maxBurningFuel = maxBurningFuel;
     }
 
     @Override
