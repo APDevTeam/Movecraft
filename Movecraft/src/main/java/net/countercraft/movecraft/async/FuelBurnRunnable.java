@@ -248,6 +248,7 @@ public class FuelBurnRunnable implements Runnable {
             return result;
         }
         result = new HashSet<>();
+        craft.getTrackedLocations().put(FURNACES_KEY, result);
 
         // FUrnaces are valid, if they belong to the tag AND have fuel in them
         Predicate<MovecraftLocation> testFurnacePredicate;
