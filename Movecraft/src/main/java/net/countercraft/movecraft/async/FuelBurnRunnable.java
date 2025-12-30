@@ -204,7 +204,7 @@ public class FuelBurnRunnable implements Runnable {
         craft.setDataTag(IS_FUELED, isBurningFuel);
     }
 
-    static void setEnginesActive(final Craft craft, final boolean active) {
+    public static void setEnginesActive(final Craft craft, final boolean active) {
         short burnTime = 0;
         boolean setProgress = Movecraft.getInstance().getNMSHelper() != null;
 
@@ -249,6 +249,7 @@ public class FuelBurnRunnable implements Runnable {
         }
         result = new HashSet<>();
 
+        // FUrnaces are valid, if they belong to the tag AND have fuel in them
         Predicate<MovecraftLocation> testFurnacePredicate;
         if (Bukkit.isPrimaryThread()) {
             testFurnacePredicate = (ml) -> {

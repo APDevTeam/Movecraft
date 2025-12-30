@@ -19,6 +19,7 @@ package net.countercraft.movecraft.craft;
 
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
+import net.countercraft.movecraft.async.FuelBurnRunnable;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
@@ -214,6 +215,8 @@ public class CraftManager implements Iterable<Craft>{
         }
 
         crafts.remove(craft);
+        // Turn off furnaces
+        FuelBurnRunnable.setEnginesActive(craft, false);
         if(craft instanceof PlayerCraft)
             playerCrafts.remove(((PlayerCraft) craft).getPilotUUID());
 
