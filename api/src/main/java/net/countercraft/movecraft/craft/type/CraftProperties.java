@@ -31,10 +31,15 @@ public class CraftProperties extends TypeSafeCraftType{
 
     @Override
     public <T> T get(@NotNull PropertyKey<T> key) {
+        // TODO: This does not work properly yet for mutable types!
         if (key instanceof PropertyKey.ImmutableKey) {
             return this.craftTypeReference.get(key);
         }
-        return super.get(key);
+        T result = super.get(key);
+        if (result == null) {
+            result = this.craftTypeReference.get(key);
+        }
+        return result;
     }
 
     @Override
