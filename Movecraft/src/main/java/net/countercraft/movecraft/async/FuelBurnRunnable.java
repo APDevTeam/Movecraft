@@ -183,6 +183,7 @@ public class FuelBurnRunnable implements Runnable {
                     }
 
                     craft.setBurningFuel(craft.getBurningFuel() + burnTime);
+                    craft.setMaxBurningFuel(craft.getBurningFuel());
 
                     isBurningFuel = true;
 
@@ -209,10 +210,11 @@ public class FuelBurnRunnable implements Runnable {
 
         // Retrieve actual burn time from ServerLevel#fuelTypes() => Requires NMS or some other stuff
         if (setProgress) {
-            final double burnPercentage = craft.getBurningFuel() / getFuelBurnRate(craft);
+            final double burnPercentage = craft.getBurningFuel() / craft.getMaxBurningFuel();
             final ItemStack fuelItem = craft.getDataTag(CURRENT_FUEL_ITEM);
             if (Movecraft.getInstance().getNMSHelper().isFuel(fuelItem, craft.getWorld())) {
-                burnTime = (short) ((double)(Movecraft.getInstance().getNMSHelper().getBurnDuration(fuelItem, craft.getWorld())) * burnPercentage);
+                double burnDuration = (Movecraft.getInstance().getNMSHelper().getBurnDuration(fuelItem, craft.getWorld()));
+                burnTime = (short) (burnDuration * burnPercentage);
             }
         }
 
