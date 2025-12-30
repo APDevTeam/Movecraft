@@ -308,6 +308,8 @@ public interface Craft {
 
     <T> boolean hasDataTag(@NotNull final CraftDataTagKey<T> tagKey);
 
+    void resetDataTag(@NotNull final CraftDataTagKey<?> tagKey);
+
     public default void markTileStateWithUUID(TileState tile) {
         // Add the marker
         tile.getPersistentDataContainer().set(

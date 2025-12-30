@@ -50,4 +50,11 @@ public class CraftDataTagContainer extends TypedContainer<CraftDataTagKey<?>> {
         return this.get(tagKey, (k) -> tagKey.createNew(craft));
     }
 
+    public void remove(@NotNull TypedKey<?> key) {
+        if (!CraftDataTagRegistry.INSTANCE.isRegistered(key.key())) {
+            throw new IllegalArgumentException(String.format("The provided key %s was not registered.", key));
+        }
+        super.delete(key);
+    }
+
 }

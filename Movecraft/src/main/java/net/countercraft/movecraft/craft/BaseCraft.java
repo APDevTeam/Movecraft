@@ -626,6 +626,11 @@ public abstract class BaseCraft implements Craft {
     }
 
     @Override
+    public void resetDataTag(@NotNull CraftDataTagKey<?> tagKey) {
+        this.dataTagContainer.remove(tagKey);
+    }
+
+    @Override
     public UUID getUUID() {
         return this.uuid;
     }
