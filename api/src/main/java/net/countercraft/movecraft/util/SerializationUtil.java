@@ -114,7 +114,7 @@ public class SerializationUtil {
                 if (value != null) {
                     result.add(namespacedKey);
                 } else {
-                   throw new IllegalArgumentException("Unable to lookup value for key <" + namespacedKey.toString() + "> in registry <" + registryKey.toString() + ">!");
+                   System.err.println("Unable to lookup value for key <" + namespacedKey.toString() + "> in registry <" + registryKey.toString() + ">!");
                 }
             }
             for (NamespacedKey tagNamespacedKey : tagsTmp) {
