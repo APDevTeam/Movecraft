@@ -99,7 +99,7 @@ public class PropertyKeys {
     public static final PropertyKey<Double> DYNAMIC_LAG_MIN_SPEED =
             register(PropertyKeyTypes.doublePropertyKey(key("dynamic_lag/min_speed")).immutable());
     public static final PropertyKey<Double> DYNAMIC_FLY_BLOCK_SPEED_FACTOR =
-            register(PropertyKeyTypes.doublePropertyKey(key("dynamic_fly/block_speed_factor")).immutable());
+            register(PropertyKeyTypes.doublePropertyKey(key("dynamic_fly_blocks/block_speed_factor")).immutable());
     public static final PropertyKey<Double> CHEST_PENALTY =
             register(PropertyKeyTypes.doublePropertyKey(key("movement/chest_penalty")).immutable());
     // endregion idk if we should keep these
