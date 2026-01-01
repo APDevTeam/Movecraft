@@ -181,7 +181,7 @@ public class TranslationTask extends AsyncTask {
 
             boolean blockObstructed;
             if (craft instanceof SinkingCraft)
-                blockObstructed = !Tags.FALL_THROUGH_BLOCKS.contains(testMaterial);
+                blockObstructed = !Tags.FALL_THROUGH_BLOCKS.contains(testBlock.getType());
             else
                 blockObstructed = !testBlock.getType().isAir()
                         && !craft.getCraftProperties().get(PropertyKeys.PASSTHROUGH_BLOCKS).contains(testMaterial);
@@ -254,6 +254,7 @@ public class TranslationTask extends AsyncTask {
                 }
             }
             newHitBox.removeAll(air);
+            // Removes all positions from newHitBox that are also part of collisionBox and oldHitBox
             for (MovecraftLocation location : collisionBox) {
                 if (craft.getCraftProperties().get(PropertyKeys.EXPLODE_ON_CRASH) > 0F) {
                     if (System.currentTimeMillis() - craft.getOrigPilotTime() <= 1000) {
