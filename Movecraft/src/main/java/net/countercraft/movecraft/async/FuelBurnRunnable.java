@@ -12,6 +12,7 @@ import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
 import net.countercraft.movecraft.craft.type.PropertyKeys;
+import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.events.FuelBurnEvent;
 import net.countercraft.movecraft.processing.MovecraftWorld;
 import net.countercraft.movecraft.util.Tags;
@@ -201,6 +202,12 @@ public class FuelBurnRunnable implements Runnable {
         }
         // TODO: Reset the furnace trackedlocations after a while
 
+        if (craft.getDataTag(IS_FUELED)) {
+            if (craft.getCraftProperties().get(PropertyKeys.SINK_WHEN_OUT_OF_FUEL) && !isBurningFuel) {
+                craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
+                CraftManager.getInstance().sink(craft);
+            }
+        }
         craft.setDataTag(IS_FUELED, isBurningFuel);
     }
 
@@ -212,7 +219,7 @@ public class FuelBurnRunnable implements Runnable {
         if (setProgress) {
             final double burnPercentage = craft.getBurningFuel() / craft.getMaxBurningFuel();
             final ItemStack fuelItem = craft.getDataTag(CURRENT_FUEL_ITEM);
-            if (Movecraft.getInstance().getNMSHelper().isFuel(fuelItem, craft.getWorld())) {
+            if (fuelItem != null && !fuelItem.isEmpty() && Movecraft.getInstance().getNMSHelper().isFuel(fuelItem, craft.getWorld())) {
                 double burnDuration = (Movecraft.getInstance().getNMSHelper().getBurnDuration(fuelItem, craft.getWorld()));
                 burnTime = (short) (burnDuration * burnPercentage);
             }
