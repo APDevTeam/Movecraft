@@ -79,6 +79,7 @@ public class FuelBurnRunnable implements Runnable {
 
     static void burnFuel(final Craft craft) {
         // TODO: The more furnaces a craft has, the more fuel it should consume, but also the more furnaces, the faster it accelerates
+        // TODO: Skiffs randomly sink now, fix that!
         boolean isBurningFuel = false;
         double fuelBurnRate = getFuelBurnRate(craft);
 
@@ -204,6 +205,7 @@ public class FuelBurnRunnable implements Runnable {
 
         if (craft.getDataTag(IS_FUELED)) {
             if (craft.getCraftProperties().get(PropertyKeys.SINK_WHEN_OUT_OF_FUEL) && !isBurningFuel) {
+                Movecraft.getInstance().getLogger().info("Scuttling craft <" + craft.getUUID().toString() +"> at <" + craft.getHitBox().getMidPoint().toString() + "> as it ran out of fuel!");
                 craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
                 CraftManager.getInstance().sink(craft);
             }
