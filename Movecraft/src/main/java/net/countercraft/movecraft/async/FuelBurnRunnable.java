@@ -214,7 +214,8 @@ public class FuelBurnRunnable implements Runnable {
     }
 
     public static void setEnginesActive(final Craft craft, final boolean active) {
-        short burnTime = 0;
+        int burnTime = 0;
+        int totalBurnTime = 0;
         boolean setProgress = Movecraft.getInstance().getNMSHelper() != null;
 
         // Retrieve actual burn time from ServerLevel#fuelTypes() => Requires NMS or some other stuff
@@ -222,8 +223,9 @@ public class FuelBurnRunnable implements Runnable {
             final double burnPercentage = craft.getBurningFuel() / craft.getMaxBurningFuel();
             final ItemStack fuelItem = craft.getDataTag(CURRENT_FUEL_ITEM);
             if (fuelItem != null && !fuelItem.isEmpty() && Movecraft.getInstance().getNMSHelper().isFuel(fuelItem, craft.getWorld())) {
-                double burnDuration = (Movecraft.getInstance().getNMSHelper().getBurnDuration(fuelItem, craft.getWorld()));
-                burnTime = (short) (burnDuration * burnPercentage);
+                totalBurnTime = (Movecraft.getInstance().getNMSHelper().getBurnDuration(fuelItem, craft.getWorld()));
+                double burnDuration = totalBurnTime;
+                burnTime = (int) (burnDuration * burnPercentage);
             }
         }
 
@@ -239,8 +241,8 @@ public class FuelBurnRunnable implements Runnable {
                 state = craft.getMovecraftWorld().getState(location);
             }
             if (state instanceof org.bukkit.block.Furnace furnace1) {
-                if (active && setProgress) {
-                    furnace1.setBurnTime(burnTime);
+                if (setProgress) {
+                    Movecraft.getInstance().getNMSHelper().setFurnaceBurnTime(burnTime, totalBurnTime + 1, furnace1);
                 }
             }
             if (furnace instanceof Furnace furnaceState) {
