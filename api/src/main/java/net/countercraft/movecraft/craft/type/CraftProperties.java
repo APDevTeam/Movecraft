@@ -31,8 +31,8 @@ public class CraftProperties extends TypeSafeCraftType{
 
     @Override
     public <T> T get(@NotNull PropertyKey<T> key) {
-        // TODO: This does not work properly yet for mutable types!
-        if (key instanceof PropertyKey.ImmutableKey) {
+        // If this property is immutable or we dont have it in ourselves (our parent is the underlying crafttype itself, so it's result does not concern us), we return the backing's value
+        if ((key instanceof PropertyKey.ImmutableKey) || !this.has(key)) {
             return this.craftTypeReference.get(key);
         }
         T result = super.get(key);

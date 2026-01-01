@@ -246,8 +246,10 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         if (key == null) {
             return false;
         }
-        if (!this.has(key)) {
-            return this.get(key, this) != null;
+        // Actually check for the property being set SOMEWHERE
+        // A value getting returned is not really valid as that could ALWAYS be the default!
+        if (!this.has(key) && this.getParent() != null) {
+            return this.getParent().hasInSelfOrAnyParent(key);
         }
         return true;
     }
