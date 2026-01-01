@@ -33,6 +33,8 @@ import net.countercraft.movecraft.mapUpdater.update.ExplosionUpdateCommand;
 import net.countercraft.movecraft.mapUpdater.update.UpdateCommand;
 import net.countercraft.movecraft.util.MathUtils;
 import net.countercraft.movecraft.util.hitboxes.BitmapHitBox;
+import net.countercraft.movecraft.util.hitboxes.HitBox;
+import net.countercraft.movecraft.util.hitboxes.MutableHitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -438,9 +440,15 @@ public class AsyncManager extends BukkitRunnable {
 
                 // TODO: Is this truly necessary?
                 if (toRemove.size() > 0) {
-                    SetHitBox newHitBox = new SetHitBox(craft.getHitBox());
-                    newHitBox.removeAll(toRemove);
-                    craft.setHitBox(newHitBox);
+                    HitBox hitBox = craft.getHitBox();
+                    // If we already use a mutable hitbox, we can simply modify that instead!
+                    if (hitBox instanceof MutableHitBox mutableHitBox) {
+                        mutableHitBox.removeAll(toRemove);
+                    } else {
+                        SetHitBox newHitBox = new SetHitBox(hitBox);
+                        newHitBox.removeAll(toRemove);
+                        craft.setHitBox(newHitBox);
+                    }
                 }
 
                 int nonNegligibleBlocks = craft.getDataTag(Craft.NON_NEGLIGIBLE_BLOCKS);
