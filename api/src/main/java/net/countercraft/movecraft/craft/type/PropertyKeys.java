@@ -125,7 +125,7 @@ public class PropertyKeys {
     public static final PropertyKey<Boolean> ALLOW_HORIZONTAL_MOVEMENT =
             register(PropertyKeyTypes.boolPropertyKey(key("constraints/movement/allow_horizontal"), t -> true).immutable());
     public static final PropertyKey<Boolean> ROTATE_AT_MIDPOINT =
-            register(PropertyKeyTypes.boolPropertyKey(key("general/rotate_at_midpoint"), t -> true).immutable());
+            register(PropertyKeyTypes.boolPropertyKey(key("general/rotate_at_midpoint"), t -> false).immutable());
     public static final PropertyKey<Boolean> ALLOW_REMOTE_SIGN =
             register(PropertyKeyTypes.boolPropertyKey(key("constraints/allow_remote_sign"), t -> true).immutable());
     public static final PropertyKey<Boolean> CAN_STATIC_MOVE =
