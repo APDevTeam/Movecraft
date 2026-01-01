@@ -68,6 +68,32 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         }
     }
 
+    public static void runTransformers(Set<TypeSafeCraftType> types) {
+        // Step 4: Apply transforms
+        for (TypeSafeCraftType type : types) {
+            for (TypeSafeTransform transform : TRANSFORM_REGISTRY) {
+                runTransformer(transform, type);
+            }
+        }
+    }
+
+    public static void runValidators(Set<TypeSafeCraftType> types) {
+        types.removeIf(type -> {
+                // Step 5: Validate!
+                try {
+                    for (Pair<Predicate<TypeSafeCraftType>, String> validator : VALIDATOR_REGISTRY) {
+                        if (!validator.getLeft().test(type)) {
+                            throw new IllegalArgumentException(validator.getRight());
+                        }
+                    }
+                } catch(IllegalArgumentException iae) {
+                    iae.printStackTrace();
+                    return true;
+                }
+                return false;
+        });
+    }
+
     public String getName() {
         return this.name;
     }
@@ -96,17 +122,6 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
         for (PropertyKey<?> propertyKey : PROPERTY_REGISTRY.getAllValues()) {
             if (readProperty(propertyKey, yamlMapping, result) > 1) {
                 System.err.println("FAILED to read propertykey <" + propertyKey.key().toString() +"> from type <" + result.getName() +">!");
-            }
-        }
-
-        // Step 4: Apply transforms
-        for (TypeSafeTransform transform : TRANSFORM_REGISTRY) {
-            runTransformer(transform, result);
-        }
-        // Step 5: Validate!
-        for (Pair<Predicate<TypeSafeCraftType>, String> validator : VALIDATOR_REGISTRY) {
-            if (!validator.getLeft().test(result)) {
-                throw new IllegalArgumentException(validator.getRight());
             }
         }
 

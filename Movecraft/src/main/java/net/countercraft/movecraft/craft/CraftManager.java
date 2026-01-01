@@ -43,8 +43,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.yaml.snakeyaml.parser.ParserException;
-import org.yaml.snakeyaml.scanner.ScannerException;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,10 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
-
-import static net.countercraft.movecraft.util.ChatUtils.ERROR_PREFIX;
 
 public class CraftManager implements Iterable<Craft>{
     private static CraftManager instance;
@@ -124,6 +119,16 @@ public class CraftManager implements Iterable<Craft>{
                 Movecraft.getInstance().getLogger().warning("Overriding crafttype setting with name <" + name + ">! This means there are duplicates!");
             }
         }
+        Set<TypeSafeCraftType> loadedTypes = new HashSet<>(this.craftTypeMap.values());
+        TypeSafeCraftType.runTransformers(loadedTypes);
+        TypeSafeCraftType.runValidators(loadedTypes);
+        Set<String> toRemove = new HashSet<>();
+        for (Map.Entry<String, TypeSafeCraftType> entry : this.craftTypeMap.entrySet()) {
+            if (!loadedTypes.contains(entry.getValue())) {
+                toRemove.add(entry.getKey());
+            }
+        }
+        toRemove.forEach(this.craftTypeMap::remove);
     }
 
     public void reloadCraftTypes() throws IOException {
