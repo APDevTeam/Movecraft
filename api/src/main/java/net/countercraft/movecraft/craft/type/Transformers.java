@@ -2,9 +2,14 @@ package net.countercraft.movecraft.craft.type;
 
 import net.countercraft.movecraft.craft.type.transform.TypeSafeTransform;
 import net.countercraft.movecraft.util.Tags;
+import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 public class Transformers {
 
@@ -36,19 +41,29 @@ public class Transformers {
         register((getter, setter, deleter) -> {
             PerWorldData<Double> speedData = getter.get(PropertyKeys.CRUISE_SPEED);
             PerWorldData<Integer> skipData = getter.get(PropertyKeys.CRUISE_SKIP_BLOCKS);
-            if (speedData == null || skipData == null) {
+
+            if (!getter.has(PropertyKeys.CRUISE_SPEED) || !getter.has(PropertyKeys.CRUISE_SKIP_BLOCKS)) {
                 return false;
             }
-            Map<String, Integer> mapping = new HashMap<>(speedData.getOverrides().size());
-            for (Map.Entry<String, Double> entry : speedData.getOverrides().entrySet()) {
-                int value = (int) Math.round((1.0D + skipData.get(entry.getKey())) * 20.0D / entry.getValue());
-                mapping.put(entry.getKey(), value);
+
+            final Map<String, Integer> mapping = new HashMap<>(speedData.getOverrides().size());
+
+            Set<String> worlds = new HashSet<>();
+            worlds.addAll(speedData.getOverrides().keySet());
+            worlds.addAll(skipData.getOverrides().keySet());
+
+            final BiFunction<Integer, Double, Integer> calculationFunction = (skip, speed) -> {
+                return (int) Math.round((1.0 + skip) * 20.0 / speed);
+            };
+
+            for (String world : worlds) {
+                double speed = speedData.get(world);
+                int skip = skipData.get(world);
+                mapping.put(world, calculationFunction.apply(skip, speed));
             }
-            for (Map.Entry<String, Integer> entry : skipData.getOverrides().entrySet()) {
-                int value = (int) Math.round((1.0D + speedData.get(entry.getKey())) * 20.0D / entry.getValue());
-                mapping.put(entry.getKey(), value);
-            }
-            PerWorldData<Integer> tickCooldown = new PerWorldData<>((int) Math.ceil(20 / speedData.getDefaultFallback()), mapping);
+            final int defaultValue = calculationFunction.apply(skipData.getDefaultFallback(), speedData.getDefaultFallback());
+
+            PerWorldData<Integer> tickCooldown = new PerWorldData<>(defaultValue, mapping);
             setter.accept(PropertyKeys.CRUISE_TICK_COOLDOWN, tickCooldown);
             deleter.add(PropertyKeys.CRUISE_SPEED);
             return true;
@@ -57,19 +72,29 @@ public class Transformers {
         register((getter, setter, deleter) -> {
             PerWorldData<Double> speedData = getter.get(PropertyKeys.VERT_CRUISE_SPEED);
             PerWorldData<Integer> skipData = getter.get(PropertyKeys.VERT_CRUISE_SKIP_BLOCKS);
-            if (speedData == null || skipData == null) {
+
+            if (!getter.has(PropertyKeys.VERT_CRUISE_SPEED) || !getter.has(PropertyKeys.VERT_CRUISE_SKIP_BLOCKS)) {
                 return false;
             }
-            Map<String, Integer> mapping = new HashMap<>(speedData.getOverrides().size());
-            for (Map.Entry<String, Double> entry : speedData.getOverrides().entrySet()) {
-                int value = (int) Math.round((1.0D + skipData.get(entry.getKey())) * 20.0D / entry.getValue());
-                mapping.put(entry.getKey(), value);
+
+            final Map<String, Integer> mapping = new HashMap<>(speedData.getOverrides().size());
+
+            Set<String> worlds = new HashSet<>();
+            worlds.addAll(speedData.getOverrides().keySet());
+            worlds.addAll(skipData.getOverrides().keySet());
+
+            final BiFunction<Integer, Double, Integer> calculationFunction = (skip, speed) -> {
+                return (int) Math.round((1.0 + skip) * 20.0 / speed);
+            };
+
+            for (String world : worlds) {
+                double speed = speedData.get(world);
+                int skip = skipData.get(world);
+                mapping.put(world, calculationFunction.apply(skip, speed));
             }
-            for (Map.Entry<String, Integer> entry : skipData.getOverrides().entrySet()) {
-                int value = (int) Math.round((1.0D + speedData.get(entry.getKey())) * 20.0D / entry.getValue());
-                mapping.put(entry.getKey(), value);
-            }
-            PerWorldData<Integer> tickCooldown = new PerWorldData<>((int) Math.ceil(20 / speedData.getDefaultFallback()), mapping);
+            final int defaultValue = calculationFunction.apply(skipData.getDefaultFallback(), speedData.getDefaultFallback());
+
+            PerWorldData<Integer> tickCooldown = new PerWorldData<>(defaultValue, mapping);
             setter.accept(PropertyKeys.VERT_CRUISE_TICK_COOLDOWN, tickCooldown);
             deleter.add(PropertyKeys.VERT_CRUISE_SPEED);
             return true;
