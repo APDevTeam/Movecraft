@@ -53,6 +53,7 @@ public class FuelBurnRunnable implements Runnable {
             if (!doesBurnFuel(craft)) {
                 continue;
             }
+
             // Burn current item or find a new one
             burnFuel(craft);
 
@@ -203,9 +204,21 @@ public class FuelBurnRunnable implements Runnable {
         }
         // TODO: Reset the furnace trackedlocations after a while
 
+        // Only sink it here if it is not moving. If it is moving, it is sunk via the task itself!
+        // We are moving, that means our result could be faulty
+        if (!craft.isNotProcessing() && !isBurningFuel) {
+            if (Settings.Debug) {
+                Movecraft.getInstance().getLogger().info("Craft <" + craft.getUUID().toString() +"> technically cant burn any more fuel but is currently busy, we will try again later!");
+            }
+            return;
+        }
+
+        // We were fueld, but now we are no longer fueled
         if (craft.getDataTag(IS_FUELED)) {
             if (craft.getCraftProperties().get(PropertyKeys.SINK_WHEN_OUT_OF_FUEL) && !isBurningFuel) {
-                Movecraft.getInstance().getLogger().info("Scuttling craft <" + craft.getUUID().toString() +"> at <" + craft.getHitBox().getMidPoint().toString() + "> as it ran out of fuel!");
+                if (Settings.Debug) {
+                    Movecraft.getInstance().getLogger().info("Scuttling craft <" + craft.getUUID().toString() +"> at <" + craft.getHitBox().getMidPoint().toString() + "> as it ran out of fuel!");
+                }
                 craft.setCruising(false, CraftStopCruiseEvent.Reason.CRAFT_SUNK);
                 CraftManager.getInstance().sink(craft);
             }
@@ -243,6 +256,8 @@ public class FuelBurnRunnable implements Runnable {
             if (state instanceof org.bukkit.block.Furnace furnace1) {
                 if (setProgress) {
                     Movecraft.getInstance().getNMSHelper().setFurnaceBurnTime(burnTime, totalBurnTime + 1, furnace1);
+                } else if (!active) {
+                    Movecraft.getInstance().getNMSHelper().setFurnaceBurnTime(0, 0, furnace1);
                 }
             }
             if (furnace instanceof Furnace furnaceState) {
