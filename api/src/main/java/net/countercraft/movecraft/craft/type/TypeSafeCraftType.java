@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
 
     public static final SimpleRegistry<NamespacedKey, PropertyKey> PROPERTY_REGISTRY = new SimpleRegistry();
-    public static final Set<TypeSafeTransform> TRANSFORM_REGISTRY = new HashSet<>();
+    public static final List<TypeSafeTransform> TRANSFORM_REGISTRY = new ArrayList<>();
     public static final Set<Pair<Predicate<TypeSafeCraftType>, String>> VALIDATOR_REGISTRY = new HashSet<>();
 
     // Initialization
@@ -71,7 +71,8 @@ public class TypeSafeCraftType extends TypedContainer<PropertyKey<?>> {
     public static void runTransformers(Set<TypeSafeCraftType> types) {
         // Step 4: Apply transforms
         for (TypeSafeCraftType type : types) {
-            for (TypeSafeTransform transform : TRANSFORM_REGISTRY) {
+            for (int i = 0; i < TRANSFORM_REGISTRY.size(); i++) {
+                TypeSafeTransform transform = TRANSFORM_REGISTRY.get(i);
                 runTransformer(transform, type);
             }
         }
