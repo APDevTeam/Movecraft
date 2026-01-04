@@ -151,7 +151,7 @@ public class TranslationTask implements Supplier<Effect> {
         callCollisionEvent(craft, collisions, preTranslateEvent.getWorld());
         if(craft.getType().getFloatProperty(CraftType.COLLISION_EXPLOSION) <= 0F && !collisions.isEmpty()){
             //TODO: collision highlights
-            return () -> craft.getAudience().sendMessage(Component.text(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed") + " @ %d,%d,%d,%s", 0, 0, 0, "not_implemented")));
+            return () -> craft.getAudience().sendMessage(Component.text(String.format(I18nSupport.getInternationalisedString("Translation - Failed Craft is obstructed"))));
         }
         Effect fluidBoxEffect = fluidBox(craft, translation);
         var  translateEvent = callTranslateEvent(craft, destinationLocations, preTranslateEvent.getWorld());
