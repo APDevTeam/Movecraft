@@ -209,14 +209,14 @@ public class CraftManager implements Iterable<Craft>{
         crafts.add(new SinkingCraftImpl(craft));
     }
 
-    public void release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason, boolean force) {
+    public boolean release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason, boolean force) {
         CraftReleaseEvent e = new CraftReleaseEvent(craft, reason);
         Bukkit.getServer().getPluginManager().callEvent(e);
         if (e.isCancelled()) {
             if (force)
                 throw new NonCancellableReleaseException();
             else
-                return;
+                return false;
         }
 
         crafts.remove(craft);
@@ -251,6 +251,7 @@ public class CraftManager implements Iterable<Craft>{
                 );
         }
         Movecraft.getInstance().getWreckManager().queueWreck(craft);
+        return true;
     }
 
     //region Craft management

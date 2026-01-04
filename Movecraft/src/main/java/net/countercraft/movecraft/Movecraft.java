@@ -233,6 +233,7 @@ public class Movecraft extends JavaPlugin {
         //getServer().getPluginManager().registerEvents(new ContactsSign(), this);
         getServer().getPluginManager().registerEvents(new CraftTypeListener(), this);
         getServer().getPluginManager().registerEvents(new CraftTranslateListener(), this);
+        getServer().getPluginManager().registerEvents(new WorldListener(), this);
         getCommand("contacts").setExecutor(new ContactsCommand());
         getCommand("ignorecontact").setExecutor(new IgnoreContactCommand());
 
