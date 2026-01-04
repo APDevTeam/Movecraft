@@ -28,7 +28,7 @@ public class Tags {
         FRAGILE_MATERIALS.add(Material.REDSTONE_WIRE);
         FRAGILE_MATERIALS.add(Material.LADDER);
         FRAGILE_MATERIALS.addAll(Tag.DOORS.getValues());
-        FRAGILE_MATERIALS.addAll(Tag.CARPETS.getValues());
+        FRAGILE_MATERIALS.addAll(Tag.WOOL_CARPETS.getValues());
         FRAGILE_MATERIALS.addAll(Tag.RAILS.getValues());
         FRAGILE_MATERIALS.addAll(Tag.WOODEN_PRESSURE_PLATES.getValues());
 
