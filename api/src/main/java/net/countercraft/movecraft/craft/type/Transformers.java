@@ -140,9 +140,6 @@ public class Transformers {
         //   and perWorldVertCruiseSpeed
         register((getter, setter, deleter) -> {
             deleter.add(PropertyKeys.SPEED);
-            deleter.add(PropertyKeys.SINK_SPEED);
-            deleter.add(PropertyKeys.CRUISE_SPEED);
-            deleter.add(PropertyKeys.VERT_CRUISE_SPEED);
             return true;
         });
     }
