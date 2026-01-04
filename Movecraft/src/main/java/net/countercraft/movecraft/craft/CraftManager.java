@@ -209,7 +209,11 @@ public class CraftManager implements Iterable<Craft>{
         crafts.add(new SinkingCraftImpl(craft));
     }
 
-    public boolean release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason, boolean force) {
+    public void release(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason, boolean force) {
+        boolean result = this.tryRelease(craft, reason, force);
+    }
+
+    public boolean tryRelease(@NotNull Craft craft, @NotNull CraftReleaseEvent.Reason reason, boolean force) {
         CraftReleaseEvent e = new CraftReleaseEvent(craft, reason);
         Bukkit.getServer().getPluginManager().callEvent(e);
         if (e.isCancelled()) {
