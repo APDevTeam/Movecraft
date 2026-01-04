@@ -116,13 +116,6 @@ public class RotationTask extends AsyncTask {
             newHitBox.add(newLocation);
 
             Material oldMaterial = originalLocation.toBukkit(w).getBlock().getType();
-            //prevent chests collision
-            if (Tags.CHESTS.contains(oldMaterial) && !checkChests(oldMaterial, newLocation)) {
-                failed = true;
-                failMessage = String.format(I18nSupport.getInternationalisedString("Rotation - Craft is obstructed") + " @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
-                break;
-            }
-
             if (!withinWorldBorder(craft.getWorld(), newLocation)) {
                 failMessage = I18nSupport.getInternationalisedString("Rotation - Failed Craft cannot pass world border") + String.format(" @ %d,%d,%d", newLocation.getX(), newLocation.getY(), newLocation.getZ());
                 failed = true;
@@ -362,36 +355,6 @@ public class RotationTask extends AsyncTask {
 
     public boolean getIsSubCraft() {
         return isSubCraft;
-    }
-
-    private boolean checkChests(Material mBlock, MovecraftLocation newLoc) {
-        Material testMaterial;
-        MovecraftLocation aroundNewLoc;
-        final World world = craft.getWorld();
-
-        aroundNewLoc = newLoc.translate(1, 0, 0);
-        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        if (checkOldHitBox(testMaterial, mBlock, aroundNewLoc))
-            return false;
-
-        aroundNewLoc = newLoc.translate(-1, 0, 0);
-        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        if (checkOldHitBox(testMaterial, mBlock, aroundNewLoc))
-            return false;
-
-        aroundNewLoc = newLoc.translate(0, 0, 1);
-        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-
-        if (checkOldHitBox(testMaterial, mBlock, aroundNewLoc))
-            return false;
-
-        aroundNewLoc = newLoc.translate(0, 0, -1);
-        testMaterial = world.getBlockAt(aroundNewLoc.getX(), aroundNewLoc.getY(), aroundNewLoc.getZ()).getType();
-        return !checkOldHitBox(testMaterial, mBlock, aroundNewLoc);
-    }
-
-    private boolean checkOldHitBox(Material testMaterial, Material mBlock, MovecraftLocation aroundNewLoc) {
-        return testMaterial.equals(mBlock) && !oldHitBox.contains(aroundNewLoc);
     }
 
     public MutableHitBox getNewHitBox() {
