@@ -4,12 +4,7 @@ import net.countercraft.movecraft.CruiseDirection;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.config.Settings;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.craft.CruiseOnPilotCraft;
-import net.countercraft.movecraft.craft.CruiseOnPilotSubCraft;
-import net.countercraft.movecraft.craft.PlayerCraftImpl;
-import net.countercraft.movecraft.craft.SubCraft;
+import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.CraftType;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
@@ -17,76 +12,70 @@ import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.functions.Result;
 import net.countercraft.movecraft.util.Pair;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
-import org.bukkit.block.data.Directional;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class CraftSign implements Listener {
-    private final Set<MovecraftLocation> piloting = new HashSet<>();
+//TODO: This is not very pretty...
+public class CraftPilotSign extends AbstractCraftPilotSign {
 
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onSignChange(@NotNull SignChangeEvent event) {
-        if (CraftManager.getInstance().getCraftTypeFromString(event.getLine(0)) == null)
-            return;
+    static final Set<MovecraftLocation> PILOTING = Collections.synchronizedSet(new HashSet<>());
 
-        if (!Settings.RequireCreatePerm)
-            return;
+    public CraftPilotSign(CraftType craftType) {
+        super(craftType);
+    }
 
-        if (!event.getPlayer().hasPermission("movecraft." + ChatColor.stripColor(event.getLine(0)) + ".create")) {
-            event.getPlayer().sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            event.setCancelled(true);
+    @Override
+    protected boolean isSignValid(Action clickType, SignListener.SignWrapper sign, Player player) {
+        String header = sign.getRaw(0).trim();
+        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(header);
+        if (craftType != this.craftType) {
+            return false;
+        }
+        if (!player.hasPermission("movecraft." + header + ".pilot")) {
+            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+            return false;
+        } else {
+            return true;
         }
     }
 
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-    public void onSignClick(@NotNull PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null)
-            return;
-
-        BlockState state = event.getClickedBlock().getState();
-        if (!(state instanceof Sign))
-            return;
-
-        Sign sign = (Sign) state;
-        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(ChatColor.stripColor(sign.getLine(0)));
-        if (craftType == null)
-            return;
-
-        // Valid sign prompt for ship command.
-        event.setCancelled(true);
-        Player player = event.getPlayer();
-        if (!player.hasPermission("movecraft." + ChatColor.stripColor(sign.getLine(0)) + ".pilot")) {
-            player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
-            return;
+    @Override
+    protected boolean internalProcessSign(Action clickType, SignListener.SignWrapper sign, Player player, @javax.annotation.Nullable Craft craft) {
+        if (this.craftType.getBoolProperty(CraftType.MUST_BE_SUBCRAFT) && craft == null) {
+            return false;
         }
-
-        Location loc = event.getClickedBlock().getLocation();
+        World world = sign.block().getWorld();
+        if (craft != null) {
+            world = craft.getWorld();
+        }
+        Location loc = sign.block().getLocation();
         MovecraftLocation startPoint = new MovecraftLocation(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        if (piloting.contains(startPoint)) {
-            return;
+
+        if (PILOTING.contains(startPoint)) {
+            // Always return true
+            return true;
         }
 
-        // Attempt to run detection
-        World world = event.getClickedBlock().getWorld();
+        runDetectTask(startPoint, player, sign, craft, world);
 
+        return true;
+    }
+
+    protected void runDetectTask(MovecraftLocation startPoint, Player player, SignListener.SignWrapper signWrapper, Craft parentCraft, World world) {
+        PILOTING.add(startPoint);
         CraftManager.getInstance().detect(
                 startPoint,
                 craftType, (type, w, p, parents) -> {
+                    // Assert instructions are not available normally, also this is checked in beforehand sort of
                     assert p != null; // Note: This only passes in a non-null player.
                     if (type.getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
                         if (parents.size() > 1)
@@ -122,10 +111,8 @@ public final class CraftSign implements Listener {
 
                     if (craft.getType().getBoolProperty(CraftType.CRUISE_ON_PILOT)) {
                         // Setup cruise direction
-                        if (sign.getBlockData() instanceof Directional)
-                            craft.setCruiseDirection(CruiseDirection.fromBlockFace(((Directional) sign.getBlockData()).getFacing()));
-                        else
-                            craft.setCruiseDirection(CruiseDirection.NONE);
+                        BlockFace facing = signWrapper.facing();
+                        craft.setCruiseDirection(CruiseDirection.fromBlockFace(facing));
 
                         // Start craft cruising
                         craft.setLastCruiseUpdate(System.currentTimeMillis());
@@ -148,11 +135,34 @@ public final class CraftSign implements Listener {
                     }
                 }
         );
+        // TODO: Move this to be directly called by the craftmanager post detection...
+        // Or use the event handler or something
         new BukkitRunnable() {
             @Override
             public void run() {
-                piloting.remove(startPoint);
+                PILOTING.remove(startPoint);
             }
         }.runTaskLater(Movecraft.getInstance(), 4);
+
+    }
+
+    @Override
+    public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
+        String header = sign.getRaw(0).trim();
+        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(header);
+        if (craftType != this.craftType) {
+            return false;
+        }
+        if (Settings.RequireCreatePerm) {
+            Player player = event.getPlayer();
+            if (!player.hasPermission("movecraft." + header + ".create")) {
+                player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
     }
 }
