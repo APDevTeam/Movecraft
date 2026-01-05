@@ -82,11 +82,7 @@ public class FuelBurnRunnable implements Runnable {
         // TODO: Skiffs randomly sink now, fix that!
         boolean isBurningFuel = false;
         double fuelBurnRate = getFuelBurnRate(craft);
-        // If our effective fuel burning rate is 0, we dont need to do anything
-        if (fuelBurnRate <= 0) {
-            craft.setDataTag(IS_FUELED, true);
-            return;
-        }
+        
         // Fuel item burning
         // We currently have somethign that we are burning
         if (craft.getBurningFuel() >= fuelBurnRate) {
