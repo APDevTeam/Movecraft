@@ -11,7 +11,7 @@ repositories {
 
 group = "net.countercraft"
 
-version = "8.7.3-TTE"
+version = "8.7.4-TTE"
 
 tasks.withType<JavaCompile>() {
     options.encoding = "UTF-8"
