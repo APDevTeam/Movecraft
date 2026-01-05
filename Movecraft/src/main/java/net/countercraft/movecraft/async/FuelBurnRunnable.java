@@ -64,17 +64,16 @@ public class FuelBurnRunnable implements Runnable {
     }
 
     static double getFuelBurnRate(final Craft craft) {
-        double fuelBurnRate = craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, craft.getWorld());
+        double fuelBurnRate = craft.getCurrentGear();
 
         // Different fuel burn rate depending on gear and if the craft is moving
         boolean craftIsMoving = craft.getCruising();
         if (craftIsMoving) {
-            // TODO: Customization on how much more fuel each gear uses!
-            fuelBurnRate *= craft.getCurrentGear();
+            fuelBurnRate *= craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, craft.getWorld());
         } else {
-            // Burns fuel 4 times slower
-            fuelBurnRate /= 4.0D;
+            fuelBurnRate *= craft.getCraftProperties().get(PropertyKeys.INACTIVE_FUEL_BURN_RATE);
         }
+
         return fuelBurnRate;
     }
 
@@ -83,7 +82,11 @@ public class FuelBurnRunnable implements Runnable {
         // TODO: Skiffs randomly sink now, fix that!
         boolean isBurningFuel = false;
         double fuelBurnRate = getFuelBurnRate(craft);
-
+        // If our effective fuel burning rate is 0, we dont need to do anything
+        if (fuelBurnRate <= 0) {
+            craft.setDataTag(IS_FUELED, true);
+            return;
+        }
         // Fuel item burning
         // We currently have somethign that we are burning
         if (craft.getBurningFuel() >= fuelBurnRate) {

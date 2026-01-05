@@ -147,6 +147,8 @@ public class PropertyKeys {
             register(PropertyKeyTypes.intPropertyKey(key("static_water_level"), t -> 0).immutable());
     public static final PropertyKey<PerWorldData<Double>> FUEL_BURN_RATE =
             register(PropertyKeyTypes.doublePropertyKey(key("fuel/burn_rate"), t -> 0D).perWorld().immutable());
+    public static final PropertyKey<Double>  INACTIVE_FUEL_BURN_RATE =
+            register(PropertyKeyTypes.doublePropertyKey(key("fuel/passive_burn_rate"), t -> 0D));
     // TODO: Change to be part of the actual constraints themselves
     public static final PropertyKey<Double> SINK_PERCENT =
             register(PropertyKeyTypes.doublePropertyKey(key("sinking/constraint_intolerance"), t -> 0D).immutable());
