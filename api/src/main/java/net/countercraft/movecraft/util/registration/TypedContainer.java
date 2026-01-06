@@ -73,4 +73,8 @@ public class TypedContainer<K extends TypedKey<?>> {
         return this.backing.entrySet();
     }
 
+    protected Set<K> keySet() {
+        return this.backing.keySet();
+    }
+
 }

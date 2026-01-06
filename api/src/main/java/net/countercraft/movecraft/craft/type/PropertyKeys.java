@@ -386,6 +386,12 @@ public class PropertyKeys {
             ).immutable());
     // endregion disabled stuff
 
+    // region serialization
+    public static final PropertyKey<PerWorldData<Boolean>> SAVE_TO_DISK =
+            register(PropertyKeyTypes.boolPropertyKey(
+                    key("serialization/save_to_disk"), false
+            )).perWorld();
+
     public static <T> PropertyKey<T> register(PropertyKey<T> propertyKey) {
         return TypeSafeCraftType.PROPERTY_REGISTRY.register(propertyKey.key(), propertyKey);
     }
