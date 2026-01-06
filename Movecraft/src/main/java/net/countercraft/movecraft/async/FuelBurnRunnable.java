@@ -82,7 +82,7 @@ public class FuelBurnRunnable implements Runnable {
         // TODO: Skiffs randomly sink now, fix that!
         boolean isBurningFuel = false;
         double fuelBurnRate = getFuelBurnRate(craft);
-        
+
         // Fuel item burning
         // We currently have somethign that we are burning
         if (craft.getBurningFuel() >= fuelBurnRate) {
@@ -226,6 +226,11 @@ public class FuelBurnRunnable implements Runnable {
     }
 
     public static void setEnginesActive(final Craft craft, final boolean active) {
+        // If not enabled for this type, quit
+        if (!craft.getCraftProperties().get(PropertyKeys.FURNACE_FUEL_VISUALIZATION)) {
+            return;
+        }
+
         int burnTime = 0;
         int totalBurnTime = 0;
         boolean setProgress = Movecraft.getInstance().getNMSHelper() != null;
