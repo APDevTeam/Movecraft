@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.util.MathUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -39,7 +39,7 @@ public abstract class AbstractMovecraftSign {
     // Special case for pilot signs, they are registered via the crafttypes name
     // Use the methods in MovecraftSignRegistry instead
     @Deprecated(forRemoval = true)
-    public static void registerCraftPilotSigns(Set<CraftType> loadedTypes, Function<CraftType, AbstractCraftPilotSign> signFactory) {
+    public static void registerCraftPilotSigns(Set<TypeSafeCraftType> loadedTypes, Function<TypeSafeCraftType, AbstractCraftPilotSign> signFactory) {
         MovecraftSignRegistry.INSTANCE.registerCraftPilotSigns(loadedTypes, signFactory);
     }
 

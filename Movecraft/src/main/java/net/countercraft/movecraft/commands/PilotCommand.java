@@ -4,7 +4,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PlayerCraftImpl;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.processing.functions.Result;
@@ -44,7 +44,7 @@ public class PilotCommand implements TabExecutor {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Insufficient Permissions"));
             return true;
         }
-        CraftType craftType = CraftManager.getInstance().getCraftTypeFromString(args[0]);
+        TypeSafeCraftType craftType = CraftManager.getInstance().getCraftTypeByName(args[0]);
         if (craftType == null) {
             player.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Pilot - Invalid Craft Type"));
             return true;
@@ -82,9 +82,9 @@ public class PilotCommand implements TabExecutor {
             return Collections.emptyList();
 
         List<String> completions = new ArrayList<>();
-        for (CraftType type : CraftManager.getInstance().getCraftTypes())
-            if (commandSender.hasPermission("movecraft." + type.getStringProperty(CraftType.NAME) + ".pilot"))
-                completions.add(type.getStringProperty(CraftType.NAME));
+        for (TypeSafeCraftType type : CraftManager.getInstance().getTypesafeCraftTypes())
+            if (commandSender.hasPermission("movecraft." + type.getName().toLowerCase() + ".pilot"))
+                completions.add(type.getName());
 
         List<String> returnValues = new ArrayList<>();
         for (String completion : completions)

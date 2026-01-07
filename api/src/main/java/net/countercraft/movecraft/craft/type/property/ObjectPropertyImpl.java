@@ -1,12 +1,15 @@
 package net.countercraft.movecraft.craft.type.property;
 
 import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKey;
 import net.countercraft.movecraft.craft.type.TypeData;
 import net.countercraft.movecraft.util.functions.QuadFunction;
 import org.bukkit.NamespacedKey;
+import org.bukkit.util.NumberConversions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.function.Function;
 
 public class ObjectPropertyImpl implements ObjectProperty {
@@ -84,4 +87,17 @@ public class ObjectPropertyImpl implements ObjectProperty {
     public NamespacedKey getNamespacedKey() {
         return namespacedKey;
     }
+
+    @Override
+    public PropertyKey<Object> asTypeSafeKey() {
+        return new PropertyKey<Object>(this.namespacedKey, (type) -> {
+            return defaultProvider.apply(new CraftType(type));
+        }, (obj, type) -> {
+            if (obj instanceof Map map) {
+                return this.loadProvider.apply(new TypeData(map), new CraftType(type), this.fileKey, this.namespacedKey);
+            }
+            return null;
+        }, (b) -> b, (a) -> a);
+    }
+
 }

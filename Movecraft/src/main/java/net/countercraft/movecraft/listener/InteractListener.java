@@ -20,7 +20,8 @@ package net.countercraft.movecraft.listener;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.PlayerCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.block.BlockState;
@@ -59,8 +60,8 @@ public final class InteractListener implements Listener {
                     p.sendMessage(I18nSupport.getInternationalisedString("Direct Control - Leaving"));
                 }
                 else if (!p.hasPermission(
-                        "movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")
-                        || !craft.getType().getBoolProperty(CraftType.CAN_DIRECT_CONTROL)) {
+                        "movecraft." + craft.getCraftProperties().getName().toLowerCase() + ".move")
+                        || !craft.getCraftProperties().get(PropertyKeys.CAN_DIRECT_CONTROL)) {
                     // Deny players from entering direct control mode
                     p.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 }
@@ -100,12 +101,12 @@ public final class InteractListener implements Listener {
             if (craft == null)
                 return;
 
-            CraftType type = craft.getType();
+            TypeSafeCraftType type = craft.getCraftProperties();
             int currentGear = craft.getCurrentGear();
-            int tickCooldown = (int) craft.getType().getPerWorldProperty(
-                    CraftType.PER_WORLD_TICK_COOLDOWN, craft.getWorld());
-            if (type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT)
-                    && type.getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_TICK_COOLDOWN))
+            int tickCooldown = type.get(
+                    PropertyKeys.TICK_COOLDOWN, craft.getWorld());
+            if (type.get(PropertyKeys.GEAR_SHIFT_AFFECT_DIRECT_MOVEMENT)
+                    && type.get(PropertyKeys.GEAR_SHIFT_AFFECT_TICK_COOLDOWN))
                 tickCooldown *= currentGear; // Account for gear shifts
             Long lastTimePlayer = PLAYER_INTERACTION_TIME_MAP.get(p.getUniqueId());
             Long lastTimeCraft = INTERACTION_TIME_MAP.get(craft.getUUID());
@@ -124,7 +125,7 @@ public final class InteractListener implements Listener {
                     long ticksElapsed = (System.currentTimeMillis() - lastTime) / 50;
 
                     // if the craft should go slower underwater, make time pass more slowly there
-                    if (craft.getType().getBoolProperty(CraftType.HALF_SPEED_UNDERWATER)
+                    if (craft.getCraftProperties().get(PropertyKeys.HALF_SPEED_UNDERWATER)
                             && craft.getHitBox().getMinY() < craft.getWorld().getSeaLevel())
                         ticksElapsed /= 2;
 
@@ -133,7 +134,7 @@ public final class InteractListener implements Listener {
                 }
             }
 
-            if (!p.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".move")) {
+            if (!p.hasPermission("movecraft." + craft.getCraftProperties().getName().toLowerCase() + ".move")) {
                 p.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return; // Player doesn't have permission to move this craft, so don't do anything
             }
@@ -146,7 +147,7 @@ public final class InteractListener implements Listener {
                 int dy = 1; // Default to up
                 if (p.isSneaking())
                     dy = -1; // Down if sneaking
-                if (craft.getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT))
+                if (craft.getCraftProperties().get(PropertyKeys.GEAR_SHIFT_AFFECT_DIRECT_MOVEMENT))
                     dy *= currentGear; // account for gear shifts
 
                 craft.translate(craft.getWorld(), 0, dy, 0);

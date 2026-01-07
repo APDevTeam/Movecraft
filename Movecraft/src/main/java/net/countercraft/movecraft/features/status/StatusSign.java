@@ -2,7 +2,7 @@ package net.countercraft.movecraft.features.status;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.sign.AbstractInformationSign;
@@ -12,6 +12,7 @@ import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,9 +56,9 @@ public class StatusSign extends AbstractInformationSign {
 
     protected Component calcFuel(Craft craft) {
         double fuel = craft.getDataTag(Craft.FUEL);
-        int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, craft.getWorld());
+        int cruiseSkipBlocks = craft.getCraftProperties().get(PropertyKeys.CRUISE_SKIP_BLOCKS, craft.getWorld());
         cruiseSkipBlocks++;
-        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
+        double fuelBurnRate = craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, craft.getWorld());
         int fuelRange = (int) Math.round((fuel * (1 + cruiseSkipBlocks)) / fuelBurnRate);
         // DONE: Create constants in base class for style colors!
         Style style;
@@ -105,17 +106,18 @@ public class StatusSign extends AbstractInformationSign {
 
         int totalNonNegligibleBlocks = 0;
         int totalNonNegligibleWaterBlocks = 0;
-        Counter<Material> materials = craft.getDataTag(Craft.MATERIALS);
+        Counter<NamespacedKey> materials = craft.getDataTag(Craft.BLOCKS);
         if (materials.isEmpty()) {
             return;
         }
-        for (Material material : materials.getKeySet()) {
-            if (material.equals(Material.FIRE) || material.isAir())
+        for (NamespacedKey namespacedKey : materials.getKeySet()) {
+            Material material = Material.matchMaterial(namespacedKey.toString());
+            if (material != null && (material.equals(Material.FIRE) || material.isAir()))
                 continue;
 
-            int add = materials.get(material);
+            int add = materials.get(namespacedKey);
             totalNonNegligibleBlocks += add;
-            if (!Tags.WATER.contains(material)) {
+            if (material != null && !Tags.WATER.contains(material)) {
                 totalNonNegligibleWaterBlocks += add;
             }
         }
@@ -133,7 +135,7 @@ public class StatusSign extends AbstractInformationSign {
                 continue;
             }
             double percentPresent = (displayBlocks.get(entry) * 100D);
-            if (craft.getType().getBoolProperty(CraftType.BLOCKED_BY_WATER)) {
+            if (craft.getCraftProperties().get(PropertyKeys.BLOCKED_BY_WATER)) {
                 percentPresent /= totalNonNegligibleBlocks;
             } else {
                 percentPresent /= totalNonNegligibleWaterBlocks;

@@ -110,7 +110,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
                 if (wrapperTmp.areSignsEqual(sign)) {
                     continue;
                 }
-                if (this.doReset(sign, wrapperTmp)) {
+                if (this.doReset(sign, wrapperTmp, craft)) {
                     update = true;
                 }
             }
@@ -123,7 +123,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         return true;
     }
 
-    public boolean doReset(SignListener.SignWrapper original, SignListener.SignWrapper other) {
+    public boolean doReset(SignListener.SignWrapper original, SignListener.SignWrapper other, Craft craft) {
         AbstractMovecraftSign otherHandler = MovecraftSignRegistry.INSTANCE.getCraftSign(other.line(0));
         boolean originalIsOn = this.isOnOrOff(original);
         if (otherHandler != this) {
@@ -133,7 +133,7 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
             }
             return false;
         }
-        if (this.shouldShareSameToggleState(original, other)) {
+        if (this.shouldShareSameToggleState(original, other, craft)) {
             other.line(0, this.buildHeader(originalIsOn));
         } else {
             other.line(0, this.buildHeaderOff());
@@ -145,17 +145,14 @@ public abstract class AbstractToggleSign extends AbstractCraftSign {
         return true;
     }
 
-    protected boolean shouldShareSameToggleState(SignListener.SignWrapper sign, SignListener.SignWrapper other) {
+    protected boolean shouldShareSameToggleState(SignListener.SignWrapper sign, SignListener.SignWrapper other, Craft craft) {
         return true;
     }
 
     // On sign placement, if the entered header is the same as our ident, it will append the off-suffix automatically
     @Override
     public boolean processSignChange(SignChangeEvent event, SignListener.SignWrapper sign) {
-        String header = sign.getRaw(0).trim();
-        if (header.equalsIgnoreCase(this.ident)) {
-            sign.line(0, buildHeaderOff());
-        }
+        sign.line(0, buildHeaderOff());
         return true;
     }
 

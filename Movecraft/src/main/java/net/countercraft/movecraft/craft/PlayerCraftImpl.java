@@ -1,6 +1,6 @@
 package net.countercraft.movecraft.craft;
 
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -18,7 +18,7 @@ public class PlayerCraftImpl extends BaseCraft implements PlayerCraft {
     private double pilotLockedY;
     private double pilotLockedZ;
 
-    public PlayerCraftImpl(@NotNull CraftType type, @NotNull World world, @NotNull Player pilot) {
+    public PlayerCraftImpl(@NotNull TypeSafeCraftType type, @NotNull World world, @NotNull Player pilot) {
         super(type, world);
         // Copy UUID just to be safe
         this.pilotUUID = UUID.fromString(pilot.getUniqueId().toString());

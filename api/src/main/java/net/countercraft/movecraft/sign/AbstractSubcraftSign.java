@@ -3,7 +3,7 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PlayerCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -25,15 +25,15 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     // TODO: Replace by writing to the signs nbt data
     protected static final Set<MovecraftLocation> IN_USE = Collections.synchronizedSet(new HashSet<>());
 
-    protected final Function<String, @Nullable CraftType> craftTypeRetrievalFunction;
+    protected final Function<String, @Nullable TypeSafeCraftType> craftTypeRetrievalFunction;
 
     protected final Supplier<Plugin> pluginInstance;
 
-    public AbstractSubcraftSign(Function<String, @Nullable CraftType> craftTypeRetrievalFunction, final Supplier<Plugin> plugin) {
+    public AbstractSubcraftSign(Function<String, @Nullable TypeSafeCraftType> craftTypeRetrievalFunction, final Supplier<Plugin> plugin) {
         this(null, craftTypeRetrievalFunction, plugin);
     }
 
-    public AbstractSubcraftSign(final String permission, Function<String, @Nullable CraftType> craftTypeRetrievalFunction, final Supplier<Plugin> plugin) {
+    public AbstractSubcraftSign(final String permission, Function<String, @Nullable TypeSafeCraftType> craftTypeRetrievalFunction, final Supplier<Plugin> plugin) {
         super(permission, false);
         this.craftTypeRetrievalFunction = craftTypeRetrievalFunction;
         this.pluginInstance = plugin;
@@ -101,16 +101,16 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
         if (!super.canPlayerUseSign(clickType, sign, player)) {
             return false;
         }
-        CraftType craftType = this.getCraftType(sign);
+        TypeSafeCraftType craftType = this.getCraftType(sign);
         if (craftType != null) {
-            return player.hasPermission("movecraft." + craftType.getStringProperty(CraftType.NAME) + ".pilot") && this.canPlayerUseSignForCraftType(clickType, sign, player, craftType);
+            return player.hasPermission("movecraft." + craftType.getName().toLowerCase() + ".pilot") && this.canPlayerUseSignForCraftType(clickType, sign, player, craftType);
         }
         return false;
     }
 
     @Override
     protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, @Nullable Craft craft, Player player) {
-        CraftType subcraftType = this.getCraftType(sign);
+        TypeSafeCraftType subcraftType = this.getCraftType(sign);
 
         final Location signLoc = sign.block().getLocation();
         final MovecraftLocation startPoint = new MovecraftLocation(signLoc.getBlockX(), signLoc.getBlockY(), signLoc.getBlockZ());
@@ -162,7 +162,7 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
     }
 
     @Nullable
-    protected CraftType getCraftType(SignListener.SignWrapper wrapper) {
+    protected TypeSafeCraftType getCraftType(SignListener.SignWrapper wrapper) {
         String ident = wrapper.getRaw(1);
         if (ident.trim().isBlank()) {
             return null;
@@ -179,11 +179,11 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
         return resultSuper;
     }
 
-    protected abstract void runDetectTask(Action clickType, CraftType subcraftType, Craft parentCraft, World world, Player player, MovecraftLocation startPoint);
+    protected abstract void runDetectTask(Action clickType, TypeSafeCraftType subcraftType, Craft parentCraft, World world, Player player, MovecraftLocation startPoint);
     protected abstract boolean isActionAllowed(final String action);
     protected abstract void onActionAlreadyInProgress(Player player);
     protected abstract Component getDefaultTextFor(int line);
-    protected abstract boolean canPlayerUseSignForCraftType(Action clickType, SignListener.SignWrapper sign, Player player, CraftType subCraftType);
+    protected abstract boolean canPlayerUseSignForCraftType(Action clickType, SignListener.SignWrapper sign, Player player, TypeSafeCraftType subCraftType);
 
     @Override
     protected boolean canPlayerUseSignOn(Player player, @Nullable Craft craft) {

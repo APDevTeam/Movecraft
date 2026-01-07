@@ -1,7 +1,7 @@
 package net.countercraft.movecraft.craft.type.property;
 
-import net.countercraft.movecraft.craft.type.CraftType;
-import net.countercraft.movecraft.craft.type.TypeData;
+import net.countercraft.movecraft.craft.type.*;
+import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
+public class PerWorldProperty<Type> implements Property<PerWorldData<Type>> {
     private final String fileKey;
     private final NamespacedKey namespacedKey;
     private final BiFunction<CraftType, String, Type> defaultProvider;
@@ -38,17 +38,18 @@ public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
      * @return the value
      */
     @Nullable
-    public Map<String, Type> load(@NotNull TypeData data, @NotNull CraftType type) {
+    public PerWorldData<Type> load(@NotNull TypeData data, @NotNull CraftType type) {
+        final Type defaultValue = this.defaultProvider.apply(type, "");
         try {
-            return stringToMapFromObject(data.getDataOrEmpty(fileKey).getBackingData());
+            return stringToMapFromObject(data.getDataOrEmpty(fileKey).getBackingData(), defaultValue);
         }
         catch (TypeData.KeyNotFoundException e) {
-            return Collections.emptyMap();
+            return new PerWorldData<>(defaultValue);
         }
     }
 
     @NotNull
-    private Map<String, Type> stringToMapFromObject(@NotNull Map<String, Object> objMap) {
+    private PerWorldData<Type> stringToMapFromObject(@NotNull Map<String, Object> objMap, Type defaultValue) {
         HashMap<String, Type> returnMap = new HashMap<>();
         for (String key : objMap.keySet()) {
             if(key == null)
@@ -59,7 +60,7 @@ public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
             Type t = (Type) o;
             returnMap.put(key, t);
         }
-        return returnMap;
+        return new PerWorldData<>(defaultValue, returnMap);
     }
 
     /**
@@ -85,5 +86,11 @@ public class PerWorldProperty<Type> implements Property<Map<String, Type>> {
     @NotNull
     public BiFunction<CraftType, String, Type> getDefaultProvider() {
         return defaultProvider;
+    }
+
+    @Override
+    public PropertyKey<PerWorldData<Type>> asTypeSafeKey() {
+        // TODO: Implement!
+        throw new NotImplementedException("Migrate to the new property system ASAP!");
     }
 }

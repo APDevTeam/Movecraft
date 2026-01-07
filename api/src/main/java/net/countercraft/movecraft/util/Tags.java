@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.EnumSet;
 
 public class Tags {
+    // TODO: Use actual datatags or NameSpacedKeys!
     public static final EnumSet<Material> WATER = EnumSet.of(Material.WATER, Material.BUBBLE_COLUMN);
     public static final EnumSet<Material> FLUID = EnumSet.of(Material.WATER, Material.BUBBLE_COLUMN, Material.LAVA);
     public static final EnumSet<Material> CHESTS = EnumSet.of(Material.CHEST, Material.TRAPPED_CHEST, Material.BARREL);
@@ -33,7 +34,7 @@ public class Tags {
         FRAGILE_MATERIALS.add(Material.REDSTONE_WIRE);
         FRAGILE_MATERIALS.add(Material.LADDER);
         FRAGILE_MATERIALS.addAll(Tag.DOORS.getValues());
-        FRAGILE_MATERIALS.addAll(Tag.CARPETS.getValues());
+        FRAGILE_MATERIALS.addAll(Tag.WOOL_CARPETS.getValues());
         FRAGILE_MATERIALS.addAll(Tag.RAILS.getValues());
         FRAGILE_MATERIALS.addAll(Tag.WOODEN_PRESSURE_PLATES.getValues());
 

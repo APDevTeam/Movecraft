@@ -17,11 +17,13 @@
 
 package net.countercraft.movecraft.async;
 
+import io.papermc.paper.registry.keys.tags.ItemTypeTagKeys;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
+import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
 import net.countercraft.movecraft.events.FuelBurnEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.Tags;
@@ -67,9 +69,8 @@ public abstract class AsyncTask extends BukkitRunnable {
         }
         return this.getCraft().getDataTag(FuelBurnRunnable.IS_FUELED);
 
-
-        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-//        double fuelBurnRate = (double) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_FUEL_BURN_RATE, craft.getWorld());
+//        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
+//        double fuelBurnRate = craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, craft.getWorld());
 //        if (fuelBurnRate == 0.0 || craft instanceof SinkingCraft)
 //            return true;
 //
@@ -87,24 +88,16 @@ public abstract class AsyncTask extends BukkitRunnable {
 //        }
 //        Block fuelHolder = null;
 //
-//        // TODO: Refactor this, wth is this supposed to be?!
-//        var v = craft.getType().getObjectProperty(CraftType.FUEL_TYPES);
-//        if (!(v instanceof Map<?, ?>))
-//            throw new IllegalStateException("FUEL_TYPES must be of type Map");
-//        var fuelTypes = (Map<?, ?>) v;
-//        for (var e : fuelTypes.entrySet()) {
-//            if (!(e.getKey() instanceof Material))
-//                throw new IllegalStateException("Keys in FUEL_TYPES must be of type Material");
-//            if (!(e.getValue() instanceof Double))
-//                throw new IllegalStateException("Values in FUEL_TYPES must be of type Double");
-//        }
+//        NamespacedKeyToDoubleProperty fuelTypes = craft.getCraftProperties().get(PropertyKeys.FUEL_TYPES);
+//
+//        // TODO: Properly rework to use NamespacedKeys!
 //
 //        for (MovecraftLocation bTest : craft.getHitBox()) {
 //            Block b = craft.getWorld().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
 //            if (Tags.FURNACES.contains(b.getType())) {
 //                InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
 //                for (ItemStack stack : inventoryHolder.getInventory()) {
-//                    if (stack == null || !fuelTypes.containsKey(stack.getType()))
+//                    if (stack == null || !fuelTypes.contains(stack.getType().getKey()))
 //                        continue;
 //                    fuelHolder = b;
 //                    break;
@@ -118,9 +111,9 @@ public abstract class AsyncTask extends BukkitRunnable {
 //        for (ItemStack iStack : inventoryHolder.getInventory()) {
 //            if (iStack == null)
 //                continue;
-//            if (!fuelTypes.containsKey(iStack.getType()))
+//            if (!fuelTypes.contains(iStack.getType().getKey()))
 //                continue;
-//            double burningFuel = (double) fuelTypes.get(iStack.getType());
+//            double burningFuel = (double) fuelTypes.get(iStack.getType().getKey());
 //            //call event
 //            final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
 //            Bukkit.getPluginManager().callEvent(event);
@@ -136,6 +129,7 @@ public abstract class AsyncTask extends BukkitRunnable {
 //            if (burningFuel < fuelBurnRate) {
 //                minAmount = (int) fuelBurnRate;
 //            }
+//            // TODO: Create proper TagKey!
 //            if (Tags.BUCKETS.contains(iStack.getType())) {
 //                //If buckets are accepted as fuel, replace with an empty bucket
 //                iStack.setType(Material.BUCKET);

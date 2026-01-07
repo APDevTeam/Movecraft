@@ -3,7 +3,7 @@ package net.countercraft.movecraft.processing.tasks.translation.effects;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.CraftTeleportEntityEvent;
 import net.countercraft.movecraft.mapUpdater.update.EntityUpdateCommand;
 import net.countercraft.movecraft.processing.effects.Effect;
@@ -27,8 +27,8 @@ public class TeleportationEffect implements Effect {
 
     @Override
     public void run() {
-        if (!craft.getType().getBoolProperty(CraftType.MOVE_ENTITIES) || craft instanceof SinkingCraft
-                && craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS))
+        if (!craft.getCraftProperties().get(PropertyKeys.CAN_MOVE_ENTITIES) || craft instanceof SinkingCraft
+                && craft.getCraftProperties().get(PropertyKeys.ONLY_MOVE_PLAYERS))
             return;
 
         Location midpoint = craft.getHitBox().getMidPoint().toBukkit(craft.getWorld());
@@ -46,7 +46,7 @@ public class TeleportationEffect implements Effect {
                         translation.getZ(), 0, 0, world);
                 eUp.doUpdate();
             }
-            else if (!craft.getType().getBoolProperty(CraftType.ONLY_MOVE_PLAYERS)
+            else if (!craft.getCraftProperties().get(PropertyKeys.ONLY_MOVE_PLAYERS)
                     || entity.getType() == EntityType.TNT) {
                 CraftTeleportEntityEvent e = new CraftTeleportEntityEvent(craft, entity);
                 Bukkit.getServer().getPluginManager().callEvent(e);

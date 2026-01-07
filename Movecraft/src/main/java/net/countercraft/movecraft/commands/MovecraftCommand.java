@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.plugin.PluginDescriptionFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,9 +35,14 @@ public class MovecraftCommand implements TabExecutor {
         }
 
         if(args.length==1 && args[0].equalsIgnoreCase("reloadtypes") && commandSender.hasPermission("movecraft.commands.movecraft.reloadtypes")){
-            CraftManager.getInstance().reloadCraftTypes();
-            commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Movecraft - Reloaded Types"));
-            return true;
+            try {
+                CraftManager.getInstance().reloadCraftTypes();
+                commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Movecraft - Reloaded Types"));
+                return true;
+            } catch(IOException ioex) {
+                ioex.printStackTrace();
+                return false;
+            }
         }
         commandSender.sendMessage(MOVECRAFT_COMMAND_PREFIX + I18nSupport.getInternationalisedString("Movecraft - Invalid Argument"));
         return true;

@@ -283,6 +283,22 @@ public class MathUtils {
         return result;
     }
 
+    public static final Random RANDOM = new Random();
+
+    public static float randomBetween(final float a, final float b) {
+        return randomBetween(RANDOM, a, b);
+    }
+
+    public static float randomBetween(final Random random, final float a, final float b) {
+        if (a == b) {
+            return a;
+        }
+        float aReal = Math.min(Math.abs(a), Math.abs(b));
+        float bReal = Math.max(Math.abs(a), Math.abs(b));
+        float result = random.nextFloat(bReal - aReal) + aReal;
+        return result;
+    }
+
     public static int randomBetween(final Random random, final int a, final int b) {
         if (a == b) {
             return a;

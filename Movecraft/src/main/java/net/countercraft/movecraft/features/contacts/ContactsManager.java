@@ -4,21 +4,16 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.CraftSinkEvent;
 import net.countercraft.movecraft.exception.EmptyHitBoxException;
 import net.countercraft.movecraft.features.contacts.events.LostContactEvent;
 import net.countercraft.movecraft.features.contacts.events.NewContactEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.util.Pair;
-import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -32,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2d;
 
-import javax.naming.Name;
 import java.util.*;
 
 public class ContactsManager extends BukkitRunnable implements Listener {
@@ -171,12 +165,12 @@ public class ContactsManager extends BukkitRunnable implements Listener {
                     detectionMultiplier = contactProvider.getDetectionMultiplier(waterLine, target.getMovecraftWorld());
             } else {
                 if (waterLine) { // TODO: fix the water line
-                    detectionMultiplier = (double) target.getType().getPerWorldProperty(
-                            CraftType.PER_WORLD_DETECTION_MULTIPLIER, target.getMovecraftWorld());
+                    detectionMultiplier = target.getCraftProperties().get(
+                            PropertyKeys.DETECTION_MULTIPLIER, target.getMovecraftWorld());
                 }
                 else {
-                    detectionMultiplier = (double) target.getType().getPerWorldProperty(
-                            CraftType.PER_WORLD_UNDERWATER_DETECTION_MULTIPLIER, target.getMovecraftWorld());
+                    detectionMultiplier = target.getCraftProperties().get(
+                            PropertyKeys.UNDERWATER_DETECTION_MULTIPLIER, target.getMovecraftWorld());
                 }
             }
 
@@ -258,7 +252,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
         if (!target.getNameRaw().isEmpty()) {
             name = name.append(target.getName());
         } else {
-            name = name.append(Component.text(target.getType().getStringProperty(CraftType.NAME)));
+            name = name.append(Component.text(target.getCraftProperties().getName()));
         }
 
         // TODO: Team colors!
@@ -492,10 +486,7 @@ public class ContactsManager extends BukkitRunnable implements Listener {
             base.getAudience().sendMessage(notification);
 
         // TODO: Change to different sound that falls back to the anvil instead
-        Object object = base.getType().getObjectProperty(CraftType.COLLISION_SOUND);
-        if (!(object instanceof Sound sound))
-            throw new IllegalStateException("COLLISION_SOUND must be of type Sound");
-        base.getAudience().playSound(sound);
+        base.getCraftProperties().get(PropertyKeys.NEW_CONTACT_SOUND).play(base.getAudience());
 
         if (base instanceof PlayerCraft) {
             Map<UUID, Long> recentContacts = base.getDataTag(RECENT_CONTACTS);

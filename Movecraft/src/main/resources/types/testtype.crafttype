@@ -1,0 +1,325 @@
+parent: ""
+movecraft:
+  general:
+    name: ""
+    block:
+      allowed:
+        - "#tte:movecraft_craft_blocks/airship"
+        - "#tte:movecraft_craft_blocks/subcraft"
+        - "#tte:movecraft_craft_blocks/skiff"
+      #directional:
+      forbidden:
+        - "minecraft:bedrock"
+    can_switch_world: true
+    can_be_named: true
+    rotate_at_midpoint: true
+    merge_piston_extensions: true
+    release_timeout: 1000
+  #disabled_state:
+    #allow_block_breaking_when_disabled: true
+    #require_disabled_to_break_blocks: true
+    #can_be_un_disabled: true
+  movement:
+    #chest_penalty:
+    speed:
+      speed: 0.25
+      #tick_cooldown:
+      #vert_tick_cooldown:
+      half_when_underwater: false
+      modifiers:
+        max_speed: 8.0
+        blocks:
+          ==: Movecraft_NamespacedKeyToDoubleProperty
+          "#tte:heavy_armor": -10.0
+          #oldschool armor is 50% less heavy
+          "#tte:oldschool_armor": -5.0
+          #Firebrakes share the same weight
+          "#tte:fire_brakes": -5.0
+          #super armor is 50% heavier
+          "#tte:super_armor": -15.0
+          #Munitions, dispensers, droppers, hoppers are 25% heavier than heavy armor
+          "#tte:munitions": -25.0
+          "minecraft:dispenser": -12.5
+          "minecraft:dropper": -6.25
+          "minecraft:hopper": -3.125
+          #If the ship is at least 30% hull block, it will have full speed
+          "#tte:light_armor": 23.33
+          #Engines give speed too, but not a lot (75% of what a hull block gives)
+          "#tte:engines": 17.5
+    cruise:
+      enabled: true
+      #on_pilot:
+        #enabled: false
+        #vert_move: 0
+        #lifetime: 300
+      skip_blocks: 15
+      vert_skip_blocks: 3
+      speed: 0.01
+      vert_speed: 0.25
+      #tick_cooldown:
+      #vert_tick_cooldown:
+    #dynamic_fly_blocks:
+      #- "#tte:munitions"
+      #- "#tte:heavy_armor"
+      #- "#tte:super_armor"
+      #- "#tte:oldschool_armor"
+      #- "#tte:fire_brakes"
+      #- "#minecraft:signs"
+      #- "minecraft:dispenser"
+    move_break_blocks:
+      - "#tte:craft_move_break_blocks"
+    passthrough_blocks:
+      - "#tte:foliage"
+      - "minecraft:cave_air"
+    collision:
+      explosion:
+        focused: false
+        #arming_time: 1000
+        #strength: 0.0
+        #underwater_strength: 0.0
+        allow_internal: true
+      sound:
+        ==: Movecraft_ConfiguredSound
+        Sound: "block.anvil.land"
+        Category: "NEUTRAL"
+        MinVolume: 2.0
+        MaxVolume: 2.0
+        MinPitch: 1.0
+        MaxPitch: 1.0
+    can_direct_control: true
+    entities:
+      enabled: true
+      only_players: false
+    gravity:
+      enabled: false
+      incline_distance: -1
+      drop_distance: -8
+  teleport:
+    enabled: false
+    #disabled_destination_worlds:
+    #cooldown:
+  constraints:
+    size:
+      max: 120000
+      min: 59000
+    #require_water_contact:
+    allow_remote_sign: true
+    must_be_subcraft: false
+    movement:
+      can_fly: true
+      #required_contact_blocks:
+      #traction_blocks:
+      #blocked_by_water:
+      #hover:
+        #enabled: false
+        #forbidden_blocks:
+        #limit: 0
+        #can_hover_over_water:
+      allow_vertical: true
+      allow_horizontal: true
+      static_move:
+        enabled: false
+        max: 0
+      height_limit:
+        min: -30
+        max: 200
+      max_ground_distance: 200
+      allow_vertical_takeoff_and_landing: true
+    #forbidden_sign_strings:
+    block:
+      flyblocks:
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Fleep"
+          min: 50.0
+          max: 100.0
+          blocks:
+            - "#tte:flyblocks"
+            - "#tte:fire_brakes"
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Armor"
+          min: 0.0
+          max: 40.0
+          blocks:
+            - "#tte:heavy_armor"
+            - "#tte:super_armor"
+            - "#tte:oldschool_armor"
+            - "minecraft:dispenser"
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Guns"
+          min: 0.0
+          max: 5.0
+          blocks:
+            - "minecraft:dispenser"
+            - "minecraft:dropper"
+            - "minecraft:hopper"
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Super armor"
+          min: 0.0
+          max: 1.0
+          blocks:
+            - "#minecraft:anvil"
+            - "#tte:super_armor"
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Water"
+          min: 0.0
+          max: 5.0
+          blocks:
+            - "minecraft:water"
+            - "minecraft:lava"
+      detection_blocks:
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Wooden flyblocks"
+          min: 0.0
+          max: 20.0
+          blocks:
+            - "#tte:wooden_flyblocks"
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Trapdoor flyblocks"
+          min: 0.0
+          max: 20.0
+          blocks:
+            - "#tte:trapdoor_flyblocks"
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Firebrakes"
+          min: 0.0
+          max: 5.0
+          blocks:
+            - "#tte:fire_brakes"
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Chests"
+          min: 0.0
+          max: 1.0
+          blocks:
+            - "#minecraft:chests"
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Furnaces"
+          min: 0.0
+          max: N200
+          blocks:
+            - "#minecraft:smelter"
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Soulsand"
+          min: 0.0
+          max: 0.5
+          blocks:
+            - "minecraft:soul_sand"
+      move_blocks:
+        - ==: Movecraft_RequiredBlockEntry
+          displayName: "Engines"
+          min: 1.0
+          max: 100.0
+          blocks:
+            - "#tte:engines"
+  #harvester:
+    #breakable_blocks:
+    #harvester_blocks:
+  try_nudge: false
+  #dynamic_lag:
+    #speed_factor:
+    #power_factor: 
+    #min_speed:
+    #block_speed_factor:
+  static_water_level: 62
+  fuel:
+    burn_rate: 1.0
+    types:
+      ==: Movecraft_NamespacedKeyToDoubleProperty
+      "minecraft:coal_block": 80
+      "minecraft:coal": 8
+      "minecraft:charcoal": 8
+  contacts:
+    detection:
+      multiplier: 10.0
+      underwater_multiplier: 1.0
+    new_contact_sound:
+      ==: Movecraft_ConfiguredSound
+      Sound: "block.note_block.bit"
+      Category: "PLAYERS"
+      MinVolume: 1.0
+      MaxVolume: 1.0
+      MinPitch: 1.20
+      MaxPitch: 1.30
+  #gear_shifts:
+    #count:
+    #modify:
+      #tick_cooldown:
+      #direct_movement:
+      #cruise_skip_blocks:
+  sinking:
+    #Old sinkpercent!
+    constraint_intolerance: 100.0
+    #Old overall sinkpercent!
+    lowest_possible_integrity: 60.0
+    speed: 1.0
+    keep_moving: false
+    sink_on_out_of_fuel: false
+    smoke: 0
+    explosion:
+      strength: 0.0
+      incendiary: false
+    falling_block_chance: 0.2
+    pretty:
+      enabled: true
+      max_remaining_percentage: 1.0
+      disintegration:
+        delay: 0
+        chance: 0.5
+        min: 40
+        max: 80
+        #sound:
+      explosion:
+        chance: 0.25
+        min: 24
+        max: 48
+#movecraft-shiprules:
+#  max_length_to_height_ratio: 1
+#  require_cruise_sign_alignment: false
+#  min_length_to_width_ratio: 0.5
+#  max_length_to_width_ratio: 1.0
+#  min_length_to_height_ratio: 0.5
+#  min_width_to_height_ratio: 0.5
+#  max_width_to_height_ratio: 1.0
+#  min_absolute_width: 10
+#  max_absolute_width: 20
+#  min_absolute_length: 10
+#  max_absolute_length: 20
+#  min_absolute_height: 10
+#  max_absolute_height: 20
+movecraft-bridges:
+  allow_bridge_signs: true
+movecraft-combat:
+  #Tracers
+  movement_tracer_blocks:
+    - "#tte:engines"
+  movement_tracer_chance: 1.0
+  max_movement_tracers: -1
+  #Directors
+  allow_aa_director_sign: true
+  max_aa_director_angle: 45.0
+  allow_arrow_director_sign: true
+  max_arrow_director_angle: 45.0
+  allow_cannon_director_sign: true
+  max_cannon_director_angle: 45.0
+movecraft-tte-additions:
+  #BlastPowerOverride
+  tnt_blast_power_override: 6.0
+  #Command Restrictor
+  enforce_command_restrictions: true
+  #Sounds
+  #Cruise rework
+  engines_define_cruise_direction: true
+  ignore_during_subcraft_detection:
+    - LaunchBomb
+    - LaunchTorpedo
+    - Turret
+    - TurretS
+    - TurretM
+    - TurretC
+    - TurretDD
+    - Lightairship
+    - Airship
+    - BigAirship
+    - MegaAirship
+    - Ultrairship
+    - GigAirship
+  #Warheads

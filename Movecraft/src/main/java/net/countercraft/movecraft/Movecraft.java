@@ -23,6 +23,10 @@ import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.type.ConfiguredSound;
+import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
+import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
+import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
 import net.countercraft.movecraft.features.contacts.ContactsCommand;
 import net.countercraft.movecraft.features.contacts.ContactsManager;
 import net.countercraft.movecraft.features.contacts.ContactsSign;
@@ -39,6 +43,7 @@ import net.countercraft.movecraft.util.BukkitTeleport;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,6 +61,7 @@ public class Movecraft extends JavaPlugin {
     private Logger logger;
     private boolean shuttingDown;
     private WorldHandler worldHandler;
+    private NMSHelper nmsHelper;
     private SmoothTeleport smoothTeleport;
     private AsyncManager asyncManager;
     private WreckManager wreckManager;
@@ -71,6 +77,11 @@ public class Movecraft extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // FIRST: Register config serialization!
+        ConfigurationSerialization.registerClass(ConfiguredSound.class, "Movecraft_ConfiguredSound");
+        ConfigurationSerialization.registerClass(RequiredBlockEntry.class, "Movecraft_RequiredBlockEntry");
+        ConfigurationSerialization.registerClass(NamespacedKeyToDoubleProperty.class, "Movecraft_NamespacedKeyToDoubleProperty");
+
         // Read in config
         Settings.LOCALE = getConfig().getString("Locale");
         Settings.Debug = getConfig().getBoolean("Debug", false);
@@ -203,7 +214,7 @@ public class Movecraft extends JavaPlugin {
         MovecraftSignRegistry.INSTANCE.register("Status:", new StatusSign());
         MovecraftSignRegistry.INSTANCE.register("Contacts:", new ContactsSign());
         //getServer().getPluginManager().registerEvents(new SubcraftRotateSign(), this);
-        MovecraftSignRegistry.INSTANCE.register("Subcraft Rotate", new SubcraftRotateSign(CraftManager.getInstance()::getCraftTypeFromString, Movecraft::getInstance));
+        MovecraftSignRegistry.INSTANCE.register("Subcraft Rotate", new SubcraftRotateSign(CraftManager.getInstance()::getCraftTypeByName, Movecraft::getInstance));
         //getServer().getPluginManager().registerEvents(new TeleportSign(), this);
         MovecraftSignRegistry.INSTANCE.register("Teleport:", new TeleportSign());
         //getServer().getPluginManager().registerEvents(new ScuttleSign(), this);
@@ -214,7 +225,7 @@ public class Movecraft extends JavaPlugin {
         // Moved to compat section!
         //getServer().getPluginManager().registerEvents(new SignListener(), this);
 
-        MovecraftSignRegistry.INSTANCE.registerCraftPilotSigns(CraftManager.getInstance().getCraftTypes(), CraftPilotSign::new);
+        MovecraftSignRegistry.INSTANCE.registerCraftPilotSigns(CraftManager.getInstance().getTypesafeCraftTypes(), CraftPilotSign::new);
 
         var contactsManager = new ContactsManager();
         contactsManager.runTaskTimerAsynchronously(this, 0, 20);
@@ -222,6 +233,7 @@ public class Movecraft extends JavaPlugin {
         //getServer().getPluginManager().registerEvents(new ContactsSign(), this);
         getServer().getPluginManager().registerEvents(new CraftTypeListener(), this);
         getServer().getPluginManager().registerEvents(new CraftTranslateListener(), this);
+        getServer().getPluginManager().registerEvents(new WorldListener(), this);
         getCommand("contacts").setExecutor(new ContactsCommand());
         getCommand("ignorecontact").setExecutor(new IgnoreContactCommand());
 
@@ -254,6 +266,16 @@ public class Movecraft extends JavaPlugin {
                             else {
                                 smoothTeleport = new BukkitTeleport(); // Fall back to bukkit teleportation
                                 getLogger().warning("Did not find smooth teleport, falling back to bukkit teleportation provider.");
+                            }
+
+                            // General NMS helper
+                            final Class<?> nmsHelperClazz = Class.forName("net.countercraft.movecraft.support." + packageName + ".INMSHelper");
+                            if (NMSHelper.class.isAssignableFrom(nmsHelperClazz)) {
+                                nmsHelper = (NMSHelper) nmsHelperClazz.getConstructor().newInstance();
+                            }
+                            else {
+                                nmsHelper = null;
+                                getLogger().warning("Did not find NMSHelper, some features may not work!.");
                             }
                         }
                         catch (final ReflectiveOperationException e) {
@@ -315,6 +337,8 @@ public class Movecraft extends JavaPlugin {
         instance = this;
         logger = getLogger();
         saveDefaultConfig();
+
+        TypeSafeCraftType.init();
     }
 
     private boolean initializeDatapack() {
@@ -404,5 +428,9 @@ public class Movecraft extends JavaPlugin {
 
     public @NotNull WreckManager getWreckManager(){
         return wreckManager;
+    }
+
+    public NMSHelper getNMSHelper() {
+        return this.nmsHelper;
     }
 }

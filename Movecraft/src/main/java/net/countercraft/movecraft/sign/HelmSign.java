@@ -2,45 +2,26 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.type.CraftType;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
+import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.jetbrains.annotations.NotNull;
 
 public class HelmSign extends AbstractCraftSign {
 
-    public static final String[] PRETTY_LINES = new String[] {
-            "\\  ||  /",
-            "\\  ||  /",
-            "/  ||  \\"
-    };
-    public static final String PRETTY_HEADER = PRETTY_LINES[0];
+     public static final String PRETTY_HEADER = "\\  ||  /";
+    public static final Component[] PRETTY_LINES = new Component[] {
+            Component.text(PRETTY_HEADER),
+            Component.text("==      =="),
+            Component.text("/  ||  \\")
+    };   
 
     public HelmSign() {
         super(false);
-    }
-
-    @EventHandler
-    public void onSignChange(SignChangeEvent event){
-        if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
-            return;
-        }
-        for (int i = 0; i < PRETTY_LINES.length && i < event.getLines().length; i++) {
-            event.setLine(i, PRETTY_LINES[i]);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onSignClick(@NotNull PlayerInteractEvent event) {
-
-
     }
 
     @Override
@@ -64,9 +45,9 @@ public class HelmSign extends AbstractCraftSign {
         if (!ChatColor.stripColor(event.getLine(0)).equalsIgnoreCase("[helm]")) {
             return true;
         }
-        event.setLine(0, "\\  ||  /");
-        event.setLine(1, "==      ==");
-        event.setLine(2, "/  ||  \\");
+        for (int i = 0; i < PRETTY_LINES.length && i < event.getLines().length; i++) {
+            event.line(i, PRETTY_LINES[i]);
+        }
         return true;
     }
 
@@ -101,7 +82,7 @@ public class HelmSign extends AbstractCraftSign {
             return false;
 
         // TODO: Why was this used before?  CraftManager.getInstance().getCraftByPlayer(event.getPlayer())...  The craft variable did exist, so why don't use it?
-        if (craft.getType().getBoolProperty(CraftType.ROTATE_AT_MIDPOINT)) {
+        if (craft.getCraftProperties().get(PropertyKeys.ROTATE_AT_MIDPOINT)) {
             craft.rotate(rotation, craft.getHitBox().getMidPoint());
         } else {
            craft.rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.block().getLocation()));
@@ -123,7 +104,7 @@ public class HelmSign extends AbstractCraftSign {
     @Override
     protected boolean canPlayerUseSignOn(Player player, Craft craft) {
         if (super.canPlayerUseSignOn(player, craft)) {
-            if (!player.hasPermission("movecraft." + craft.getType().getStringProperty(CraftType.NAME) + ".rotate")) {
+            if (!player.hasPermission("movecraft." + craft.getCraftProperties().getName().toLowerCase() + ".rotate")) {
                 player.sendMessage(I18nSupport.getInternationalisedString("Insufficient Permissions"));
                 return false;
             }
