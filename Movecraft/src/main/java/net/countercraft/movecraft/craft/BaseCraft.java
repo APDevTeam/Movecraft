@@ -30,6 +30,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.HashMap;
@@ -77,6 +78,7 @@ public abstract class BaseCraft implements Craft {
     private Component name = Component.empty();
     @NotNull
     private MovecraftLocation lastTranslation = new MovecraftLocation(0, 0, 0);
+    private Vector bresenhamError = new Vector(0.0, 0.0, 0.0);
     private Map<NamespacedKey, Set<TrackedLocation>> trackedLocations = new ConcurrentHashMap<>();
 
     @NotNull
@@ -155,6 +157,31 @@ public abstract class BaseCraft implements Craft {
     @Deprecated
     public void translate(int dx, int dy, int dz) {
         translate(w, dx, dy, dz);
+    }
+
+    // Bresenham translation
+    public Vector translate(@NotNull World world, Vector translateVector) {
+        // Java double to int casting truncates, e.g. -4 == (int) -4.9
+        Vector discreteTranslate = new Vector(
+                (int) translateVector.getX(),
+                (int) translateVector.getY(),
+                (int) translateVector.getZ()
+        );
+        // Add the remainder to the bresenham errors
+        Vector error = translateVector.subtract(discreteTranslate);
+        bresenhamError.add(error);
+        // Adjust if error is greater than 0.5 in each direction
+        Vector adjust = new Vector(
+                (Math.abs(bresenhamError.getX()) > 0.5) ? Math.signum(bresenhamError.getX()) : 0.0,
+                (Math.abs(bresenhamError.getY()) > 0.5) ? Math.signum(bresenhamError.getY()) : 0.0,
+                (Math.abs(bresenhamError.getZ()) > 0.5) ? Math.signum(bresenhamError.getZ()) : 0.0
+        );
+        discreteTranslate.add(adjust);
+        bresenhamError.subtract(adjust);
+        // Kind of messy using doubles but their mantissa has 52 bits which should be enough
+        // Can change algo to use ints but it would be more ugly
+        translate(world, (int) discreteTranslate.getX(), (int) discreteTranslate.getY(), (int) discreteTranslate.getZ());
+        return discreteTranslate;
     }
 
     @Override
