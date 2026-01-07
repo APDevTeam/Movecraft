@@ -161,7 +161,7 @@ final public class CraftType {
     public static final NamespacedKey GEAR_SHIFTS = PropertyKeys.GEAR_SHIFTS.key();
     public static final NamespacedKey GEAR_SHIFTS_AFFECT_TICK_COOLDOWN = PropertyKeys.GEAR_SHIFT_AFFECT_TICK_COOLDOWN.key();
     public static final NamespacedKey GEAR_SHIFTS_AFFECT_DIRECT_MOVEMENT = PropertyKeys.GEAR_SHIFT_AFFECT_DIRECT_MOVEMENT.key();
-    public static final NamespacedKey GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS = PropertyKeys.GEAR_SHIFT_AFFECT_AFFECT_CRUISE_SKIP_BLOCKS.key();
+    public static final NamespacedKey GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS = PropertyKeys.GEAR_SHIFT_AFFECT_CRUISE_SKIP_BLOCKS.key();
     public static final NamespacedKey RELEASE_TIMEOUT = PropertyKeys.RELEASE_TIMEOUT.key();
     public static final NamespacedKey MERGE_PISTON_EXTENSIONS = PropertyKeys.MERGE_PISTON_EXTENSIONS.key();
 

@@ -287,7 +287,7 @@ public class PropertyKeys {
             register(PropertyKeyTypes.boolPropertyKey(
                     key("gear_shifts/modify/direct_movement"), t -> false
             ).immutable());
-    public static final PropertyKey<Boolean> GEAR_SHIFT_AFFECT_AFFECT_CRUISE_SKIP_BLOCKS =
+    public static final PropertyKey<Boolean> GEAR_SHIFT_AFFECT_CRUISE_SKIP_BLOCKS =
             register(PropertyKeyTypes.boolPropertyKey(
                     key("gear_shifts/modify/cruise_skip_blocks"), t -> false
             ).immutable());
