@@ -241,8 +241,6 @@ public class AsyncManager extends BukkitRunnable {
                 Movecraft.getInstance().getAsyncManager().cooldownCache.put(craft,tickCoolDown);
             }
             // Account for banking and diving in speed calculations by changing the tickCoolDown
-            int cruiseSkipBlocks = craft.getCraftProperties().get(
-                    PropertyKeys.CRUISE_SKIP_BLOCKS).get(w);
             if (!craft.getCruiseDirection().isVertical()) {
                 if (bankLeft || bankRight) {
                     if (!(dive || rise)) {
