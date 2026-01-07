@@ -230,7 +230,7 @@ public class AsyncManager extends BukkitRunnable {
                     bankRight = true;
             }
 
-            int cruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_CRUISE_SKIP_BLOCKS, w);
+            int cruiseSkipBlocks = craft.getCraftProperties().get(PropertyKeys.CRUISE_SKIP_BLOCKS, w);
 
             int tickCoolDown;
             if (Movecraft.getInstance().getAsyncManager().cooldownCache.containsKey(craft)) {
@@ -259,7 +259,7 @@ public class AsyncManager extends BukkitRunnable {
                 }
             }
 
-            int vertCruiseSkipBlocks = (int) craft.getType().getPerWorldProperty(CraftType.PER_WORLD_VERT_CRUISE_SKIP_BLOCKS, craft.getWorld());
+            int vertCruiseSkipBlocks = craft.getCraftProperties().get(PropertyKeys.VERT_CRUISE_SKIP_BLOCKS).get(craft.getWorld());
             CruiseDirection direction = craft.getCruiseDirection().clone();
             int jumpDistance = 1 + (direction.isVertical() ? vertCruiseSkipBlocks : cruiseSkipBlocks);
 
@@ -280,11 +280,10 @@ public class AsyncManager extends BukkitRunnable {
                 direction.rise2D(ARCSIN_ONE_HALF);
             if (dive)
                 direction.rise2D(-ARCSIN_ONE_HALF);
-            int vertCruiseSkipBlocks = craft.getCraftProperties().get(PropertyKeys.VERT_CRUISE_SKIP_BLOCKS).get(craft.getWorld());
 
             Vector cruiseVector = direction.multiply(jumpDistance);
 
-            if (craft.getType().getBoolProperty(CraftType.GEAR_SHIFTS_AFFECT_CRUISE_SKIP_BLOCKS)) {
+            if (craft.getCraftProperties().get(PropertyKeys.GEAR_SHIFT_AFFECT_CRUISE_SKIP_BLOCKS)) {
                 final int gearshift = craft.getCurrentGear();
                 cruiseVector.multiply(gearshift);
             }
