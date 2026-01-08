@@ -13,7 +13,7 @@ import org.bukkit.event.block.SignChangeEvent;
 
 public class HelmSign extends AbstractCraftSign {
 
-     public static final String PRETTY_HEADER = "\\  ||  /";
+    public static final String PRETTY_HEADER = "\\  ||  /";
     public static final Component[] PRETTY_LINES = new Component[] {
             Component.text(PRETTY_HEADER),
             Component.text("==      =="),
@@ -98,7 +98,7 @@ public class HelmSign extends AbstractCraftSign {
                 curTickCooldown = curTickCooldown * 2;*/
         //CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown); // lose half your speed when turning
 
-        return false;
+        return true;
     }
 
     @Override
