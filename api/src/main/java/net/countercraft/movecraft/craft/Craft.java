@@ -48,6 +48,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.naming.Name;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public interface Craft {
     // TODO: Unify with RECENT_CONTACTS tag and use a object to also store distance and direction
@@ -161,10 +162,16 @@ public interface Craft {
      * @param rotation The direction to rotate the craft
      * @param originPoint the origin point of the rotation
      */
-    boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint);
+    default boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint) {
+        return this.rotate(rotation, originPoint, null);
+    }
+    boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint, BiConsumer<Craft, MovecraftRotation> rotationProcessor);
 
     @Deprecated
-    boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
+    default boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
+        return rotate(rotation, originPoint, isSubCraft, null);
+    }
+    boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft, BiConsumer<Craft, MovecraftRotation> rotationProcessor);
 
     /**
      * Gets the cruising state of the craft.

@@ -46,6 +46,7 @@ import org.bukkit.util.Vector;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import static net.countercraft.movecraft.util.MathUtils.withinWorldBorder;
 
@@ -58,6 +59,13 @@ public class RotationTask extends AsyncTask {
     private String failMessage;
     //private final MovecraftLocation[] blockList;    // used to be final, not sure why. Changed by Mark / Loraxe42
     private Set<UpdateCommand> updates = new HashSet<>();
+    protected BiConsumer<Craft, MovecraftRotation> rotationProcessor = (craft, rotation) -> {
+        if (craft.getCruising()) {
+            CruiseDirection direction = craft.getCruiseDirection();
+            // TODO: Add event or something here so we can properly control the cruise direction rotation
+            craft.setCruiseDirection(direction.getRotated2D(rotation));
+        }
+    };
 
     private final MutableHitBox oldHitBox;
     private final MutableHitBox newHitBox;
@@ -65,6 +73,10 @@ public class RotationTask extends AsyncTask {
     private final MutableHitBox newFluidList;
 
     public RotationTask(Craft c, MovecraftLocation originPoint, MovecraftRotation rotation, World w, boolean isSubCraft) {
+        this(c, originPoint, rotation, w, isSubCraft, null);
+    }
+
+    public RotationTask(Craft c, MovecraftLocation originPoint, MovecraftRotation rotation, World w, boolean isSubCraft, BiConsumer<Craft, MovecraftRotation> rotationProcessor) {
         super(c);
         this.originPoint = originPoint;
         this.rotation = rotation;
@@ -74,10 +86,17 @@ public class RotationTask extends AsyncTask {
         this.oldHitBox = new SetHitBox(c.getHitBox());
         this.oldFluidList = new SetHitBox(c.getFluidLocations());
         this.newFluidList = new SetHitBox(c.getFluidLocations());
+        if (rotationProcessor != null) {
+            this.rotationProcessor = rotationProcessor;
+        }
     }
 
     public RotationTask(Craft c, MovecraftLocation originPoint, MovecraftRotation rotation, World w) {
         this(c,originPoint,rotation,w,false);
+    }
+
+    public RotationTask(Craft c, MovecraftLocation originPoint, MovecraftRotation rotation, World w, BiConsumer<Craft, MovecraftRotation> rotationProcessor) {
+        this(c,originPoint,rotation,w,false, rotationProcessor);
     }
 
     @Override
@@ -182,10 +201,9 @@ public class RotationTask extends AsyncTask {
 
         rotateEntitiesOnCraft(tOP);
 
-        Craft craft1 = getCraft();
-        if (craft1.getCruising()) {
-            CruiseDirection direction = craft1.getCruiseDirection();
-            craft1.setCruiseDirection(direction.getRotated2D(rotation));
+        final Craft craft1 = getCraft();
+        if (this.rotationProcessor != null) {
+            this.rotationProcessor.accept(craft1, rotation);
         }
 
         // if you rotated a subcraft, update the parent with the new blocks

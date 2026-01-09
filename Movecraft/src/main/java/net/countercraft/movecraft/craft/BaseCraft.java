@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 
 import static net.countercraft.movecraft.util.SignUtils.getFacing;
@@ -220,19 +221,19 @@ public abstract class BaseCraft implements Craft {
     }
 
     @Override
-    public boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint) {
+    public boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint, BiConsumer<Craft, MovecraftRotation> rotationProcessor) {
         if (getLastRotateTime() + 1e9 > System.nanoTime()) {
             getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Rotation - Turning Too Quickly"));
             return false;
         }
         setLastRotateTime(System.nanoTime());
-        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, getWorld()), this);
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, getWorld(), rotationProcessor), this);
         return true;
     }
 
     @Override
-    public boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
-        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, getWorld(), isSubCraft), this);
+    public boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft, BiConsumer<Craft, MovecraftRotation> rotationProcessor) {
+        Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, getWorld(), isSubCraft, rotationProcessor), this);
         return true;
     }
 
