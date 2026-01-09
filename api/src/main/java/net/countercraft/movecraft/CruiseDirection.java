@@ -77,5 +77,16 @@ public class CruiseDirection extends Vector {
         this.rotateAroundNonUnitAxis(perpendicular, angle);
     }
 
+    public double getYaw() {
+        // Adjusted, so the values match whatever is present in the crosshair
+        return Math.atan2(-this.x, this.z);
+    }
+
+    public double getYawInDegree() {
+        final double yawRadian = this.getYaw();
+        final double yawDegree = Math.toDegrees(yawRadian);
+        return (yawDegree + 360) % 360;
+    }
+
 }
 
