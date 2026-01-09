@@ -3,6 +3,7 @@ package net.countercraft.movecraft.sign;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.PlayerCraft;
+import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
@@ -103,6 +104,11 @@ public abstract class AbstractSubcraftSign extends AbstractCraftSign {
         }
         TypeSafeCraftType craftType = this.getCraftType(sign);
         if (craftType != null) {
+            if (!craftType.get(PropertyKeys.CAN_BE_SUBCRAFT)) {
+                // TODO: Print message to player
+                return false;
+            }
+
             return player.hasPermission("movecraft." + craftType.getName().toLowerCase() + ".pilot") && this.canPlayerUseSignForCraftType(clickType, sign, player, craftType);
         }
         return false;

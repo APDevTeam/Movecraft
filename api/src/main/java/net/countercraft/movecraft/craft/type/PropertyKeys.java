@@ -142,6 +142,8 @@ public class PropertyKeys {
             register(PropertyKeyTypes.boolPropertyKey(key("movement/collision/explosion/focused"), t -> false).immutable());
     public static final PropertyKey<Boolean> MUST_BE_SUBCRAFT =
             register(PropertyKeyTypes.boolPropertyKey(key("constraints/must_be_subcraft"), t -> false).immutable());
+    public static final PropertyKey<Boolean> CAN_BE_SUBCRAFT =
+            register(PropertyKeyTypes.boolPropertyKey(key("constraints/can_be_subcraft"), t -> true).immutable());
     // TODO: Remove, worlds have their own waterlevel which should be used instead
     public static final PropertyKey<Integer> STATIC_WATER_LEVEL =
             register(PropertyKeyTypes.intPropertyKey(key("static_water_level"), t -> 0).immutable());
