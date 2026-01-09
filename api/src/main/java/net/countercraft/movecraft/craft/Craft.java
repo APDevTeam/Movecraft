@@ -161,10 +161,10 @@ public interface Craft {
      * @param rotation The direction to rotate the craft
      * @param originPoint the origin point of the rotation
      */
-    void rotate(MovecraftRotation rotation, MovecraftLocation originPoint);
+    boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint);
 
     @Deprecated
-    void rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
+    boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft);
 
     /**
      * Gets the cruising state of the craft.

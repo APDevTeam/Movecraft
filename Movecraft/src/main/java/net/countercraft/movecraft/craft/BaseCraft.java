@@ -220,18 +220,20 @@ public abstract class BaseCraft implements Craft {
     }
 
     @Override
-    public void rotate(MovecraftRotation rotation, MovecraftLocation originPoint) {
+    public boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint) {
         if (getLastRotateTime() + 1e9 > System.nanoTime()) {
             getAudience().sendMessage(I18nSupport.getInternationalisedComponent("Rotation - Turning Too Quickly"));
-            return;
+            return false;
         }
         setLastRotateTime(System.nanoTime());
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, getWorld()), this);
+        return true;
     }
 
     @Override
-    public void rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
+    public boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint, boolean isSubCraft) {
         Movecraft.getInstance().getAsyncManager().submitTask(new RotationTask(this, originPoint, rotation, getWorld(), isSubCraft), this);
+        return true;
     }
 
     @Override
