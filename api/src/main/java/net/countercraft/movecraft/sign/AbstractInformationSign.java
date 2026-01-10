@@ -34,9 +34,13 @@ public abstract class AbstractInformationSign extends AbstractCraftSign {
         SIGN_CLICK
     }
 
+    public AbstractInformationSign(String permission, boolean ignoreCraftIsBusy) {
+        super(permission, ignoreCraftIsBusy);
+    }
+
     public AbstractInformationSign() {
         // Info signs only display things, that should not require permissions, also it doesn't matter if the craft is busy or not
-        super(null, true);
+        this(null, true);
     }
 
     @Override
