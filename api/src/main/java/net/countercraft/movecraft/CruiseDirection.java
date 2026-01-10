@@ -66,9 +66,11 @@ public class CruiseDirection extends Vector {
         this.rotateAroundY(angle);
     }
 
+    static final double PI_HALF = Math.PI / 2;
+
     /** Rise or dive (if angle is negative), angle in radians. Will default to UP (or DOWN) if risen too much. */
     public void rise2D(double angle) {
-        Vector perpendicular = new Vector(this.getX(), 0, this.getZ()).rotateAroundY(90.0d);
+        Vector perpendicular = new Vector(this.getX(), 0, this.getZ()).rotateAroundY(PI_HALF);
         if (angle > 0) {
             angle = Math.min(angle, this.angle(UP));
         } else {
