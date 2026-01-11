@@ -26,6 +26,7 @@ import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.craft.*;
 import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.events.InitiateTranslateEvent;
 import net.countercraft.movecraft.events.RunnableRegistrationEvent;
 import net.countercraft.movecraft.mapUpdater.MapUpdateManager;
 import net.countercraft.movecraft.mapUpdater.update.BlockCreateCommand;
@@ -293,6 +294,12 @@ public class AsyncManager extends BukkitRunnable {
             }
 
             // TODO: GEAR_SHIFT respection?
+            InitiateTranslateEvent initiateTranslateEvent = new InitiateTranslateEvent(craft, cruiseVector);
+            Bukkit.getServer().getPluginManager().callEvent(initiateTranslateEvent);
+            if (initiateTranslateEvent.isCancelled()) {
+                continue;
+            }
+            cruiseVector = initiateTranslateEvent.getTranslationDirection();
             Vector discreteTranslation = craft.translate(craft.getWorld(), cruiseVector);
             craft.setLastTranslation(new MovecraftLocation((int) discreteTranslation.getX(), (int) discreteTranslation.getY(), (int) discreteTranslation.getZ()));
             craft.setLastCruiseUpdate(System.currentTimeMillis());
