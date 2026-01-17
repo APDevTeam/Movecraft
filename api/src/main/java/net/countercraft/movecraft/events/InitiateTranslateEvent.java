@@ -31,6 +31,10 @@ public class InitiateTranslateEvent extends CraftEvent implements Cancellable {
         return HANDLERS;
     }
 
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
+    }
+
     @Override
     public boolean isCancelled() {
         return this.cancelled;
