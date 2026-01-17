@@ -294,7 +294,7 @@ public class AsyncManager extends BukkitRunnable {
             }
 
             // TODO: GEAR_SHIFT respection?
-            InitiateTranslateEvent initiateTranslateEvent = new InitiateTranslateEvent(craft, cruiseVector);
+            InitiateTranslateEvent initiateTranslateEvent = new InitiateTranslateEvent(craft, cruiseVector.clone());
             Bukkit.getServer().getPluginManager().callEvent(initiateTranslateEvent);
             if (initiateTranslateEvent.isCancelled()) {
                 continue;
