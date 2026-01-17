@@ -10,8 +10,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
+import org.jetbrains.annotations.Nullable;
 
-public class HelmSign extends AbstractCraftSign {
+public class HelmSign extends AbstractInformationSign {
 
     public static final String PRETTY_HEADER = "\\  ||  /";
     public static final Component[] PRETTY_LINES = new Component[] {
@@ -21,7 +22,7 @@ public class HelmSign extends AbstractCraftSign {
     };   
 
     public HelmSign() {
-        super(false);
+        super(null, false);
     }
 
     @Override
@@ -49,6 +50,21 @@ public class HelmSign extends AbstractCraftSign {
             event.line(i, PRETTY_LINES[i]);
         }
         return true;
+    }
+
+    @Override
+    protected @Nullable Component getUpdateString(int lineIndex, Component oldData, Craft craft) {
+        return null;
+    }
+
+    @Override
+    protected @Nullable Component getDefaultString(int lineIndex, Component oldComponent) {
+        return null;
+    }
+
+    @Override
+    protected void performUpdate(Component[] newComponents, SignListener.SignWrapper sign, REFRESH_CAUSE refreshCause) {
+        return;
     }
 
     @Override
