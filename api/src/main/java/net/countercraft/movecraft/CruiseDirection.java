@@ -1,6 +1,7 @@
 package net.countercraft.movecraft;
 
 import org.bukkit.block.BlockFace;
+import org.bukkit.util.NumberConversions;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -82,13 +83,35 @@ public class CruiseDirection extends Vector {
 
     public double getYaw() {
         // Adjusted, so the values match whatever is present in the crosshair
-        return Math.atan2(-this.x, this.z);
+        // North: 180°
+        // East: -90°
+        // South: 0°
+        // West: 90°
+        Vector workingCopy = this.clone().normalize();
+        return Math.atan2(-workingCopy.getX(), workingCopy.getZ());
     }
 
     public double getYawInDegree() {
         final double yawRadian = this.getYaw();
         final double yawDegree = Math.toDegrees(yawRadian);
         return (yawDegree + 360) % 360;
+    }
+
+    public double getPitch() {
+        // Adjusted, so the values match whatever is present in the crosshair
+        // Level: 0°
+        // Straight up: -90°
+        // Straight down: 90°
+        Vector workingCopy = this.clone().normalize();
+        return -Math.asin(workingCopy.getY());
+    }
+
+    public double getPitchInDegree() {
+        final double pitchRadian = this.getPitch();
+        final double pitchDegree = Math.toDegrees(pitchRadian);
+        // Limit to range between -90 and 90 degrees
+        // No need to, this should already be perfectly between -90 and 90 degrees!
+        return pitchDegree;
     }
 
 }
