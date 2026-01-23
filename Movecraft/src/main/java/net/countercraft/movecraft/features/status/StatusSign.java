@@ -1,6 +1,7 @@
 package net.countercraft.movecraft.features.status;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.countercraft.movecraft.async.FuelBurnRunnable;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
@@ -11,6 +12,8 @@ import net.countercraft.movecraft.util.Counter;
 import net.countercraft.movecraft.util.Tags;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -53,32 +56,76 @@ public class StatusSign extends AbstractInformationSign {
 
     // Yes, trillion is ridiculous, anyway...
     final char[] NUMBER_SIZE_MARKERS = {'K', 'M', 'B', 'T'};
+    static final Style STYLE_COLOR_GRAY = Style.style(TextColor.color(69, 69, 69));
+    static final Style STYLE_COLOR_BLACK = Style.style(TextColor.color(0, 0, 0));
+    static final Component FUEL_PREFIX = Component.text("[").style(STYLE_COLOR_GRAY);
+    static final Component FUEL_SUFFIX = Component.text("]").style(STYLE_COLOR_GRAY);
+    static final Component FUEL_EMPTY = Component.text("-EMPTY-").style(STYLE_COLOR_RED.decorate(TextDecoration.BOLD));
+    static final int CELL_COUNT = 20;
 
     protected Component calcFuel(Craft craft) {
-        double fuel = craft.getDataTag(Craft.FUEL);
-        int cruiseSkipBlocks = craft.getCraftProperties().get(PropertyKeys.CRUISE_SKIP_BLOCKS, craft.getWorld());
-        cruiseSkipBlocks++;
-        double fuelBurnRate = craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, craft.getWorld());
-        int fuelRange = (int) Math.round((fuel * (1 + cruiseSkipBlocks)) / fuelBurnRate);
-        // DONE: Create constants in base class for style colors!
-        Style style;
-        if (fuelRange > 1000) {
-            style = STYLE_COLOR_GREEN;
-        } else if (fuelRange > 100) {
-            style = STYLE_COLOR_YELLOW;
-        } else {
-            style = STYLE_COLOR_RED;
+        // If we dont burn any fuel, we can quit early
+        if (!FuelBurnRunnable.doesBurnFuel(craft)) {
+            return null;
         }
 
-        // Shorten for large numbers, or trim the number (e.g. 10k instead of 10.000)
-        String fuelString = "" + fuelRange;
-        int numberSuffixIndex = 0;
-        while (numberSuffixIndex < NUMBER_SIZE_MARKERS.length && fuelRange > 1000) {
-            fuelRange /= 1000;
-            fuelString = "" + fuelRange + NUMBER_SIZE_MARKERS[numberSuffixIndex];
-            numberSuffixIndex++;
+        // Since our fuel burn rate varies, we will just display how full our tank is instead...
+        final double fuelLevel = craft.getDataTag(FuelBurnRunnable.FUEL_PERCENTAGE);
+        int cells = (int) Math.round(fuelLevel * ((double) CELL_COUNT));
+        Component result = Component.text("Fuel: ");
+        result = result.append(FUEL_PREFIX);
+        if (cells > 0) {
+            Style style;
+            if (cells > 10) {
+                style = STYLE_COLOR_GREEN;
+            } else if (cells > 5) {
+                style = STYLE_COLOR_YELLOW;
+            } else {
+                style = STYLE_COLOR_RED;
+            }
+            // Create component that represents the fuel level (in 5% steps!)
+            String stringTmp = "";
+            for (int i = 0; i < CELL_COUNT; i++) {
+               stringTmp += "|";
+               if (i + 1 == cells && (CELL_COUNT != cells)) {
+                   result = result.append(Component.text(stringTmp).style(style));
+                   style = STYLE_COLOR_BLACK;
+                   stringTmp = "";
+               }
+            }
+            result = result.append(Component.text(stringTmp).style(style));
+        } else {
+            result = result.append(FUEL_EMPTY);
         }
-        return Component.text("Fuel: " + fuelString).style(style);
+        result = result.append(FUEL_SUFFIX);
+
+        return result;
+
+        // Old logic
+//        double fuel = craft.getDataTag(Craft.FUEL);
+//        int cruiseSkipBlocks = craft.getCraftProperties().get(PropertyKeys.CRUISE_SKIP_BLOCKS, craft.getWorld());
+//        cruiseSkipBlocks++;
+//        double fuelBurnRate = craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, craft.getWorld());
+//        int fuelRange = (int) Math.round((fuel * (1 + cruiseSkipBlocks)) / fuelBurnRate);
+//        // DONE: Create constants in base class for style colors!
+//        Style style;
+//        if (fuelRange > 1000) {
+//            style = STYLE_COLOR_GREEN;
+//        } else if (fuelRange > 100) {
+//            style = STYLE_COLOR_YELLOW;
+//        } else {
+//            style = STYLE_COLOR_RED;
+//        }
+//
+//        // Shorten for large numbers, or trim the number (e.g. 10k instead of 10.000)
+//        String fuelString = "" + fuelRange;
+//        int numberSuffixIndex = 0;
+//        while (numberSuffixIndex < NUMBER_SIZE_MARKERS.length && fuelRange > 1000) {
+//            fuelRange /= 1000;
+//            fuelString = "" + fuelRange + NUMBER_SIZE_MARKERS[numberSuffixIndex];
+//            numberSuffixIndex++;
+//        }
+//        return Component.text("Fuel: " + fuelString).style(style);
     }
 
     @Override

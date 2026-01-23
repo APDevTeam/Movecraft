@@ -225,7 +225,7 @@ public class CraftManager implements Iterable<Craft>{
 
         crafts.remove(craft);
         // Turn off furnaces
-        FuelBurnRunnable.setEnginesActive(craft, false);
+        FuelBurnRunnable.updateFurnaces(craft, false);
         if(craft instanceof PlayerCraft)
             playerCrafts.remove(((PlayerCraft) craft).getPilotUUID());
 

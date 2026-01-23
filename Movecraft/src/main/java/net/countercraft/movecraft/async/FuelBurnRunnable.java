@@ -11,6 +11,7 @@ import net.countercraft.movecraft.craft.SinkingCraft;
 import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagKey;
 import net.countercraft.movecraft.craft.datatag.CraftDataTagRegistry;
+import net.countercraft.movecraft.craft.type.CraftProperties;
 import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.CraftStopCruiseEvent;
 import net.countercraft.movecraft.events.FuelBurnEvent;
@@ -40,6 +41,7 @@ public class FuelBurnRunnable implements Runnable {
     // TODO: Listen to furnace burn events (item consumption and stuff) and cancel them if it is a actively used furnace!
 
     public static final CraftDataTagKey<Boolean> IS_FUELED = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey(Movecraft.getInstance(), "is_fueled"), c -> false);
+    public static final CraftDataTagKey<Double> FUEL_PERCENTAGE = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey(Movecraft.getInstance(), "fuel_percentage"), c -> 0.0D);
     // TODO: Replace with config object that has the values directly
     public static final CraftDataTagKey<ItemStack> CURRENT_FUEL_ITEM = CraftDataTagRegistry.INSTANCE.registerTagKey(new NamespacedKey(Movecraft.getInstance(), "fuel_item"), c -> ItemStack.empty());
 
@@ -59,7 +61,7 @@ public class FuelBurnRunnable implements Runnable {
 
             boolean isFueled = craft.getDataTag(IS_FUELED);
             // Activate engines
-            setEnginesActive(craft, isFueled);
+            updateFurnaces(craft, isFueled);
         }
     }
 
@@ -225,12 +227,7 @@ public class FuelBurnRunnable implements Runnable {
         craft.setDataTag(IS_FUELED, isBurningFuel);
     }
 
-    public static void setEnginesActive(final Craft craft, final boolean active) {
-        // If not enabled for this type, quit
-        if (!craft.getCraftProperties().get(PropertyKeys.FURNACE_FUEL_VISUALIZATION)) {
-            return;
-        }
-
+    public static void updateFurnaces(final Craft craft, final boolean active) {
         int burnTime = 0;
         int totalBurnTime = 0;
         boolean setProgress = Movecraft.getInstance().getNMSHelper() != null;
@@ -246,30 +243,72 @@ public class FuelBurnRunnable implements Runnable {
             }
         }
 
-        for (TrackedLocation trackedLocation : craft.getDataTag(FURNACES)) {
-            MovecraftLocation location = trackedLocation.getAbsoluteLocation();
-            BlockData furnace;
-            BlockState state;
-            if (Bukkit.isPrimaryThread()) {
-                furnace = craft.getWorld().getBlockData(location.toBukkit(craft.getWorld()));
-                state = craft.getWorld().getBlockState(location.toBukkit(craft.getWorld()));
-            } else {
-                furnace = craft.getMovecraftWorld().getData(location);
-                state = craft.getMovecraftWorld().getState(location);
-            }
-            if (state instanceof org.bukkit.block.Furnace furnace1) {
-                if (setProgress) {
-                    Movecraft.getInstance().getNMSHelper().setFurnaceBurnTime(burnTime, totalBurnTime + 1, furnace1);
-                } else if (!active) {
-                    Movecraft.getInstance().getNMSHelper().setFurnaceBurnTime(0, 0, furnace1);
+        // TODO: Incorporate fuel tanks!
+        double furnaceFuelLevel = 0.0d;
+
+        final Set<TrackedLocation> furnaceLocations = craft.getDataTag(FURNACES);
+        if (furnaceLocations.size() > 0) {
+            for (TrackedLocation trackedLocation : furnaceLocations) {
+                MovecraftLocation location = trackedLocation.getAbsoluteLocation();
+                BlockData furnace;
+                BlockState state;
+                if (Bukkit.isPrimaryThread()) {
+                    furnace = craft.getWorld().getBlockData(location.toBukkit(craft.getWorld()));
+                    state = craft.getWorld().getBlockState(location.toBukkit(craft.getWorld()));
+                } else {
+                    furnace = craft.getMovecraftWorld().getData(location);
+                    state = craft.getMovecraftWorld().getState(location);
+                }
+
+                // Calculate and add this furnace's fuel level
+                if (Tags.FURNACES.contains(state.getType())) {
+                    if (state instanceof InventoryHolder inventoryHolder) {
+                        if (inventoryHolder.getInventory() instanceof FurnaceInventory furnaceInventory) {
+                            furnaceFuelLevel += getFurnaceFuelLevel(furnaceInventory, craft.getCraftProperties());
+                        }
+                    }
+                }
+
+                // If not enabled for this type, quit
+                if (!craft.getCraftProperties().get(PropertyKeys.FURNACE_FUEL_VISUALIZATION)) {
+                    continue;
+                }
+
+                if (state instanceof org.bukkit.block.Furnace furnace1) {
+                    if (setProgress) {
+                        Movecraft.getInstance().getNMSHelper().setFurnaceBurnTime(burnTime, totalBurnTime + 1, furnace1);
+                    } else if (!active) {
+                        Movecraft.getInstance().getNMSHelper().setFurnaceBurnTime(0, 0, furnace1);
+                    }
+                }
+                if (furnace instanceof Furnace furnaceState) {
+                    furnaceState.setLit(active);
+                    state.setBlockData(furnaceState);
+                    state.update();
                 }
             }
-            if (furnace instanceof Furnace furnaceState) {
-                furnaceState.setLit(active);
-                state.setBlockData(furnaceState);
-                state.update();
-            }
+
+            furnaceFuelLevel /= furnaceLocations.size();
         }
+        craft.setDataTag(FUEL_PERCENTAGE, furnaceFuelLevel);
+    }
+
+    static double getFurnaceFuelLevel(final FurnaceInventory furnaceInventory, final CraftProperties craftProperties) {
+        if (furnaceInventory == null || furnaceInventory.isEmpty())
+            return 0.0D;
+
+        // Check fuel item
+        // If fueled, check for special effects of the cooked item
+        // If we consumed a bucket, add the bucket to the result slot or drop it in front of the furnace
+        ItemStack fuelItemStack = furnaceInventory.getFuel();
+        if (fuelItemStack == null || fuelItemStack.isEmpty())
+            return 0.0D;
+        NamespacedKey itemID = fuelItemStack.getType().getKey();
+        if (!craftProperties.get(PropertyKeys.FUEL_TYPES).contains(itemID)) {
+            return 0.0D;
+        }
+        // Return how full this itemstack is
+        return (((double) fuelItemStack.getAmount()) / ((double) fuelItemStack.getMaxStackSize()));
     }
 
     static Set<TrackedLocation> calcFurnaceLocations(final Craft craft) {
@@ -301,7 +340,7 @@ public class FuelBurnRunnable implements Runnable {
         return result;
     }
 
-    static boolean doesBurnFuel(final Craft craft) {
+    public static boolean doesBurnFuel(final Craft craft) {
         if (craft instanceof SinkingCraft) {
             return false;
         }
