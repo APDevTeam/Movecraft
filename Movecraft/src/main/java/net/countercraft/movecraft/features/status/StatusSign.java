@@ -93,7 +93,7 @@ public class StatusSign extends AbstractInformationSign {
                    result = result.append(Component.text(stringTmp).style(style));
                    style = STYLE_COLOR_BLACK;
                    stringTmp = "";
-                   charTmp = '.';
+                   charTmp = '¦';
                }
             }
             result = result.append(Component.text(stringTmp).style(style));
