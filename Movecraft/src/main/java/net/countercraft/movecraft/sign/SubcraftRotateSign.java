@@ -35,6 +35,8 @@ public class SubcraftRotateSign extends AbstractSubcraftSign {
             return;
         }
 
+        // TODO: Migrate to use controller
+        // TODO: Introduce action queue for crafts to avoid beavering and to overall achieve a cleaner process
         CraftManager.getInstance().detect(
                 startPoint,
                 subcraftType, (type, w, p, parents) -> {

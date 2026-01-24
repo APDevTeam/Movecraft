@@ -23,6 +23,7 @@ import net.countercraft.movecraft.commands.*;
 import net.countercraft.movecraft.config.Settings;
 import net.countercraft.movecraft.craft.ChunkManager;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.controller.rotation.DefaultRotationController;
 import net.countercraft.movecraft.craft.type.ConfiguredSound;
 import net.countercraft.movecraft.craft.type.RequiredBlockEntry;
 import net.countercraft.movecraft.craft.type.TypeSafeCraftType;
@@ -81,6 +82,7 @@ public class Movecraft extends JavaPlugin {
         ConfigurationSerialization.registerClass(ConfiguredSound.class, "Movecraft_ConfiguredSound");
         ConfigurationSerialization.registerClass(RequiredBlockEntry.class, "Movecraft_RequiredBlockEntry");
         ConfigurationSerialization.registerClass(NamespacedKeyToDoubleProperty.class, "Movecraft_NamespacedKeyToDoubleProperty");
+        ConfigurationSerialization.registerClass(DefaultRotationController.class, "Movecraft_DefaultRotationController");
 
         // Read in config
         Settings.LOCALE = getConfig().getString("Locale");

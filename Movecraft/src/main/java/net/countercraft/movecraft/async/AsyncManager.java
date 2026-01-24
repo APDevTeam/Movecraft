@@ -24,6 +24,7 @@ import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.async.rotation.RotationTask;
 import net.countercraft.movecraft.async.translation.TranslationTask;
 import net.countercraft.movecraft.craft.*;
+import net.countercraft.movecraft.craft.controller.AbstractRotationController;
 import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
 import net.countercraft.movecraft.events.InitiateTranslateEvent;
@@ -298,6 +299,13 @@ public class AsyncManager extends BukkitRunnable {
             Bukkit.getServer().getPluginManager().callEvent(initiateTranslateEvent);
             if (initiateTranslateEvent.isCancelled()) {
                 continue;
+            }
+            final AbstractRotationController rotationController = craft.getCraftProperties().get(PropertyKeys.ROTATION_CONTROLLER);
+            if (rotationController != null) {
+                rotationController.onInitiateTranslation(initiateTranslateEvent);
+                if (initiateTranslateEvent.isCancelled()) {
+                    continue;
+                }
             }
             cruiseVector = initiateTranslateEvent.getTranslationDirection();
             Vector discreteTranslation = craft.translate(craft.getWorld(), cruiseVector);

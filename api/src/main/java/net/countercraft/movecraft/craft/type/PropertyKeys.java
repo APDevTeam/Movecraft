@@ -1,5 +1,7 @@
 package net.countercraft.movecraft.craft.type;
 
+import net.countercraft.movecraft.craft.controller.AbstractRotationController;
+import net.countercraft.movecraft.craft.controller.rotation.DefaultRotationController;
 import net.countercraft.movecraft.craft.type.property.BlockSetProperty;
 import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
 import org.bukkit.Material;
@@ -387,6 +389,25 @@ public class PropertyKeys {
                     key("disabled_state/can_be_un_disabled"), true
             ).immutable());
     // endregion disabled stuff
+
+    // region movement controllers
+    public static final PropertyKey<AbstractRotationController> ROTATION_CONTROLLER =
+            register(
+                    new PropertyKey<AbstractRotationController>(
+                            key("movement/controller/rotation"),
+                            type -> new DefaultRotationController(),
+                            (obj, type) -> {
+                                if (obj != null && (obj instanceof AbstractRotationController)) {
+                                    // AbstractRotationController is serializable!
+                                    return (AbstractRotationController)obj;
+                                }
+                                return new DefaultRotationController();
+                            },
+                            (s) -> s,
+                            AbstractRotationController::clone
+                    )
+            );
+    // endregion movement controllers
 
     public static <T> PropertyKey<T> register(PropertyKey<T> propertyKey) {
         return TypeSafeCraftType.PROPERTY_REGISTRY.register(propertyKey.key(), propertyKey);

@@ -2,6 +2,7 @@ package net.countercraft.movecraft.sign;
 
 import net.countercraft.movecraft.MovecraftRotation;
 import net.countercraft.movecraft.craft.Craft;
+import net.countercraft.movecraft.craft.controller.AbstractRotationController;
 import net.countercraft.movecraft.craft.type.PropertyKeys;
 import net.countercraft.movecraft.localisation.I18nSupport;
 import net.countercraft.movecraft.util.MathUtils;
@@ -69,15 +70,6 @@ public class HelmSign extends AbstractInformationSign {
 
     @Override
     protected boolean internalProcessSignWithCraft(Action clickType, SignListener.SignWrapper sign, Craft craft, Player player) {
-        MovecraftRotation rotation;
-        if (clickType == Action.RIGHT_CLICK_BLOCK) {
-            rotation = MovecraftRotation.CLOCKWISE;
-        }else if(clickType == Action.LEFT_CLICK_BLOCK){
-            rotation = MovecraftRotation.ANTICLOCKWISE;
-        }else{
-            return false;
-        }
-
         /*Long time = timeMap.get(event.getPlayer());
         if (time != null) {
             long ticksElapsed = (System.currentTimeMillis() - time) / 50;
@@ -97,12 +89,11 @@ public class HelmSign extends AbstractInformationSign {
         if(!MathUtils.locIsNearCraftFast(craft, MathUtils.bukkit2MovecraftLoc(player.getLocation())))
             return false;
 
-        // TODO: Why was this used before?  CraftManager.getInstance().getCraftByPlayer(event.getPlayer())...  The craft variable did exist, so why don't use it?
-        if (craft.getCraftProperties().get(PropertyKeys.ROTATE_AT_MIDPOINT)) {
-            craft.rotate(rotation, craft.getHitBox().getMidPoint());
-        } else {
-           craft.rotate(rotation, MathUtils.bukkit2MovecraftLoc(sign.block().getLocation()));
+        AbstractRotationController controller = craft.getCraftProperties().get(PropertyKeys.ROTATION_CONTROLLER);
+        if (controller != null) {
+            return controller.onHelmInteraction(craft, sign, clickType, player);
         }
+        return false;
 
         //timeMap.put(event.getPlayer(), System.currentTimeMillis());
         //TODO: Lower speed while turning
@@ -113,8 +104,6 @@ public class HelmSign extends AbstractInformationSign {
             else
                 curTickCooldown = curTickCooldown * 2;*/
         //CraftManager.getInstance().getCraftByPlayer(event.getPlayer()).setCurTickCooldown(curTickCooldown); // lose half your speed when turning
-
-        return true;
     }
 
     @Override

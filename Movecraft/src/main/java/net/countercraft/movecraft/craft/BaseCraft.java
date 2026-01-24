@@ -220,6 +220,7 @@ public abstract class BaseCraft implements Craft {
         Movecraft.getInstance().getAsyncManager().submitTask(new TranslationTask(this, world, dx, dy, dz), this);
     }
 
+    // TODO: replace with RotationController!
     @Override
     public boolean rotate(MovecraftRotation rotation, MovecraftLocation originPoint, BiConsumer<Craft, MovecraftRotation> rotationProcessor) {
         if (getLastRotateTime() + 1e9 > System.nanoTime()) {
