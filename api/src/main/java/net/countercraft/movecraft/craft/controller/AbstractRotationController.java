@@ -8,7 +8,9 @@ import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractRotationController implements ConfigurationSerializable, Cloneable {
@@ -20,7 +22,7 @@ public abstract class AbstractRotationController implements ConfigurationSeriali
         this.turningEnabled = SerializationUtil.deserializeBoolean("TurningEnabled", rawData, true);
     }
 
-    public boolean onHelmInteraction(final Craft craft, final SignListener.SignWrapper signWrapper, final Action clickType, final Player interactor) {
+    public boolean onHelmInteraction(final Craft craft, final @Nullable SignListener.SignWrapper signWrapper, final Action clickType, final Player interactor) {
         return this.turningEnabled;
     }
 
@@ -44,7 +46,9 @@ public abstract class AbstractRotationController implements ConfigurationSeriali
         Map<String, Object> serialized = Map.of(
                 "TurningEnabled", this.turningEnabled
         );
-        return addToSerialize(serialized);
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.putAll(serialized);
+        return addToSerialize(paramMap);
     }
     public abstract @NotNull Map<String, Object> addToSerialize(@NotNull Map<String, Object> serialized);
 

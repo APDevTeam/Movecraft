@@ -37,7 +37,7 @@ public class DefaultRotationController extends AbstractRotationController {
             return false;
         }
 
-        if (craft.getCraftProperties().get(PropertyKeys.ROTATE_AT_MIDPOINT)) {
+        if (craft.getCraftProperties().get(PropertyKeys.ROTATE_AT_MIDPOINT) || signWrapper == null) {
             return craft.rotate(rotation, craft.getHitBox().getMidPoint());
         } else if (signWrapper.block() != null) {
             return craft.rotate(rotation, MathUtils.bukkit2MovecraftLoc(signWrapper.block().getLocation()));
