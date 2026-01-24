@@ -84,13 +84,16 @@ public class StatusSign extends AbstractInformationSign {
                 style = STYLE_COLOR_RED;
             }
             // Create component that represents the fuel level (in 5% steps!)
+            // Necessary, sign class only updates sign if the raw strings are different!
             String stringTmp = "";
+            char charTmp = '|';
             for (int i = 0; i < CELL_COUNT; i++) {
-               stringTmp += "|";
+                stringTmp += charTmp;
                if (i + 1 == cells && (CELL_COUNT != cells)) {
                    result = result.append(Component.text(stringTmp).style(style));
                    style = STYLE_COLOR_BLACK;
                    stringTmp = "";
+                   charTmp = '.';
                }
             }
             result = result.append(Component.text(stringTmp).style(style));
