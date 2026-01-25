@@ -76,9 +76,9 @@ public class StatusSign extends AbstractInformationSign {
         result = result.append(FUEL_PREFIX);
         if (cells > 0) {
             Style style;
-            if (cells > 10) {
+            if (cells > 6) {
                 style = STYLE_COLOR_GREEN;
-            } else if (cells > 5) {
+            } else if (cells > 3) {
                 style = STYLE_COLOR_YELLOW;
             } else {
                 style = STYLE_COLOR_RED;
