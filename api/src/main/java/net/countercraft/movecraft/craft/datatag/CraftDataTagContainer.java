@@ -3,12 +3,16 @@ package net.countercraft.movecraft.craft.datatag;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.util.registration.TypedContainer;
 import net.countercraft.movecraft.util.registration.TypedKey;
+import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
-public class CraftDataTagContainer extends TypedContainer<CraftDataTagKey<?>> {
+public class CraftDataTagContainer extends TypedContainer<CraftDataTagKey<?>> implements ConfigurationSerializable {
     public CraftDataTagContainer(){
         super();
     }
@@ -57,4 +61,67 @@ public class CraftDataTagContainer extends TypedContainer<CraftDataTagKey<?>> {
         super.delete(key);
     }
 
+    public static @NotNull CraftDataTagContainer deserialize(@NotNull Map<String, Object> args) {
+        CraftDataTagContainer result = new CraftDataTagContainer();
+
+        for (Map.Entry<String, Object> entry : args.entrySet()) {
+            NamespacedKey key = NamespacedKey.fromString(entry.getKey());
+            CraftDataTagKey<?> dataTagKey = CraftDataTagRegistry.INSTANCE.get(key);
+            if (dataTagKey == null) {
+                continue;
+            }
+            deserializeEntry(dataTagKey, entry.getValue(), result);
+        }
+
+        return result;
+    }
+
+    protected static <T> void deserializeEntry(CraftDataTagKey<T> key, Object serializedObject, CraftDataTagContainer container) {
+        DataTagSerializer<T> deserializer = CraftDataTagRegistry.INSTANCE.getSerializer(key);
+        if (deserializer == null) {
+            return;
+        }
+
+        T deserialized = deserializer.deserialize(serializedObject);
+        if (deserialized == null) {
+            return;
+        }
+
+        container.set(key, deserialized);
+    }
+
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        Map<String, Object> result = new HashMap<>();
+
+        for (CraftDataTagKey<?> key : this.keySet()) {
+            // Special case for normally serializable things
+            serializeEntry(key, result);
+        }
+
+        return result;
+    }
+
+    protected <T> void serializeEntry(CraftDataTagKey<T> key, Map<String, Object> serializationOutput) {
+        // If we dont have a value, we can quit early!
+        if (!this.has(key)) {
+            return;
+        }
+        T value = this.get(key);
+        if (value == null) {
+            return;
+        }
+
+        DataTagSerializer<T> serializer = CraftDataTagRegistry.INSTANCE.getSerializer(key);
+        if (serializer == null) {
+            return;
+        }
+
+        Object serialized = serializer.serialize(value);
+        if (serialized == null) {
+            return;
+        }
+
+        serializationOutput.put(key.key().toString(), serialized);
+    }
 }

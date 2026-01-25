@@ -51,4 +51,14 @@ public class CraftProperties extends TypeSafeCraftType{
     public CraftProperties createCraftProperties(final Craft craft) {
         return this;
     }
+
+    // TODO: Serialization
+    // - First, save all overrides that are in the properties but not the type
+    // - Second, save the entire backing type to the file
+    // - Third, save the types identifier in addition
+
+    // TODO: Deserialization
+    // - First, grab the underlying type
+    // - Second, if the type does not exist, deserialize it and "register" it
+    // - Third, apply all the overrides
 }
