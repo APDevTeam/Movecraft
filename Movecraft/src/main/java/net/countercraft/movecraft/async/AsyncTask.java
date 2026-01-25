@@ -17,24 +17,11 @@
 
 package net.countercraft.movecraft.async;
 
-import io.papermc.paper.registry.keys.tags.ItemTypeTagKeys;
 import net.countercraft.movecraft.Movecraft;
-import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.SinkingCraft;
-import net.countercraft.movecraft.craft.type.PropertyKeys;
-import net.countercraft.movecraft.craft.type.property.NamespacedKeyToDoubleProperty;
-import net.countercraft.movecraft.events.FuelBurnEvent;
 import net.countercraft.movecraft.localisation.I18nSupport;
-import net.countercraft.movecraft.util.Tags;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
@@ -61,90 +48,12 @@ public abstract class AsyncTask extends BukkitRunnable {
         return craft;
     }
 
-    // TODO: Move into it's own async task
-    // TODO: Check against craft datatag
+    // DONE: Move into it's own async task
+    // DONE: Check against craft datatag
     protected boolean checkFuel() {
         if (!FuelBurnRunnable.doesBurnFuel(this.getCraft())) {
             return true;
         }
         return this.getCraft().getDataTag(FuelBurnRunnable.IS_FUELED);
-
-//        // check for fuel, burn some from a furnace if needed. Blocks of coal are supported, in addition to coal and charcoal
-//        double fuelBurnRate = craft.getCraftProperties().get(PropertyKeys.FUEL_BURN_RATE, craft.getWorld());
-//        if (fuelBurnRate == 0.0 || craft instanceof SinkingCraft)
-//            return true;
-//
-//        if (craft.getBurningFuel() >= fuelBurnRate) {
-//            double burningFuel = craft.getBurningFuel();
-//            // call event
-//            final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
-//            Bukkit.getPluginManager().callEvent(event);
-//            if (event.getBurningFuel() != burningFuel)
-//                burningFuel = event.getBurningFuel();
-//            if (event.getFuelBurnRate() != fuelBurnRate)
-//                fuelBurnRate = event.getFuelBurnRate();
-//            craft.setBurningFuel(burningFuel - fuelBurnRate);
-//            return true;
-//        }
-//        Block fuelHolder = null;
-//
-//        NamespacedKeyToDoubleProperty fuelTypes = craft.getCraftProperties().get(PropertyKeys.FUEL_TYPES);
-//
-//        // TODO: Properly rework to use NamespacedKeys!
-//
-//        for (MovecraftLocation bTest : craft.getHitBox()) {
-//            Block b = craft.getWorld().getBlockAt(bTest.getX(), bTest.getY(), bTest.getZ());
-//            if (Tags.FURNACES.contains(b.getType())) {
-//                InventoryHolder inventoryHolder = (InventoryHolder) b.getState();
-//                for (ItemStack stack : inventoryHolder.getInventory()) {
-//                    if (stack == null || !fuelTypes.contains(stack.getType().getKey()))
-//                        continue;
-//                    fuelHolder = b;
-//                    break;
-//                }
-//            }
-//        }
-//        if (fuelHolder == null) {
-//            return false;
-//        }
-//        InventoryHolder inventoryHolder = (InventoryHolder) fuelHolder.getState();
-//        for (ItemStack iStack : inventoryHolder.getInventory()) {
-//            if (iStack == null)
-//                continue;
-//            if (!fuelTypes.contains(iStack.getType().getKey()))
-//                continue;
-//            double burningFuel = (double) fuelTypes.get(iStack.getType().getKey());
-//            //call event
-//            final FuelBurnEvent event = new FuelBurnEvent(craft, burningFuel, fuelBurnRate);
-//            Bukkit.getPluginManager().callEvent(event);
-//            if (event.getBurningFuel() != burningFuel)
-//                burningFuel = event.getBurningFuel();
-//            if (event.getFuelBurnRate() != fuelBurnRate)
-//                fuelBurnRate = event.getFuelBurnRate();
-//            if (burningFuel == 0.0) {
-//                continue;
-//            }
-//            int amount = iStack.getAmount();
-//            int minAmount = 1;
-//            if (burningFuel < fuelBurnRate) {
-//                minAmount = (int) fuelBurnRate;
-//            }
-//            // TODO: Create proper TagKey!
-//            if (Tags.BUCKETS.contains(iStack.getType())) {
-//                //If buckets are accepted as fuel, replace with an empty bucket
-//                iStack.setType(Material.BUCKET);
-//            } else if (amount == minAmount) {
-//                inventoryHolder.getInventory().remove(iStack);
-//            } else if (amount < minAmount) {
-//                inventoryHolder.getInventory().remove(iStack);
-//                final ItemStack secStack = inventoryHolder.getInventory().getItem(inventoryHolder.getInventory().first(iStack.getType()));
-//                secStack.setAmount(secStack.getAmount() - (minAmount - amount));
-//            } else {
-//                iStack.setAmount(amount - minAmount);
-//            }
-//            craft.setBurningFuel(craft.getBurningFuel() + burningFuel);
-//            break;
-//        }
-//        return true;
     }
 }
