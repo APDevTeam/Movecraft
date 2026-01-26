@@ -243,16 +243,20 @@ public class CraftManager implements Iterable<Craft>{
                         craft.getCraftProperties().getName(),
                         craft.getHitBox().size(),
                         craft.getHitBox().getMinX(),
-                        craft.getHitBox().getMinZ())
-                );
+                        craft.getHitBox().getMinY(),
+                        craft.getHitBox().getMinZ(),
+                        craft.getWorld().getName()
+                ));
             else
                 Movecraft.getInstance().getLogger().info(String.format(I18nSupport.getInternationalisedString(
                         "Release - Null Craft Release Console"),
                         craft.getCraftProperties().getName(),
                         craft.getHitBox().size(),
                         craft.getHitBox().getMinX(),
-                        craft.getHitBox().getMinZ())
-                );
+                        craft.getHitBox().getMinY(),
+                        craft.getHitBox().getMinZ(),
+                        craft.getWorld().getName()
+                ));
         }
         Movecraft.getInstance().getWreckManager().queueWreck(craft);
         return true;
