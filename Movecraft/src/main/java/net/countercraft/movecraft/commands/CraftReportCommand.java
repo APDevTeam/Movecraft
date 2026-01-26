@@ -76,6 +76,8 @@ public class CraftReportCommand implements CommandExecutor {
                     .append(Component.text(hitBox.getMinY()))
                     .append(Component.text(","))
                     .append(Component.text(hitBox.getMinZ()))
+                    .append(Component.text(" in "))
+                    .append(Component.text(craft.getWorld().getName()))
                     .append(Component.text(" - "))
                     .append(Component.text(String.format("%.2f", 1000 * craft.getMeanCruiseTime())))
                     .append(Component.text("ms"));
