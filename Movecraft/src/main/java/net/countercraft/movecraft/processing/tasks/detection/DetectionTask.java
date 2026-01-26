@@ -299,8 +299,11 @@ public class DetectionTask implements Supplier<Effect> {
                     craft.getCraftProperties().getName(),
                     craft.getHitBox().size(),
                     craft.getHitBox().getMinX(),
-                    craft.getHitBox().getMinZ()
+                    craft.getHitBox().getMinY(),
+                    craft.getHitBox().getMinZ(),
+                    craft.getWorld().getName()
             ));
+            System.out.println(I18nSupport.getInternationalisedString("Detection - Success - Log Output"));
         }).andThen(
                 // Apply water effect
                 water(craft) //TODO: Remove
