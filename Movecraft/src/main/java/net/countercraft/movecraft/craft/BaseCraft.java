@@ -513,6 +513,8 @@ public abstract class BaseCraft implements Craft {
      */
     @Override
     public double getSpeed() {
+        // TODO @HalfQuark / @DerToaster: Adjust for vector cruise => Calculate the skip blocks properly here and then divide by tickcooldown
+        // TODO: Belong to upper TODO, but other calculations of skip blocks must be adjusted too!
         if (cruiseDirection == CruiseDirection.UP || cruiseDirection == CruiseDirection.DOWN) {
             return 20 * (getCraftProperties().get(PropertyKeys.VERT_CRUISE_SKIP_BLOCKS, w) + 1) / (double) getTickCooldown();
         }
