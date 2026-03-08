@@ -31,6 +31,8 @@ import net.countercraft.movecraft.processing.WorldManager;
 import net.countercraft.movecraft.processing.effects.Effect;
 import net.countercraft.movecraft.processing.functions.CraftSupplier;
 import net.countercraft.movecraft.processing.tasks.detection.DetectionTask;
+import net.countercraft.movecraft.sign.AbstractMovecraftSign;
+import net.countercraft.movecraft.sign.CraftPilotSign;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -96,6 +98,9 @@ public class CraftManager implements Iterable<Craft>{
             craftTypes = loadCraftTypes();
         else
             craftTypes = new HashSet<>();
+
+        // Since the event is only created in reload cases...
+        AbstractMovecraftSign.registerCraftPilotSigns(CraftManager.getInstance().getCraftTypes(), CraftPilotSign::new);
     }
 
     @NotNull
