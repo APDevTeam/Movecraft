@@ -16,6 +16,7 @@ dependencies {
     runtimeOnly(project(":movecraft-v1_21_10"))
     runtimeOnly(project(":movecraft-v1_21_11"))
     runtimeOnly(project(":movecraft-v26_1_2"))
+    runtimeOnly(project(":movecraft-v26_2"))
     implementation(project(":movecraft-api"))
     compileOnly("org.yaml:snakeyaml:2.0")
 }
@@ -35,6 +36,7 @@ tasks.shadowJar {
         include(project(":movecraft-v1_21_10"))
         include(project(":movecraft-v1_21_11"))
         include(project(":movecraft-v26_1_2"))
+        include(project(":movecraft-v26_2"))
     }
 
     manifest.attributes(
