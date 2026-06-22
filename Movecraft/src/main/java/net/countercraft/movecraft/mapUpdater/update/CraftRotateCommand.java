@@ -21,14 +21,11 @@ import net.countercraft.movecraft.util.Tags;
 import net.countercraft.movecraft.util.hitboxes.HitBox;
 import net.countercraft.movecraft.util.hitboxes.SetHitBox;
 import net.countercraft.movecraft.util.hitboxes.SolidHitBox;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Tag;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -231,25 +228,27 @@ public class CraftRotateCommand extends UpdateCommand {
             // if(!event.isUpdated()){
             //     continue;
             // }
-            // TODO: This is implemented only to fix client caching
-            //  ideally we wouldn't do the update and would instead fake it out to the player
             for (MovecraftLocation location : entry.getValue()) {
-                Block block = location.toBukkit(craft.getWorld()).getBlock();
+                Location mcLocation = location.toBukkit(craft.getWorld());
+                Block block = mcLocation.getBlock();
                 BlockState state = block.getState();
-                BlockData data = block.getBlockData();
                 if (!(state instanceof Sign)) {
                     continue;
                 }
+
                 Sign sign = signStates.get(location);
-                if (event.isUpdated()) {
-                    for (int i = 0; i < 4; i++) {
-                        sign.setLine(i, entry.getKey()[i]);
-                    }
+                if (!event.isUpdated())
+                    continue;
+
+                for (Player player : mcLocation.getNearbyPlayers(64)) {
+                    updateSign(player, mcLocation, entry.getKey(), sign);
                 }
-                sign.update(false, false);
-                block.setBlockData(data);
             }
         }
+    }
+
+    private void updateSign(Player player, Location location, String[] lines, Sign sign) {
+        player.sendBlockChange(location, sign.getBlockData());
     }
 
     @NotNull
