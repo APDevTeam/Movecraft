@@ -10,6 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
+/**
+ * TODO: Change to extend @link SimpleRegistry in the future
+  */
 public class CraftDataTagRegistry {
     public static final @NotNull CraftDataTagRegistry INSTANCE = new CraftDataTagRegistry();
 
