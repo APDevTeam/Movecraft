@@ -20,7 +20,7 @@ package net.countercraft.movecraft.localisation;
 import net.countercraft.movecraft.Movecraft;
 import net.countercraft.movecraft.config.Settings;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,6 +36,7 @@ import java.util.logging.Level;
 
 public class I18nSupport {
     private static Properties languageFile;
+    private static final LegacyComponentSerializer legacy = LegacyComponentSerializer.legacySection();
 
     public static void init() {
         languageFile = new Properties();
@@ -83,7 +84,7 @@ public class I18nSupport {
     }
 
     @Contract("_ -> new")
-    public static @NotNull TextComponent getInternationalisedComponent(String key){
-        return Component.text(get(key));
+    public static @NotNull Component getInternationalisedComponent(String key){
+        return legacy.deserialize(get(key));
     }
 }
