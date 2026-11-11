@@ -39,12 +39,15 @@ import net.countercraft.movecraft.util.BukkitTeleport;
 import net.countercraft.movecraft.util.Tags;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Server;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -187,6 +190,8 @@ public class Movecraft extends JavaPlugin {
 
         // Startup procedure
         boolean datapackInitialized = isDatapackEnabled() || initializeDatapack();
+        if(!isEnabled())
+            return;
         asyncManager = new AsyncManager();
         asyncManager.runTaskTimer(this, 0, 1);
         MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
@@ -253,12 +258,7 @@ public class Movecraft extends JavaPlugin {
     }
 
     private boolean initializeDatapack() {
-        File datapackDirectory = null;
-        for(var world : getServer().getWorlds()) {
-            datapackDirectory = new File(world.getWorldFolder(), "datapacks");
-            if(datapackDirectory.exists())
-                break;
-        }
+        File datapackDirectory = getDatapackDirectory();
         if(datapackDirectory == null) {
             logger.severe("Failed to initialize Movecraft data pack due to first time world initialization.");
             return false;
@@ -311,6 +311,25 @@ public class Movecraft extends JavaPlugin {
             return false;
         }
         return true;
+    }
+
+    private @Nullable File getDatapackDirectory() {
+        // Since 26.1, World#getWorldFolder() is the dimension folder, so ask for the level directory instead
+        try {
+            Path levelDirectory = (Path) Server.class.getMethod("getLevelDirectory").invoke(getServer());
+            return levelDirectory.resolve("datapacks").toFile();
+        }
+        catch (final NoSuchMethodException e) {
+            // Before 26.1, the main world's folder is the level directory
+        }
+        catch (final ReflectiveOperationException e) {
+            e.printStackTrace();
+            return null;
+        }
+        var worlds = getServer().getWorlds();
+        if(worlds.isEmpty())
+            return null;
+        return new File(worlds.get(0).getWorldFolder(), "datapacks");
     }
 
     private boolean isDatapackEnabled() {
