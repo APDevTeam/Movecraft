@@ -190,6 +190,8 @@ public class Movecraft extends JavaPlugin {
 
         // Startup procedure
         boolean datapackInitialized = isDatapackEnabled() || initializeDatapack();
+        if(!isEnabled())
+            return;
         asyncManager = new AsyncManager();
         asyncManager.runTaskTimer(this, 0, 1);
         MapUpdateManager.getInstance().runTaskTimer(this, 0, 1);
